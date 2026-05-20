@@ -1,6 +1,16 @@
 [package]
 name = "swelog"
 version = "0.1.0"
+authors = ["Rudra Patel <patelrudra2003@gmail.com>"]
 edition = "2024"
+description = "A Rust CLI to track your daily accomplishments in Obsidian"
 
 [dependencies]
+anyhow = "1.0.102"
+clap = { version = "4.6.1", features = ["derive"] }
+dirs = "6.0.0"
+serde = { version = "1.0.228", features = ["derive"] }
+serde_json = "1.0.149"
+
+[dev-dependencies]
+tempfile = "3.27.0"
