@@ -1,8 +1,14 @@
-name: lint-and-format
+name: pr-check
 
 on:
-  push:
   pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - edited
+    branches:
+      - main
 
 jobs:
   lint-and-format:
