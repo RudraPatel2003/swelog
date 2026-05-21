@@ -1,11 +1,14 @@
 mod swelog_config;
 
-#[cfg(test)]
-mod tests;
-
-use anyhow::{Context, Result, bail};
-use std::fs;
-use std::path::PathBuf;
+use anyhow::{
+    Context,
+    Result,
+    bail,
+};
+use std::{
+    fs,
+    path::PathBuf,
+};
 use swelog_config::SwelogConfig;
 
 const APP_NAME: &str = "swelog";
@@ -37,7 +40,7 @@ fn get_config_file_path() -> Result<PathBuf> {
     Ok(config_file_path)
 }
 
-pub(crate) fn write_default_config(
+fn write_default_config(
     config_file_path: &PathBuf,
     config: &SwelogConfig,
     overwrite_existing_config: bool,
@@ -67,3 +70,6 @@ pub(crate) fn write_default_config(
 
     Ok(())
 }
+
+#[cfg(test)]
+mod tests;

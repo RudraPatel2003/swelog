@@ -1,8 +1,9 @@
-use super::swelog_config::SwelogConfig;
-use super::write_default_config;
-use std::fs;
+use super::*;
 use std::path::PathBuf;
-use tempfile::{TempDir, tempdir};
+use tempfile::{
+    TempDir,
+    tempdir,
+};
 
 const CONFIG_FILE_NAME: &str = "swelog.json";
 const VAULT_DIRECTORY_NAME: &str = "vault";

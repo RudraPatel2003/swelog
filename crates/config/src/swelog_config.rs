@@ -1,11 +1,17 @@
-use serde::{Deserialize, Serialize};
-use std::path::{Path, PathBuf};
+use serde::{
+    Deserialize,
+    Serialize,
+};
+use std::path::{
+    Path,
+    PathBuf,
+};
 
 const APP_NAME: &str = "swelog";
 
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
-pub struct SwelogConfig {
+pub(crate) struct SwelogConfig {
     pub obsidian_vault_path: PathBuf,
     pub daily_log_folder: PathBuf,
     pub weekly_log_folder: PathBuf,
