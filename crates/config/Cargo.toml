@@ -1,15 +1,17 @@
 [package]
 name = "config"
 version = "0.1.0"
+publish = false
 authors = { workspace = true }
 edition = { workspace = true }
 description = { workspace = true }
 
 [dependencies]
-anyhow = { workspace = true }
 dirs = { workspace = true }
+miette = { workspace = true, features = ["derive"] }
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
+thiserror = { workspace = true }
 
 [dev-dependencies]
 tempfile = { workspace = true }

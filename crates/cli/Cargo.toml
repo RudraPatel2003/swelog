@@ -10,6 +10,7 @@ name = "swelog"
 path = "src/main.rs"
 
 [dependencies]
-anyhow = { workspace = true }
 clap = { workspace = true, features = ["derive"] }
 config = { path = "../config" }
+miette = { workspace = true, features = ["fancy"] }
+owo-colors = { workspace = true }

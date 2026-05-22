@@ -35,10 +35,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
 
+      - name: Setup Just
+        uses: extractions/setup-just@v4
+
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@nightly
         with:
           components: clippy, rustfmt
 
-      - name: Run linting and formatting checks
-        run: ./check.sh
+      - name: Run PR checks
+        run: just pr

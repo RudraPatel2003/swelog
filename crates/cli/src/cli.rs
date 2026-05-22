@@ -7,7 +7,7 @@ use clap::{
 #[command(name = "swelog", version, about)]
 pub(crate) struct Cli {
     #[command(subcommand)]
-    pub(crate) command: Commands,
+    pub command: Commands,
 }
 
 #[derive(Debug, Subcommand)]
