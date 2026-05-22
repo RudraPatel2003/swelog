@@ -7,7 +7,7 @@ use serde::{
 
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
-pub(crate) struct SwelogConfig {
+pub struct SwelogConfig {
     pub obsidian_vault_path: PathBuf,
     pub swelog_folder: PathBuf,
     pub daily_log_folder: PathBuf,
@@ -19,8 +19,8 @@ impl SwelogConfig {
         Self {
             obsidian_vault_path: PathBuf::from(""),
             swelog_folder: PathBuf::from("swelog"),
-            daily_log_folder: PathBuf::from("Daily"),
-            weekly_log_folder: PathBuf::from("Weekly"),
+            daily_log_folder: PathBuf::from("daily"),
+            weekly_log_folder: PathBuf::from("weekly"),
         }
     }
 }

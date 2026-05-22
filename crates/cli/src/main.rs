@@ -18,9 +18,12 @@ fn main() -> Result<()> {
             println!("Created swelog config at {}", config_file_path.display().cyan());
         }
         Commands::Setup { overwrite_existing_files } => {
-            config::setup::setup_swelog_files(overwrite_existing_files)?;
+            let swelog_config = config::setup::setup_swelog_files(overwrite_existing_files)?;
 
-            println!("Created swelog files in your Obsidian vault.");
+            println!(
+                "Created swelog files in your Obsidian vault at {}",
+                swelog_config.obsidian_vault_path.display().cyan()
+            );
         }
     }
 
