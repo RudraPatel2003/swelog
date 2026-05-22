@@ -1,16 +1,19 @@
 #!/bin/bash
 
+RED='\033[0;31m'
+RESET='\033[0m'
+
 if ! cargo +nightly fmt --all -- --check; then
-    echo "Error: cargo fmt failed"
+    echo -e "${RED}Error: cargo fmt failed${RESET}"
     exit 1
 fi
 
 if ! cargo clippy --workspace --all-targets --all-features -- -D warnings; then
-    echo "Error: cargo clippy failed"
+    echo -e "${RED}Error: cargo clippy failed${RESET}"
     exit 1
 fi
 
 if ! cargo test --workspace --all-features; then
-    echo "Error: cargo test failed"
+    echo -e "${RED}Error: cargo test failed${RESET}"
     exit 1
 fi
