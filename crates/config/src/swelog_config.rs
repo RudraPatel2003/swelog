@@ -1,14 +1,9 @@
-use std::path::{
-    Path,
-    PathBuf,
-};
+use std::path::PathBuf;
 
 use serde::{
     Deserialize,
     Serialize,
 };
-
-const APP_NAME: &str = "swelog";
 
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
@@ -20,11 +15,9 @@ pub(crate) struct SwelogConfig {
 }
 
 impl SwelogConfig {
-    pub fn get_default_config(vault_directory: &Path) -> Self {
-        let vault_path = vault_directory.join(APP_NAME);
-
+    pub fn get_default_config() -> Self {
         Self {
-            obsidian_vault_path: vault_path,
+            obsidian_vault_path: PathBuf::from(""),
             swelog_folder: PathBuf::from("swelog"),
             daily_log_folder: PathBuf::from("Daily"),
             weekly_log_folder: PathBuf::from("Weekly"),

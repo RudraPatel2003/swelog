@@ -18,4 +18,10 @@ pub(crate) enum Commands {
         #[arg(long = "force")]
         overwrite_existing_config: bool,
     },
+    /// Setup the swelog files in your Obsidian vault.
+    Setup {
+        /// Overwrite existing swelog files.
+        #[arg(long = "force")]
+        overwrite_existing_files: bool,
+    },
 }
