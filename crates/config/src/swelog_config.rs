@@ -20,6 +20,8 @@ pub struct SwelogConfig {
     pub weekly_log_folder_name: String,
 
     pub llm: SupportedLlm,
+    #[serde(default = "default_ollama_model")]
+    pub ollama_model: String,
 }
 
 impl SwelogConfig {
@@ -30,6 +32,11 @@ impl SwelogConfig {
             daily_log_folder_name: String::from("daily"),
             weekly_log_folder_name: String::from("weekly"),
             llm: SupportedLlm::Ollama,
+            ollama_model: default_ollama_model(),
         }
     }
+}
+
+fn default_ollama_model() -> String {
+    String::from("llama3.2")
 }

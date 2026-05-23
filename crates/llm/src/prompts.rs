@@ -67,7 +67,6 @@ work.md content:
 context.md content:
 
 {context_file_content}
-",
-        work_file_content, context_file_content
+"
     )
 }

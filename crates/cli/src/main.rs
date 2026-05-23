@@ -8,7 +8,8 @@ use cli::{
 use miette::Result;
 use owo_colors::OwoColorize;
 
-fn main() -> Result<()> {
+#[tokio::main]
+async fn main() -> Result<()> {
     let cli = Cli::parse();
 
     match cli.command {
@@ -25,8 +26,8 @@ fn main() -> Result<()> {
                 swelog_config.obsidian_vault_path.display().cyan()
             );
         }
-        Commands::Log { overwrite_existing_daily_log, save_work_file } => {
-            logging::log::log_daily_work(overwrite_existing_daily_log, save_work_file)?;
+        Commands::Log { overwrite_existing_daily_log, keep_work_file } => {
+            logging::log::log_daily_work(overwrite_existing_daily_log, keep_work_file).await?;
 
             println!("Logged your work into the daily folder");
         }

@@ -3,7 +3,7 @@ mod setup_paths;
 
 use std::fs;
 
-use default_files::{
+pub use default_files::{
     DEFAULT_CONTEXT_FILE_CONTENT,
     DEFAULT_WORK_FILE_CONTENT,
 };
@@ -12,7 +12,7 @@ use miette::{
     Result,
     WrapErr,
 };
-use setup_paths::SetupPaths;
+pub use setup_paths::SetupPaths;
 
 use crate::{
     errors::SetupFilesAlreadyExist,

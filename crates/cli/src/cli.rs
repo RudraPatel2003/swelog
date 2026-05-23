@@ -32,8 +32,8 @@ pub(crate) enum Commands {
         #[arg(long = "force")]
         overwrite_existing_daily_log: bool,
 
-        /// Save the current contents of the work.md file
-        #[arg(long = "save")]
-        save_work_file: bool,
+        /// Keep the current contents of the work.md file.
+        #[arg(long = "keep")]
+        keep_work_file: bool,
     },
 }

@@ -50,6 +50,7 @@ fn get_test_context() -> TestContext {
         daily_log_folder_name: String::from("daily"),
         weekly_log_folder_name: String::from("weekly"),
         llm: SupportedLlm::Ollama,
+        ollama_model: String::from("llama3.2"),
     };
 
     TestContext { temporary_directory, config }
@@ -88,6 +89,7 @@ fn setup_uses_configured_folder_names() {
         daily_log_folder_name: String::from("days"),
         weekly_log_folder_name: String::from("weeks"),
         llm: SupportedLlm::Ollama,
+        ollama_model: String::from("llama3.2"),
     };
 
     let overwrite_existing_files = false;
