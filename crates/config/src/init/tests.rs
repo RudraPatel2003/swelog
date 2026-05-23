@@ -8,7 +8,6 @@ use tempfile::{
 use super::*;
 
 const CONFIG_FILE_NAME: &str = "swelog.json";
-const VAULT_DIRECTORY_NAME: &str = "vault";
 
 const EXISTING_CONFIG_FILE_CONTENT: &str = "existing";
 
@@ -23,8 +22,7 @@ fn get_test_context() -> TestContext {
 
     let config_file_path = temporary_directory.path().join(CONFIG_FILE_NAME);
 
-    let config =
-        SwelogConfig::get_default_config(&temporary_directory.path().join(VAULT_DIRECTORY_NAME));
+    let config = SwelogConfig::get_default_config();
 
     TestContext { temporary_directory, config_file_path, config }
 }
@@ -65,7 +63,7 @@ fn write_config_fails_when_file_exists_without_force() {
     let error =
         error.downcast_ref::<ConfigAlreadyExists>().expect("error should be ConfigAlreadyExists");
 
-    assert_eq!(error.path, config_file_path);
+    assert_eq!(error.config_file_path, config_file_path);
 
     let file_contents =
         fs::read_to_string(&config_file_path).expect("config file should be readable");
