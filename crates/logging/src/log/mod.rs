@@ -1,7 +1,6 @@
-use std::{
-    fs,
-    path::PathBuf,
-};
+mod errors;
+
+use std::fs;
 
 use chrono::{
     Local,
@@ -18,33 +17,22 @@ use config::{
         ensure_swelog_file_exists,
     },
 };
+use errors::DailyLogAlreadyExists;
 use llm::{
     LanguageModel,
     get_language_model_from_config,
     prompts::get_daily_log_prompt,
 };
 use miette::{
-    Diagnostic,
     IntoDiagnostic,
     Result,
     WrapErr,
 };
-use thiserror::Error;
-
-#[derive(Debug, Diagnostic, Error)]
-#[error("daily log already exists at {daily_log_file}")]
-#[diagnostic(
-    code(swelog::logging::daily_log_already_exists),
-    help("use `swelog log --force` to overwrite the existing daily log file")
-)]
-pub struct DailyLogAlreadyExists {
-    pub daily_log_file: PathBuf,
-}
 
 pub async fn log_daily_work(
     overwrite_existing_daily_log: bool,
     keep_work_file: bool,
-) -> Result<()> {
+) -> Result<NaiveDate> {
     let swelog_config = config::utils::read_config_file()?;
 
     let language_model = get_language_model_from_config(&swelog_config);
@@ -60,7 +48,7 @@ pub async fn log_daily_work(
     )
     .await?;
 
-    Ok(())
+    Ok(log_date)
 }
 
 async fn log_daily_work_from_config(
@@ -76,7 +64,9 @@ async fn log_daily_work_from_config(
     ensure_swelog_file_exists(&swelog_paths.work_file)?;
     ensure_swelog_directory_exists(&swelog_paths.daily_log_directory)?;
 
-    let daily_log_file = swelog_paths.daily_log_directory.join(daily_log_file_name(log_date));
+    let daily_log_file_name = get_daily_log_file_name(&log_date);
+
+    let daily_log_file = swelog_paths.daily_log_directory.join(daily_log_file_name);
 
     if daily_log_file.exists() && !overwrite_existing_daily_log {
         let daily_log_already_exists_error = DailyLogAlreadyExists { daily_log_file };
@@ -95,6 +85,7 @@ async fn log_daily_work_from_config(
         })?;
 
     let prompt = get_daily_log_prompt(&work_file_content, &context_file_content, &log_date);
+
     let daily_log_content = language_model.generate_response(&prompt).await?;
 
     fs::write(&daily_log_file, daily_log_content).into_diagnostic().wrap_err_with(|| {
@@ -112,7 +103,7 @@ async fn log_daily_work_from_config(
     Ok(())
 }
 
-fn daily_log_file_name(log_date: NaiveDate) -> String {
+pub fn get_daily_log_file_name(log_date: &NaiveDate) -> String {
     format!("{}.md", log_date.format("%m-%d-%Y"))
 }
 
