@@ -4,7 +4,7 @@
 
 <h1 align="center">
   <br>
-    <img src="./assets/repository-banner.png" alt="Repository Banner" width="70%">
+    <img src="./assets/repository-banner.png" alt="Repository Banner" width="20%">
   <br>
     swelog
 </h1>
