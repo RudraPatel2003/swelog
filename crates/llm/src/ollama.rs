@@ -17,7 +17,7 @@ pub struct OllamaLlm {
 }
 
 impl OllamaLlm {
-    pub fn new(model: &String) -> Self {
+    pub fn new(model: String) -> Self {
         Self { client: Ollama::default(), model }
     }
 }

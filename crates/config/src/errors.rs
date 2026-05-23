@@ -44,3 +44,13 @@ pub struct ConfigNotFound {
 pub struct SetupFilesAlreadyExist {
     pub setup_path: PathBuf,
 }
+
+#[derive(Debug, Diagnostic, Error)]
+#[error("swelog setup file not found at {setup_path}")]
+#[diagnostic(
+    code(swelog::logging::setup_file_not_found),
+    help("run `swelog setup` to create the required swelog files")
+)]
+pub struct SetupFileNotFound {
+    pub setup_path: PathBuf,
+}

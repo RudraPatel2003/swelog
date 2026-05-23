@@ -6,13 +6,14 @@ use std::{
 use async_trait::async_trait;
 use chrono::NaiveDate;
 use config::{
+    errors::SetupFileNotFound,
     setup::DEFAULT_WORK_FILE_CONTENT,
     swelog_config::{
         SupportedLlm,
         SwelogConfig,
     },
 };
-use llm::Llm;
+use llm::llm::Llm;
 use miette::Result;
 use tempfile::{
     TempDir,

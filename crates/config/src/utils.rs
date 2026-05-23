@@ -1,6 +1,9 @@
 use std::{
     fs,
-    path::PathBuf,
+    path::{
+        Path,
+        PathBuf,
+    },
 };
 
 use miette::{
@@ -14,6 +17,7 @@ use crate::{
     errors::{
         ConfigNotFound,
         EmptyObsidianVaultPath,
+        SetupFileNotFound,
     },
     swelog_config::SwelogConfig,
 };
@@ -55,4 +59,24 @@ pub fn read_config_file() -> Result<SwelogConfig> {
     }
 
     Ok(config)
+}
+
+pub fn ensure_setup_file_exists(setup_path: &Path) -> Result<()> {
+    if setup_path.is_file() {
+        return Ok(());
+    }
+
+    let setup_file_not_found_error = SetupFileNotFound { setup_path: setup_path.to_path_buf() };
+
+    Err(setup_file_not_found_error.into())
+}
+
+pub fn ensure_setup_directory_exists(setup_path: &Path) -> Result<()> {
+    if setup_path.is_dir() {
+        return Ok(());
+    }
+
+    let setup_file_not_found_error = SetupFileNotFound { setup_path: setup_path.to_path_buf() };
+
+    Err(setup_file_not_found_error.into())
 }
