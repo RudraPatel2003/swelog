@@ -27,12 +27,10 @@ impl LanguageModel for OllamaLanguageModel {
     async fn generate_response(&self, prompt: &str) -> Result<String> {
         let request = GenerationRequest::new(self.model.clone(), prompt);
 
-        let response = self
-            .client
-            .generate(request)
-            .await
-            .into_diagnostic()
-            .wrap_err("failed to generate response with Ollama")?;
+        let response =
+            self.client.generate(request).await.into_diagnostic().wrap_err_with(|| {
+                format!("Failed to generate response with Ollama model {}. Please ensure the model is available and running.", self.model)
+            })?;
 
         Ok(response.response)
     }

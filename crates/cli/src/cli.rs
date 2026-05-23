@@ -26,13 +26,13 @@ pub(crate) enum Commands {
         overwrite_existing_files: bool,
     },
 
-    /// Summarize your work.md file and log it into the daily folder
+    /// Summarize your configured work file and log it into the daily folder.
     Log {
         /// Overwrite existing daily log file.
         #[arg(long = "force")]
         overwrite_existing_daily_log: bool,
 
-        /// Keep the current contents of the work.md file.
+        /// Keep the current contents of the configured work file.
         #[arg(long = "keep")]
         keep_work_file: bool,
     },

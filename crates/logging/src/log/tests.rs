@@ -7,11 +7,11 @@ use async_trait::async_trait;
 use chrono::NaiveDate;
 use config::{
     errors::SwelogFileNotFound,
-    setup::DEFAULT_WORK_FILE_CONTENT,
-    swelog_config::{
-        LanguageModelProvider,
-        SwelogConfig,
+    setup::{
+        DEFAULT_WORK_FILE_CONTENT,
+        SwelogPaths,
     },
+    swelog_config::SwelogConfig,
 };
 use llm::LanguageModel;
 use miette::Result;
@@ -41,20 +41,20 @@ impl LanguageModel for FakeLanguageModel {
 }
 
 impl TestContext {
-    fn swelog_directory(&self) -> PathBuf {
-        self.config.obsidian_vault_path.join(&self.config.swelog_folder_name)
+    fn swelog_paths(&self) -> SwelogPaths {
+        SwelogPaths::new(&self.config)
     }
 
     fn context_file(&self) -> PathBuf {
-        self.swelog_directory().join("context.md")
+        self.swelog_paths().context_file
     }
 
     fn work_file(&self) -> PathBuf {
-        self.swelog_directory().join("work.md")
+        self.swelog_paths().work_file
     }
 
     fn daily_log_directory(&self) -> PathBuf {
-        self.swelog_directory().join(&self.config.daily_log_folder_name)
+        self.swelog_paths().daily_log_directory
     }
 
     fn daily_log_file(&self) -> PathBuf {
@@ -81,11 +81,7 @@ fn get_test_context() -> TestContext {
 
     let config = SwelogConfig {
         obsidian_vault_path: temporary_directory.path().to_path_buf(),
-        swelog_folder_name: String::from("swelog"),
-        daily_log_folder_name: String::from("daily"),
-        weekly_log_folder_name: String::from("weekly"),
-        language_model_provider: LanguageModelProvider::Ollama,
-        ollama_model: String::from("llama3.2"),
+        ..SwelogConfig::get_default_config()
     };
 
     TestContext { temporary_directory, config }

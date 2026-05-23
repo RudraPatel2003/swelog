@@ -16,15 +16,15 @@ impl SwelogPaths {
             swelog_config.obsidian_vault_path.join(&swelog_config.swelog_folder_name);
 
         Self {
-            context_file: swelog_directory.join("context.md"),
-            work_file: swelog_directory.join("work.md"),
+            context_file: swelog_directory.join(&swelog_config.context_file_name),
+            work_file: swelog_directory.join(&swelog_config.work_file_name),
             daily_log_directory: swelog_directory.join(&swelog_config.daily_log_folder_name),
             weekly_log_directory: swelog_directory.join(&swelog_config.weekly_log_folder_name),
             swelog_directory,
         }
     }
 
-    pub fn paths_to_check(&self) -> [&PathBuf; 4] {
+    pub fn all_paths(&self) -> [&PathBuf; 4] {
         [&self.context_file, &self.work_file, &self.daily_log_directory, &self.weekly_log_directory]
     }
 }

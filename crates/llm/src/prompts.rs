@@ -1,12 +1,20 @@
-pub fn get_daily_log_prompt(work_file_content: &str, context_file_content: &str) -> String {
+use chrono::NaiveDate;
+
+pub fn get_daily_log_prompt(
+    work_file_content: &str,
+    context_file_content: &str,
+    log_date: &NaiveDate,
+) -> String {
+    let formatted_date = log_date.format("%m-%d-%Y").to_string();
+
     format!(
         "
 You are generating a daily engineering work log.
 
 You will be given:
-1. Long-term engineer context from context.md
-2. Raw work notes from work.md
-3. Activity data from git, GitHub, PRs, reviews, issues, and related metadata
+1. Long-term engineer context
+2. Raw work notes
+3. Potentially activity data from git, GitHub, PRs, reviews, issues, and related metadata
 
 Your job is to generate a concise but specific daily summary.
 
@@ -21,50 +29,30 @@ Goals:
 
 The output should be Markdown.
 
+The resulting output should be a valid Markdown document that can be directly copied and pasted into the daily log file.
+Do not include any extraneous text or formatting in the output.
+
 Use the following structure:
 
-# Daily Log - YYYY-MM-DD
+```markdown
+# Daily Log - {formatted_date}
 
 ## Summary
+
 2-5 sentence overview of the day.
 
-## Project Work
-Group work by project or initiative.
-
-For each project:
-- what was worked on
-- important findings or decisions
-- blockers or follow-ups
-- technical details if relevant
-
-## Collaboration
-Include:
-- PR reviews
-- mentoring
-- cross-team discussions
-- design conversations
-- operational coordination
-
 ## Wins
-Highlight meaningful progress, shipped work, resolved issues, or impactful contributions.
 
-## Follow Ups
-List unresolved items, risks, or next steps.
-
-Guidelines:
-- Be concise but information-dense
-- Avoid repeating raw notes verbatim
-- Avoid generic phrases like “worked on various tasks”
-- Prefer specific technical descriptions
-- Infer intent and impact when possible
+Highlight meaningful progress, shipped work, resolved issues, or impactful contributions. Structure these as if they were resume bullet points.
+```
 
 CONTEXT:
 
-work.md content:
+work file content:
 
 {work_file_content}
 
-context.md content:
+context file content:
 
 {context_file_content}
 "

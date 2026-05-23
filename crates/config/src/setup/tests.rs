@@ -9,7 +9,6 @@ use tempfile::{
 };
 
 use super::*;
-use crate::swelog_config::LanguageModelProvider;
 
 const EXISTING_CONTEXT_FILE_CONTENT: &str = "existing context";
 const EXISTING_WORK_FILE_CONTENT: &str = "existing work";
@@ -20,24 +19,28 @@ struct TestContext {
 }
 
 impl TestContext {
+    fn swelog_paths(&self) -> SwelogPaths {
+        SwelogPaths::new(&self.config)
+    }
+
     fn swelog_directory(&self) -> PathBuf {
-        self.config.obsidian_vault_path.join(&self.config.swelog_folder_name)
+        self.swelog_paths().swelog_directory
     }
 
     fn context_file(&self) -> PathBuf {
-        self.swelog_directory().join("context.md")
+        self.swelog_paths().context_file
     }
 
     fn work_file(&self) -> PathBuf {
-        self.swelog_directory().join("work.md")
+        self.swelog_paths().work_file
     }
 
     fn daily_log_directory(&self) -> PathBuf {
-        self.swelog_directory().join(&self.config.daily_log_folder_name)
+        self.swelog_paths().daily_log_directory
     }
 
     fn weekly_log_directory(&self) -> PathBuf {
-        self.swelog_directory().join(&self.config.weekly_log_folder_name)
+        self.swelog_paths().weekly_log_directory
     }
 }
 
@@ -46,11 +49,7 @@ fn get_test_context() -> TestContext {
 
     let config = SwelogConfig {
         obsidian_vault_path: temporary_directory.path().to_path_buf(),
-        swelog_folder_name: String::from("swelog"),
-        daily_log_folder_name: String::from("daily"),
-        weekly_log_folder_name: String::from("weekly"),
-        language_model_provider: LanguageModelProvider::Ollama,
-        ollama_model: String::from("llama3.2"),
+        ..SwelogConfig::get_default_config()
     };
 
     TestContext { temporary_directory, config }
@@ -80,27 +79,29 @@ fn setup_creates_swelog_files_and_directories() {
 }
 
 #[test]
-fn setup_uses_configured_folder_names() {
+fn setup_uses_configured_path_names() {
     let temporary_directory = tempdir().expect("temp directory should be created");
 
     let config = SwelogConfig {
         obsidian_vault_path: temporary_directory.path().to_path_buf(),
         swelog_folder_name: String::from("accomplishments"),
+        context_file_name: String::from("team-context.md"),
+        work_file_name: String::from("daily-work.md"),
         daily_log_folder_name: String::from("days"),
         weekly_log_folder_name: String::from("weeks"),
-        language_model_provider: LanguageModelProvider::Ollama,
-        ollama_model: String::from("llama3.2"),
+        ..SwelogConfig::get_default_config()
     };
 
+    let swelog_paths = SwelogPaths::new(&config);
     let overwrite_existing_files = false;
 
     setup_swelog_files_from_config(&config, overwrite_existing_files)
         .expect("swelog files should be created");
 
-    assert!(temporary_directory.path().join("accomplishments/context.md").is_file());
-    assert!(temporary_directory.path().join("accomplishments/work.md").is_file());
-    assert!(temporary_directory.path().join("accomplishments/days").is_dir());
-    assert!(temporary_directory.path().join("accomplishments/weeks").is_dir());
+    assert!(swelog_paths.context_file.is_file());
+    assert!(swelog_paths.work_file.is_file());
+    assert!(swelog_paths.daily_log_directory.is_dir());
+    assert!(swelog_paths.weekly_log_directory.is_dir());
 
     drop(temporary_directory);
 }

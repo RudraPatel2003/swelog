@@ -18,6 +18,7 @@ async fn main() -> Result<()> {
 
             println!("Created swelog config at {}", config_file_path.display().cyan());
         }
+
         Commands::Setup { overwrite_existing_files } => {
             let swelog_config = config::setup::setup_swelog_files(overwrite_existing_files)?;
 
@@ -26,6 +27,7 @@ async fn main() -> Result<()> {
                 swelog_config.obsidian_vault_path.display().cyan()
             );
         }
+
         Commands::Log { overwrite_existing_daily_log, keep_work_file } => {
             logging::log::log_daily_work(overwrite_existing_daily_log, keep_work_file).await?;
 

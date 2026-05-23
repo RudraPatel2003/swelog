@@ -21,6 +21,7 @@ use config::{
 use llm::{
     LanguageModel,
     get_language_model_from_config,
+    prompts::get_daily_log_prompt,
 };
 use miette::{
     Diagnostic,
@@ -93,7 +94,7 @@ async fn log_daily_work_from_config(
             format!("failed to read work file at {}", swelog_paths.work_file.display())
         })?;
 
-    let prompt = llm::prompts::get_daily_log_prompt(&work_file_content, &context_file_content);
+    let prompt = get_daily_log_prompt(&work_file_content, &context_file_content, &log_date);
     let daily_log_content = language_model.generate_response(&prompt).await?;
 
     fs::write(&daily_log_file, daily_log_content).into_diagnostic().wrap_err_with(|| {

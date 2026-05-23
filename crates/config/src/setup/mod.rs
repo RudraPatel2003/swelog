@@ -74,7 +74,7 @@ fn setup_swelog_files_from_config(
 }
 
 fn fail_if_swelog_paths_exist(swelog_paths: &SwelogPaths) -> Result<()> {
-    for swelog_path in swelog_paths.paths_to_check() {
+    for swelog_path in swelog_paths.all_paths() {
         if swelog_path.exists() {
             let swelog_files_already_exist_error =
                 SwelogFilesAlreadyExist { swelog_path: swelog_path.to_path_buf() };
