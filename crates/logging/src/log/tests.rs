@@ -9,11 +9,11 @@ use config::{
     errors::SwelogFileNotFound,
     setup::DEFAULT_WORK_FILE_CONTENT,
     swelog_config::{
-        SupportedLlm,
+        LanguageModelProvider,
         SwelogConfig,
     },
 };
-use llm::llm::Llm;
+use llm::LanguageModel;
 use miette::Result;
 use tempfile::{
     TempDir,
@@ -31,10 +31,10 @@ struct TestContext {
     config: SwelogConfig,
 }
 
-struct FakeLlm;
+struct FakeLanguageModel;
 
 #[async_trait]
-impl Llm for FakeLlm {
+impl LanguageModel for FakeLanguageModel {
     async fn generate_response(&self, prompt: &str) -> Result<String> {
         Ok(format!("generated from prompt:\n{prompt}"))
     }
@@ -84,7 +84,7 @@ fn get_test_context() -> TestContext {
         swelog_folder_name: String::from("swelog"),
         daily_log_folder_name: String::from("daily"),
         weekly_log_folder_name: String::from("weekly"),
-        llm: SupportedLlm::Ollama,
+        language_model_provider: LanguageModelProvider::Ollama,
         ollama_model: String::from("llama3.2"),
     };
 
@@ -101,9 +101,15 @@ async fn log_daily_work_writes_generated_daily_log() {
 
     test_context.write_swelog_files();
 
-    log_daily_work_from_config(&test_context.config, &FakeLlm, test_log_date(), false, false)
-        .await
-        .expect("daily log should be written");
+    log_daily_work_from_config(
+        &test_context.config,
+        &FakeLanguageModel,
+        test_log_date(),
+        false,
+        false,
+    )
+    .await
+    .expect("daily log should be written");
 
     let daily_log_content =
         fs::read_to_string(test_context.daily_log_file()).expect("daily log should be readable");
@@ -122,10 +128,15 @@ async fn log_daily_work_fails_when_context_file_is_missing() {
 
     fs::remove_file(test_context.context_file()).expect("context file should be removed");
 
-    let error =
-        log_daily_work_from_config(&test_context.config, &FakeLlm, test_log_date(), false, false)
-            .await
-            .expect_err("missing context file should fail");
+    let error = log_daily_work_from_config(
+        &test_context.config,
+        &FakeLanguageModel,
+        test_log_date(),
+        false,
+        false,
+    )
+    .await
+    .expect_err("missing context file should fail");
 
     let error =
         error.downcast_ref::<SwelogFileNotFound>().expect("error should be SwelogFileNotFound");
@@ -143,10 +154,15 @@ async fn log_daily_work_fails_when_work_file_is_missing() {
 
     fs::remove_file(test_context.work_file()).expect("work file should be removed");
 
-    let error =
-        log_daily_work_from_config(&test_context.config, &FakeLlm, test_log_date(), false, false)
-            .await
-            .expect_err("missing work file should fail");
+    let error = log_daily_work_from_config(
+        &test_context.config,
+        &FakeLanguageModel,
+        test_log_date(),
+        false,
+        false,
+    )
+    .await
+    .expect_err("missing work file should fail");
 
     let error =
         error.downcast_ref::<SwelogFileNotFound>().expect("error should be SwelogFileNotFound");
@@ -165,10 +181,15 @@ async fn log_daily_work_fails_when_daily_log_directory_is_missing() {
     fs::remove_dir(test_context.daily_log_directory())
         .expect("daily log directory should be removed");
 
-    let error =
-        log_daily_work_from_config(&test_context.config, &FakeLlm, test_log_date(), false, false)
-            .await
-            .expect_err("missing daily log directory should fail");
+    let error = log_daily_work_from_config(
+        &test_context.config,
+        &FakeLanguageModel,
+        test_log_date(),
+        false,
+        false,
+    )
+    .await
+    .expect_err("missing daily log directory should fail");
 
     let error =
         error.downcast_ref::<SwelogFileNotFound>().expect("error should be SwelogFileNotFound");
@@ -187,10 +208,15 @@ async fn log_daily_work_fails_when_daily_log_exists_without_force() {
     fs::write(test_context.daily_log_file(), EXISTING_DAILY_LOG_CONTENT)
         .expect("existing daily log should be written");
 
-    let error =
-        log_daily_work_from_config(&test_context.config, &FakeLlm, test_log_date(), false, false)
-            .await
-            .expect_err("existing daily log should fail without force");
+    let error = log_daily_work_from_config(
+        &test_context.config,
+        &FakeLanguageModel,
+        test_log_date(),
+        false,
+        false,
+    )
+    .await
+    .expect_err("existing daily log should fail without force");
 
     let error = error
         .downcast_ref::<DailyLogAlreadyExists>()
@@ -215,9 +241,15 @@ async fn log_daily_work_overwrites_existing_daily_log_with_force() {
     fs::write(test_context.daily_log_file(), EXISTING_DAILY_LOG_CONTENT)
         .expect("existing daily log should be written");
 
-    log_daily_work_from_config(&test_context.config, &FakeLlm, test_log_date(), true, false)
-        .await
-        .expect("existing daily log should be overwritten with force");
+    log_daily_work_from_config(
+        &test_context.config,
+        &FakeLanguageModel,
+        test_log_date(),
+        true,
+        false,
+    )
+    .await
+    .expect("existing daily log should be overwritten with force");
 
     let daily_log_content =
         fs::read_to_string(test_context.daily_log_file()).expect("daily log should be readable");
@@ -234,9 +266,15 @@ async fn log_daily_work_resets_work_file_by_default() {
 
     test_context.write_swelog_files();
 
-    log_daily_work_from_config(&test_context.config, &FakeLlm, test_log_date(), false, false)
-        .await
-        .expect("daily log should be written");
+    log_daily_work_from_config(
+        &test_context.config,
+        &FakeLanguageModel,
+        test_log_date(),
+        false,
+        false,
+    )
+    .await
+    .expect("daily log should be written");
 
     let work_file_content =
         fs::read_to_string(test_context.work_file()).expect("work file should be readable");
@@ -252,9 +290,15 @@ async fn log_daily_work_keeps_work_file_when_keep_is_set() {
 
     test_context.write_swelog_files();
 
-    log_daily_work_from_config(&test_context.config, &FakeLlm, test_log_date(), false, true)
-        .await
-        .expect("daily log should be written");
+    log_daily_work_from_config(
+        &test_context.config,
+        &FakeLanguageModel,
+        test_log_date(),
+        false,
+        true,
+    )
+    .await
+    .expect("daily log should be written");
 
     let work_file_content =
         fs::read_to_string(test_context.work_file()).expect("work file should be readable");

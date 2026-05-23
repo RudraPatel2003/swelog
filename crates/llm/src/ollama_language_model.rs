@@ -9,21 +9,21 @@ use ollama_rs::{
     generation::completion::request::GenerationRequest,
 };
 
-use crate::llm::Llm;
+use crate::language_model::LanguageModel;
 
-pub struct OllamaLlm {
+pub struct OllamaLanguageModel {
     client: Ollama,
     model: String,
 }
 
-impl OllamaLlm {
+impl OllamaLanguageModel {
     pub fn new(model: String) -> Self {
         Self { client: Ollama::default(), model }
     }
 }
 
 #[async_trait]
-impl Llm for OllamaLlm {
+impl LanguageModel for OllamaLanguageModel {
     async fn generate_response(&self, prompt: &str) -> Result<String> {
         let request = GenerationRequest::new(self.model.clone(), prompt);
 

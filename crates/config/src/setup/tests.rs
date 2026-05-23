@@ -9,7 +9,7 @@ use tempfile::{
 };
 
 use super::*;
-use crate::swelog_config::SupportedLlm;
+use crate::swelog_config::LanguageModelProvider;
 
 const EXISTING_CONTEXT_FILE_CONTENT: &str = "existing context";
 const EXISTING_WORK_FILE_CONTENT: &str = "existing work";
@@ -49,7 +49,7 @@ fn get_test_context() -> TestContext {
         swelog_folder_name: String::from("swelog"),
         daily_log_folder_name: String::from("daily"),
         weekly_log_folder_name: String::from("weekly"),
-        llm: SupportedLlm::Ollama,
+        language_model_provider: LanguageModelProvider::Ollama,
         ollama_model: String::from("llama3.2"),
     };
 
@@ -88,7 +88,7 @@ fn setup_uses_configured_folder_names() {
         swelog_folder_name: String::from("accomplishments"),
         daily_log_folder_name: String::from("days"),
         weekly_log_folder_name: String::from("weeks"),
-        llm: SupportedLlm::Ollama,
+        language_model_provider: LanguageModelProvider::Ollama,
         ollama_model: String::from("llama3.2"),
     };
 

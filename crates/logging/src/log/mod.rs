@@ -19,8 +19,8 @@ use config::{
     },
 };
 use llm::{
-    llm::Llm,
-    llm_provider::get_llm_provider_from_config,
+    LanguageModel,
+    get_language_model_from_config,
 };
 use miette::{
     Diagnostic,
@@ -46,13 +46,13 @@ pub async fn log_daily_work(
 ) -> Result<()> {
     let swelog_config = config::utils::read_config_file()?;
 
-    let llm = get_llm_provider_from_config(&swelog_config);
+    let language_model = get_language_model_from_config(&swelog_config);
 
     let log_date = Local::now().date_naive();
 
     log_daily_work_from_config(
         &swelog_config,
-        &llm,
+        language_model.as_ref(),
         log_date,
         overwrite_existing_daily_log,
         keep_work_file,
@@ -62,9 +62,9 @@ pub async fn log_daily_work(
     Ok(())
 }
 
-async fn log_daily_work_from_config<L: Llm + ?Sized>(
+async fn log_daily_work_from_config(
     swelog_config: &SwelogConfig,
-    llm: &L,
+    language_model: &dyn LanguageModel,
     log_date: NaiveDate,
     overwrite_existing_daily_log: bool,
     keep_work_file: bool,
@@ -94,7 +94,7 @@ async fn log_daily_work_from_config<L: Llm + ?Sized>(
         })?;
 
     let prompt = llm::prompts::get_daily_log_prompt(&work_file_content, &context_file_content);
-    let daily_log_content = llm.generate_response(&prompt).await?;
+    let daily_log_content = language_model.generate_response(&prompt).await?;
 
     fs::write(&daily_log_file, daily_log_content).into_diagnostic().wrap_err_with(|| {
         format!("failed to write daily log file at {}", daily_log_file.display())
