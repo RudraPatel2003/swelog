@@ -32,3 +32,15 @@ pub struct EmptyObsidianVaultPath {
 pub struct ConfigNotFound {
     pub config_file_path: PathBuf,
 }
+
+#[derive(Debug, Diagnostic, Error)]
+#[error("swelog setup files already exist at {setup_path}")]
+#[diagnostic(
+    code(swelog::config::setup_files_already_exist),
+    help(
+        "use `swelog setup --force` to overwrite existing swelog files. This will overwrite the existing context and work files but keep the contents of the daily and weekly log directories."
+    )
+)]
+pub struct SetupFilesAlreadyExist {
+    pub setup_path: PathBuf,
+}

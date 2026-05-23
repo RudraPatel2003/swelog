@@ -9,18 +9,18 @@ use serde::{
 #[serde(rename_all = "camelCase")]
 pub struct SwelogConfig {
     pub obsidian_vault_path: PathBuf,
-    pub swelog_folder: PathBuf,
-    pub daily_log_folder: PathBuf,
-    pub weekly_log_folder: PathBuf,
+    pub swelog_folder_name: String,
+    pub daily_log_folder_name: String,
+    pub weekly_log_folder_name: String,
 }
 
 impl SwelogConfig {
     pub fn get_default_config() -> Self {
         Self {
             obsidian_vault_path: PathBuf::from(""),
-            swelog_folder: PathBuf::from("swelog"),
-            daily_log_folder: PathBuf::from("daily"),
-            weekly_log_folder: PathBuf::from("weekly"),
+            swelog_folder_name: String::from("swelog"),
+            daily_log_folder_name: String::from("daily"),
+            weekly_log_folder_name: String::from("weekly"),
         }
     }
 }

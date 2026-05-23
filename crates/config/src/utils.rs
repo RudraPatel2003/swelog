@@ -56,4 +56,3 @@ pub fn read_config_file() -> Result<SwelogConfig> {
 
     Ok(config)
 }
- 
