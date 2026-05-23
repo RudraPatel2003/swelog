@@ -6,7 +6,7 @@ use std::{
 use async_trait::async_trait;
 use chrono::NaiveDate;
 use config::{
-    errors::SetupFileNotFound,
+    errors::SwelogFileNotFound,
     setup::DEFAULT_WORK_FILE_CONTENT,
     swelog_config::{
         SupportedLlm,
@@ -65,7 +65,7 @@ impl TestContext {
         self.daily_log_directory().join(format!("{formatted_date}.md"))
     }
 
-    fn write_setup_files(&self) {
+    fn write_swelog_files(&self) {
         fs::create_dir_all(self.daily_log_directory())
             .expect("daily log directory should be created");
 
@@ -99,7 +99,7 @@ fn test_log_date() -> NaiveDate {
 async fn log_daily_work_writes_generated_daily_log() {
     let test_context = get_test_context();
 
-    test_context.write_setup_files();
+    test_context.write_swelog_files();
 
     log_daily_work_from_config(&test_context.config, &FakeLlm, test_log_date(), false, false)
         .await
@@ -117,7 +117,7 @@ async fn log_daily_work_writes_generated_daily_log() {
 #[tokio::test]
 async fn log_daily_work_fails_when_context_file_is_missing() {
     let test_context = get_test_context();
-    test_context.write_setup_files();
+    test_context.write_swelog_files();
     fs::remove_file(test_context.context_file()).expect("context file should be removed");
 
     let error =
@@ -126,9 +126,9 @@ async fn log_daily_work_fails_when_context_file_is_missing() {
             .expect_err("missing context file should fail");
 
     let error =
-        error.downcast_ref::<SetupFileNotFound>().expect("error should be SetupFileNotFound");
+        error.downcast_ref::<SwelogFileNotFound>().expect("error should be SwelogFileNotFound");
 
-    assert_eq!(error.setup_path, test_context.context_file());
+    assert_eq!(error.swelog_path, test_context.context_file());
 
     drop(test_context.temporary_directory);
 }
@@ -136,7 +136,7 @@ async fn log_daily_work_fails_when_context_file_is_missing() {
 #[tokio::test]
 async fn log_daily_work_fails_when_work_file_is_missing() {
     let test_context = get_test_context();
-    test_context.write_setup_files();
+    test_context.write_swelog_files();
     fs::remove_file(test_context.work_file()).expect("work file should be removed");
 
     let error =
@@ -145,9 +145,9 @@ async fn log_daily_work_fails_when_work_file_is_missing() {
             .expect_err("missing work file should fail");
 
     let error =
-        error.downcast_ref::<SetupFileNotFound>().expect("error should be SetupFileNotFound");
+        error.downcast_ref::<SwelogFileNotFound>().expect("error should be SwelogFileNotFound");
 
-    assert_eq!(error.setup_path, test_context.work_file());
+    assert_eq!(error.swelog_path, test_context.work_file());
 
     drop(test_context.temporary_directory);
 }
@@ -155,7 +155,7 @@ async fn log_daily_work_fails_when_work_file_is_missing() {
 #[tokio::test]
 async fn log_daily_work_fails_when_daily_log_directory_is_missing() {
     let test_context = get_test_context();
-    test_context.write_setup_files();
+    test_context.write_swelog_files();
     fs::remove_dir(test_context.daily_log_directory())
         .expect("daily log directory should be removed");
 
@@ -165,9 +165,9 @@ async fn log_daily_work_fails_when_daily_log_directory_is_missing() {
             .expect_err("missing daily log directory should fail");
 
     let error =
-        error.downcast_ref::<SetupFileNotFound>().expect("error should be SetupFileNotFound");
+        error.downcast_ref::<SwelogFileNotFound>().expect("error should be SwelogFileNotFound");
 
-    assert_eq!(error.setup_path, test_context.daily_log_directory());
+    assert_eq!(error.swelog_path, test_context.daily_log_directory());
 
     drop(test_context.temporary_directory);
 }
@@ -175,7 +175,7 @@ async fn log_daily_work_fails_when_daily_log_directory_is_missing() {
 #[tokio::test]
 async fn log_daily_work_fails_when_daily_log_exists_without_force() {
     let test_context = get_test_context();
-    test_context.write_setup_files();
+    test_context.write_swelog_files();
     fs::write(test_context.daily_log_file(), EXISTING_DAILY_LOG_CONTENT)
         .expect("existing daily log should be written");
 
@@ -201,7 +201,7 @@ async fn log_daily_work_fails_when_daily_log_exists_without_force() {
 #[tokio::test]
 async fn log_daily_work_overwrites_existing_daily_log_with_force() {
     let test_context = get_test_context();
-    test_context.write_setup_files();
+    test_context.write_swelog_files();
     fs::write(test_context.daily_log_file(), EXISTING_DAILY_LOG_CONTENT)
         .expect("existing daily log should be written");
 
@@ -221,7 +221,7 @@ async fn log_daily_work_overwrites_existing_daily_log_with_force() {
 #[tokio::test]
 async fn log_daily_work_resets_work_file_by_default() {
     let test_context = get_test_context();
-    test_context.write_setup_files();
+    test_context.write_swelog_files();
 
     log_daily_work_from_config(&test_context.config, &FakeLlm, test_log_date(), false, false)
         .await
@@ -238,7 +238,7 @@ async fn log_daily_work_resets_work_file_by_default() {
 #[tokio::test]
 async fn log_daily_work_keeps_work_file_when_keep_is_set() {
     let test_context = get_test_context();
-    test_context.write_setup_files();
+    test_context.write_swelog_files();
 
     log_daily_work_from_config(&test_context.config, &FakeLlm, test_log_date(), false, true)
         .await

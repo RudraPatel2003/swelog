@@ -122,10 +122,10 @@ fn setup_fails_when_context_file_exists_without_force() {
     let error = result.expect_err("existing context file should not be overwritten without force");
 
     let error = error
-        .downcast_ref::<SetupFilesAlreadyExist>()
+        .downcast_ref::<SwelogFilesAlreadyExist>()
         .expect("error should be SetupFilesAlreadyExist");
 
-    assert_eq!(error.setup_path, test_context.context_file());
+    assert_eq!(error.swelog_path, test_context.context_file());
 
     let context_file_contents =
         fs::read_to_string(test_context.context_file()).expect("context file should be readable");
@@ -151,10 +151,10 @@ fn setup_fails_when_work_file_exists_without_force() {
     let error = result.expect_err("existing work file should not be overwritten without force");
 
     let error = error
-        .downcast_ref::<SetupFilesAlreadyExist>()
+        .downcast_ref::<SwelogFilesAlreadyExist>()
         .expect("error should be SetupFilesAlreadyExist");
 
-    assert_eq!(error.setup_path, test_context.work_file());
+    assert_eq!(error.swelog_path, test_context.work_file());
 
     let work_file_contents =
         fs::read_to_string(test_context.work_file()).expect("work file should be readable");
@@ -179,10 +179,10 @@ fn setup_fails_when_daily_log_directory_exists_without_force() {
         result.expect_err("existing daily log directory should not be overwritten without force");
 
     let error = error
-        .downcast_ref::<SetupFilesAlreadyExist>()
+        .downcast_ref::<SwelogFilesAlreadyExist>()
         .expect("error should be SetupFilesAlreadyExist");
 
-    assert_eq!(error.setup_path, test_context.daily_log_directory());
+    assert_eq!(error.swelog_path, test_context.daily_log_directory());
 
     drop(test_context.temporary_directory);
 }
@@ -202,10 +202,10 @@ fn setup_fails_when_weekly_log_directory_exists_without_force() {
         result.expect_err("existing weekly log directory should not be overwritten without force");
 
     let error = error
-        .downcast_ref::<SetupFilesAlreadyExist>()
+        .downcast_ref::<SwelogFilesAlreadyExist>()
         .expect("error should be SetupFilesAlreadyExist");
 
-    assert_eq!(error.setup_path, test_context.weekly_log_directory());
+    assert_eq!(error.swelog_path, test_context.weekly_log_directory());
 
     drop(test_context.temporary_directory);
 }

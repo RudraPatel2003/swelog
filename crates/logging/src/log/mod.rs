@@ -10,12 +10,12 @@ use chrono::{
 use config::{
     setup::{
         DEFAULT_WORK_FILE_CONTENT,
-        SetupPaths,
+        SwelogPaths,
     },
     swelog_config::SwelogConfig,
     utils::{
-        ensure_setup_directory_exists,
-        ensure_setup_file_exists,
+        ensure_swelog_directory_exists,
+        ensure_swelog_file_exists,
     },
 };
 use llm::llm::Llm;
@@ -64,13 +64,13 @@ async fn log_daily_work_from_config<L: Llm + ?Sized>(
     overwrite_existing_daily_log: bool,
     keep_work_file: bool,
 ) -> Result<()> {
-    let setup_paths = SetupPaths::new(swelog_config);
+    let swelog_paths = SwelogPaths::new(swelog_config);
 
-    ensure_setup_file_exists(&setup_paths.context_file)?;
-    ensure_setup_file_exists(&setup_paths.work_file)?;
-    ensure_setup_directory_exists(&setup_paths.daily_log_directory)?;
+    ensure_swelog_file_exists(&swelog_paths.context_file)?;
+    ensure_swelog_file_exists(&swelog_paths.work_file)?;
+    ensure_swelog_directory_exists(&swelog_paths.daily_log_directory)?;
 
-    let daily_log_file = setup_paths.daily_log_directory.join(daily_log_file_name(log_date));
+    let daily_log_file = swelog_paths.daily_log_directory.join(daily_log_file_name(log_date));
 
     if daily_log_file.exists() && !overwrite_existing_daily_log {
         let daily_log_already_exists_error = DailyLogAlreadyExists { daily_log_file };
@@ -79,13 +79,13 @@ async fn log_daily_work_from_config<L: Llm + ?Sized>(
     }
 
     let context_file_content =
-        fs::read_to_string(&setup_paths.context_file).into_diagnostic().wrap_err_with(|| {
-            format!("failed to read context file at {}", setup_paths.context_file.display())
+        fs::read_to_string(&swelog_paths.context_file).into_diagnostic().wrap_err_with(|| {
+            format!("failed to read context file at {}", swelog_paths.context_file.display())
         })?;
 
     let work_file_content =
-        fs::read_to_string(&setup_paths.work_file).into_diagnostic().wrap_err_with(|| {
-            format!("failed to read work file at {}", setup_paths.work_file.display())
+        fs::read_to_string(&swelog_paths.work_file).into_diagnostic().wrap_err_with(|| {
+            format!("failed to read work file at {}", swelog_paths.work_file.display())
         })?;
 
     let prompt = llm::prompts::get_daily_log_prompt(&work_file_content, &context_file_content);
@@ -96,10 +96,10 @@ async fn log_daily_work_from_config<L: Llm + ?Sized>(
     })?;
 
     if !keep_work_file {
-        fs::write(&setup_paths.work_file, DEFAULT_WORK_FILE_CONTENT)
+        fs::write(&swelog_paths.work_file, DEFAULT_WORK_FILE_CONTENT)
             .into_diagnostic()
             .wrap_err_with(|| {
-                format!("failed to reset work file at {}", setup_paths.work_file.display())
+                format!("failed to reset work file at {}", swelog_paths.work_file.display())
             })?;
     }
 

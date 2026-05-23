@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use crate::swelog_config::SwelogConfig;
 
-pub struct SetupPaths {
+pub struct SwelogPaths {
     pub swelog_directory: PathBuf,
     pub context_file: PathBuf,
     pub work_file: PathBuf,
@@ -10,7 +10,7 @@ pub struct SetupPaths {
     pub weekly_log_directory: PathBuf,
 }
 
-impl SetupPaths {
+impl SwelogPaths {
     pub fn new(swelog_config: &SwelogConfig) -> Self {
         let swelog_directory =
             swelog_config.obsidian_vault_path.join(&swelog_config.swelog_folder_name);
