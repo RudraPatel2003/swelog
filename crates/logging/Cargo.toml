@@ -1,0 +1,10 @@
+[package]
+name = "logging"
+version = "0.1.0"
+authors = { workspace = true }
+edition = { workspace = true }
+description = { workspace = true }
+
+[dependencies]
+miette = { workspace = true, features = ["derive"] }
+llm = { path = "../llm" }
