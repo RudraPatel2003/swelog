@@ -18,7 +18,10 @@ use config::{
         ensure_swelog_file_exists,
     },
 };
-use llm::llm::Llm;
+use llm::{
+    llm::Llm,
+    llm_provider::get_llm_provider_from_config,
+};
 use miette::{
     Diagnostic,
     IntoDiagnostic,
@@ -42,7 +45,9 @@ pub async fn log_daily_work(
     keep_work_file: bool,
 ) -> Result<()> {
     let swelog_config = config::utils::read_config_file()?;
-    let llm = llm::llm_provider::get_llm_provider_from_config(&swelog_config);
+
+    let llm = get_llm_provider_from_config(&swelog_config);
+
     let log_date = Local::now().date_naive();
 
     log_daily_work_from_config(
