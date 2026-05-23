@@ -1,7 +1,12 @@
+mod default_files;
 mod setup_paths;
 
 use std::fs;
 
+use default_files::{
+    DEFAULT_CONTEXT_FILE_CONTENT,
+    DEFAULT_WORK_FILE_CONTENT,
+};
 use miette::{
     IntoDiagnostic,
     Result,
@@ -37,13 +42,15 @@ fn setup_swelog_files_from_config(
         format!("failed to create swelog directory at {}", setup_paths.swelog_directory.display())
     })?;
 
-    fs::write(&setup_paths.context_file, "").into_diagnostic().wrap_err_with(|| {
-        format!("failed to write context file at {}", setup_paths.context_file.display())
-    })?;
+    fs::write(&setup_paths.context_file, DEFAULT_CONTEXT_FILE_CONTENT)
+        .into_diagnostic()
+        .wrap_err_with(|| {
+            format!("failed to write context file at {}", setup_paths.context_file.display())
+        })?;
 
-    fs::write(&setup_paths.work_file, "").into_diagnostic().wrap_err_with(|| {
-        format!("failed to write work file at {}", setup_paths.work_file.display())
-    })?;
+    fs::write(&setup_paths.work_file, DEFAULT_WORK_FILE_CONTENT).into_diagnostic().wrap_err_with(
+        || format!("failed to write work file at {}", setup_paths.work_file.display()),
+    )?;
 
     fs::create_dir_all(&setup_paths.daily_log_directory).into_diagnostic().wrap_err_with(|| {
         format!(

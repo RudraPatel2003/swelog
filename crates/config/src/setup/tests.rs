@@ -9,6 +9,7 @@ use tempfile::{
 };
 
 use super::*;
+use crate::swelog_config::SupportedLlm;
 
 const EXISTING_CONTEXT_FILE_CONTENT: &str = "existing context";
 const EXISTING_WORK_FILE_CONTENT: &str = "existing work";
@@ -48,6 +49,7 @@ fn get_test_context() -> TestContext {
         swelog_folder_name: String::from("swelog"),
         daily_log_folder_name: String::from("daily"),
         weekly_log_folder_name: String::from("weekly"),
+        llm: SupportedLlm::Ollama,
     };
 
     TestContext { temporary_directory, config }
@@ -68,8 +70,8 @@ fn setup_creates_swelog_files_and_directories() {
     let work_file_contents =
         fs::read_to_string(test_context.work_file()).expect("work file should be readable");
 
-    assert_eq!(context_file_contents, "");
-    assert_eq!(work_file_contents, "");
+    assert_eq!(context_file_contents, DEFAULT_CONTEXT_FILE_CONTENT);
+    assert_eq!(work_file_contents, DEFAULT_WORK_FILE_CONTENT);
     assert!(test_context.daily_log_directory().is_dir());
     assert!(test_context.weekly_log_directory().is_dir());
 
@@ -85,6 +87,7 @@ fn setup_uses_configured_folder_names() {
         swelog_folder_name: String::from("accomplishments"),
         daily_log_folder_name: String::from("days"),
         weekly_log_folder_name: String::from("weeks"),
+        llm: SupportedLlm::Ollama,
     };
 
     let overwrite_existing_files = false;
@@ -229,8 +232,8 @@ fn setup_overwrites_existing_files_when_force_is_set() {
     let work_file_contents =
         fs::read_to_string(test_context.work_file()).expect("work file should be readable");
 
-    assert_eq!(context_file_contents, "");
-    assert_eq!(work_file_contents, "");
+    assert_eq!(context_file_contents, DEFAULT_CONTEXT_FILE_CONTENT);
+    assert_eq!(work_file_contents, DEFAULT_WORK_FILE_CONTENT);
     assert!(test_context.daily_log_directory().is_dir());
     assert!(test_context.weekly_log_directory().is_dir());
 
