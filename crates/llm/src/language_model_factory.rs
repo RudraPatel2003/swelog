@@ -1,4 +1,4 @@
-use config::{
+use config::swelog_config::{
     LanguageModelProvider,
     SwelogConfig,
 };

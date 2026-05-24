@@ -15,6 +15,7 @@ use config::{
     utils::{
         ensure_swelog_directory_exists,
         ensure_swelog_file_exists,
+        read_config_file,
     },
 };
 use errors::DailyLogAlreadyExists;
@@ -33,7 +34,7 @@ pub async fn log_daily_work(
     overwrite_existing_daily_log: bool,
     keep_work_file: bool,
 ) -> Result<NaiveDate> {
-    let swelog_config = config::utils::read_config_file()?;
+    let swelog_config = read_config_file()?;
 
     let language_model = get_language_model_from_config(&swelog_config);
 
