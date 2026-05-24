@@ -19,24 +19,28 @@ struct TestContext {
 }
 
 impl TestContext {
+    fn swelog_paths(&self) -> SwelogPaths {
+        SwelogPaths::new(&self.config)
+    }
+
     fn swelog_directory(&self) -> PathBuf {
-        self.config.obsidian_vault_path.join(&self.config.swelog_folder_name)
+        self.swelog_paths().swelog_directory
     }
 
     fn context_file(&self) -> PathBuf {
-        self.swelog_directory().join("context.md")
+        self.swelog_paths().context_file
     }
 
     fn work_file(&self) -> PathBuf {
-        self.swelog_directory().join("work.md")
+        self.swelog_paths().work_file
     }
 
     fn daily_log_directory(&self) -> PathBuf {
-        self.swelog_directory().join(&self.config.daily_log_folder_name)
+        self.swelog_paths().daily_log_directory
     }
 
     fn weekly_log_directory(&self) -> PathBuf {
-        self.swelog_directory().join(&self.config.weekly_log_folder_name)
+        self.swelog_paths().weekly_log_directory
     }
 }
 
@@ -45,9 +49,7 @@ fn get_test_context() -> TestContext {
 
     let config = SwelogConfig {
         obsidian_vault_path: temporary_directory.path().to_path_buf(),
-        swelog_folder_name: String::from("swelog"),
-        daily_log_folder_name: String::from("daily"),
-        weekly_log_folder_name: String::from("weekly"),
+        ..SwelogConfig::get_default_config()
     };
 
     TestContext { temporary_directory, config }
@@ -68,8 +70,8 @@ fn setup_creates_swelog_files_and_directories() {
     let work_file_contents =
         fs::read_to_string(test_context.work_file()).expect("work file should be readable");
 
-    assert_eq!(context_file_contents, "");
-    assert_eq!(work_file_contents, "");
+    assert_eq!(context_file_contents, DEFAULT_CONTEXT_FILE_CONTENT);
+    assert_eq!(work_file_contents, DEFAULT_WORK_FILE_CONTENT);
     assert!(test_context.daily_log_directory().is_dir());
     assert!(test_context.weekly_log_directory().is_dir());
 
@@ -77,25 +79,29 @@ fn setup_creates_swelog_files_and_directories() {
 }
 
 #[test]
-fn setup_uses_configured_folder_names() {
+fn setup_uses_configured_path_names() {
     let temporary_directory = tempdir().expect("temp directory should be created");
 
     let config = SwelogConfig {
         obsidian_vault_path: temporary_directory.path().to_path_buf(),
         swelog_folder_name: String::from("accomplishments"),
+        context_file_name: String::from("team-context.md"),
+        work_file_name: String::from("daily-work.md"),
         daily_log_folder_name: String::from("days"),
         weekly_log_folder_name: String::from("weeks"),
+        ..SwelogConfig::get_default_config()
     };
 
+    let swelog_paths = SwelogPaths::new(&config);
     let overwrite_existing_files = false;
 
     setup_swelog_files_from_config(&config, overwrite_existing_files)
         .expect("swelog files should be created");
 
-    assert!(temporary_directory.path().join("accomplishments/context.md").is_file());
-    assert!(temporary_directory.path().join("accomplishments/work.md").is_file());
-    assert!(temporary_directory.path().join("accomplishments/days").is_dir());
-    assert!(temporary_directory.path().join("accomplishments/weeks").is_dir());
+    assert!(swelog_paths.context_file.is_file());
+    assert!(swelog_paths.work_file.is_file());
+    assert!(swelog_paths.daily_log_directory.is_dir());
+    assert!(swelog_paths.weekly_log_directory.is_dir());
 
     drop(temporary_directory);
 }
@@ -117,10 +123,10 @@ fn setup_fails_when_context_file_exists_without_force() {
     let error = result.expect_err("existing context file should not be overwritten without force");
 
     let error = error
-        .downcast_ref::<SetupFilesAlreadyExist>()
+        .downcast_ref::<SwelogFilesAlreadyExist>()
         .expect("error should be SetupFilesAlreadyExist");
 
-    assert_eq!(error.setup_path, test_context.context_file());
+    assert_eq!(error.swelog_path, test_context.context_file());
 
     let context_file_contents =
         fs::read_to_string(test_context.context_file()).expect("context file should be readable");
@@ -146,10 +152,10 @@ fn setup_fails_when_work_file_exists_without_force() {
     let error = result.expect_err("existing work file should not be overwritten without force");
 
     let error = error
-        .downcast_ref::<SetupFilesAlreadyExist>()
+        .downcast_ref::<SwelogFilesAlreadyExist>()
         .expect("error should be SetupFilesAlreadyExist");
 
-    assert_eq!(error.setup_path, test_context.work_file());
+    assert_eq!(error.swelog_path, test_context.work_file());
 
     let work_file_contents =
         fs::read_to_string(test_context.work_file()).expect("work file should be readable");
@@ -174,10 +180,10 @@ fn setup_fails_when_daily_log_directory_exists_without_force() {
         result.expect_err("existing daily log directory should not be overwritten without force");
 
     let error = error
-        .downcast_ref::<SetupFilesAlreadyExist>()
+        .downcast_ref::<SwelogFilesAlreadyExist>()
         .expect("error should be SetupFilesAlreadyExist");
 
-    assert_eq!(error.setup_path, test_context.daily_log_directory());
+    assert_eq!(error.swelog_path, test_context.daily_log_directory());
 
     drop(test_context.temporary_directory);
 }
@@ -197,10 +203,10 @@ fn setup_fails_when_weekly_log_directory_exists_without_force() {
         result.expect_err("existing weekly log directory should not be overwritten without force");
 
     let error = error
-        .downcast_ref::<SetupFilesAlreadyExist>()
+        .downcast_ref::<SwelogFilesAlreadyExist>()
         .expect("error should be SetupFilesAlreadyExist");
 
-    assert_eq!(error.setup_path, test_context.weekly_log_directory());
+    assert_eq!(error.swelog_path, test_context.weekly_log_directory());
 
     drop(test_context.temporary_directory);
 }
@@ -229,8 +235,8 @@ fn setup_overwrites_existing_files_when_force_is_set() {
     let work_file_contents =
         fs::read_to_string(test_context.work_file()).expect("work file should be readable");
 
-    assert_eq!(context_file_contents, "");
-    assert_eq!(work_file_contents, "");
+    assert_eq!(context_file_contents, DEFAULT_CONTEXT_FILE_CONTENT);
+    assert_eq!(work_file_contents, DEFAULT_WORK_FILE_CONTENT);
     assert!(test_context.daily_log_directory().is_dir());
     assert!(test_context.weekly_log_directory().is_dir());
 

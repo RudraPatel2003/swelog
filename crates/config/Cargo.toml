@@ -5,6 +5,12 @@ publish = false
 authors = { workspace = true }
 edition = { workspace = true }
 description = { workspace = true }
+keywords = { workspace = true }
+categories = { workspace = true }
+repository = { workspace = true }
+homepage = { workspace = true }
+readme = { workspace = true }
+license = { workspace = true }
 
 [dependencies]
 dirs = { workspace = true }

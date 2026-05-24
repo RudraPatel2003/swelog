@@ -34,13 +34,23 @@ pub struct ConfigNotFound {
 }
 
 #[derive(Debug, Diagnostic, Error)]
-#[error("swelog setup files already exist at {setup_path}")]
+#[error("swelog setup files already exist at {swelog_path}")]
 #[diagnostic(
-    code(swelog::config::setup_files_already_exist),
+    code(swelog::config::swelog_files_already_exist),
     help(
         "use `swelog setup --force` to overwrite existing swelog files. This will overwrite the existing context and work files but keep the contents of the daily and weekly log directories."
     )
 )]
-pub struct SetupFilesAlreadyExist {
-    pub setup_path: PathBuf,
+pub struct SwelogFilesAlreadyExist {
+    pub swelog_path: PathBuf,
+}
+
+#[derive(Debug, Diagnostic, Error)]
+#[error("swelog setup file not found at {swelog_path}")]
+#[diagnostic(
+    code(swelog::logging::swelog_file_not_found),
+    help("run `swelog setup` to create the required swelog files")
+)]
+pub struct SwelogFileNotFound {
+    pub swelog_path: PathBuf,
 }

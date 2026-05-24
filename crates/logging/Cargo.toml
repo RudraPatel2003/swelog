@@ -1,5 +1,5 @@
 [package]
-name = "cli"
+name = "logging"
 version = "0.1.0"
 authors = { workspace = true }
 edition = { workspace = true }
@@ -11,14 +11,14 @@ homepage = { workspace = true }
 readme = { workspace = true }
 license = { workspace = true }
 
-[[bin]]
-name = "swelog"
-path = "src/main.rs"
-
 [dependencies]
-clap = { workspace = true, features = ["derive"] }
+async-trait = { workspace = true }
+chrono = { workspace = true }
 config = { path = "../config" }
-miette = { workspace = true, features = ["fancy"] }
-logging = { path = "../logging" }
-owo-colors = { workspace = true }
+miette = { workspace = true, features = ["derive"] }
+llm = { path = "../llm" }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }
 tokio = { workspace = true }
