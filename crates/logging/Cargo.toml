@@ -11,9 +11,6 @@ homepage = { workspace = true }
 readme = { workspace = true }
 license = { workspace = true }
 
-[lints]
-workspace = true
-
 [dependencies]
 async-trait = { workspace = true }
 chrono = { workspace = true }
