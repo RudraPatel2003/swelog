@@ -13,7 +13,7 @@ use config::{
     },
     swelog_config::SwelogConfig,
 };
-use llm::LanguageModel;
+use llm::language_model::LanguageModel;
 use miette::Result;
 use tempfile::{
     TempDir,
@@ -60,9 +60,9 @@ impl TestContext {
     fn daily_log_file(&self) -> PathBuf {
         let date = test_log_date();
 
-        let formatted_date = date.format("%m-%d-%Y").to_string();
+        let daily_log_file_name = get_daily_log_file_name(&date);
 
-        self.daily_log_directory().join(format!("{formatted_date}.md"))
+        self.daily_log_directory().join(daily_log_file_name)
     }
 
     fn write_swelog_files(&self) {

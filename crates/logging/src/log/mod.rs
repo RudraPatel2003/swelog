@@ -20,8 +20,8 @@ use config::{
 };
 use errors::DailyLogAlreadyExists;
 use llm::{
-    LanguageModel,
-    get_language_model_from_config,
+    language_model::LanguageModel,
+    language_model_factory::get_language_model_from_config,
     prompts::get_daily_log_prompt,
 };
 use miette::{
@@ -105,7 +105,9 @@ async fn log_daily_work_from_config(
 }
 
 pub fn get_daily_log_file_name(log_date: &NaiveDate) -> String {
-    format!("{}.md", log_date.format("%m-%d-%Y"))
+    let formatted_date = log_date.format("%m-%d-%Y").to_string();
+
+    format!("{formatted_date}.md")
 }
 
 #[cfg(test)]
