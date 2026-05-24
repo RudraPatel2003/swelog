@@ -19,6 +19,8 @@ Obsidian. Workspace crates live under `crates/*`.
 - Prefer explicit, typed errors using `thiserror` and user-facing diagnostics with `miette`.
 - Prefer explicit variable names such as `directory` over abbreviations like `dir`.
 - Prefer white space between lines of code unless they are related to each other.
+- Prefer extracting logic into files so that core logic remains readable.
+- When importing other modules in this repository, import the whole item rather than qualifying it.
 
 ## Testing
 
