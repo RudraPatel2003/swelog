@@ -1,9 +1,9 @@
-mod default_files;
-mod swelog_paths;
+pub mod default_files;
+pub mod swelog_paths;
 
 use std::fs;
 
-pub use default_files::{
+use default_files::{
     DEFAULT_CONTEXT_FILE_CONTENT,
     DEFAULT_WORK_FILE_CONTENT,
 };
@@ -12,7 +12,7 @@ use miette::{
     Result,
     WrapErr,
 };
-pub use swelog_paths::SwelogPaths;
+use swelog_paths::SwelogPaths;
 
 use crate::{
     errors::SwelogFilesAlreadyExist,

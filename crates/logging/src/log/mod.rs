@@ -8,8 +8,8 @@ use chrono::{
 };
 use config::{
     setup::{
-        DEFAULT_WORK_FILE_CONTENT,
-        SwelogPaths,
+        default_files::DEFAULT_WORK_FILE_CONTENT,
+        swelog_paths::SwelogPaths,
     },
     swelog_config::SwelogConfig,
     utils::{
