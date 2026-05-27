@@ -8,8 +8,8 @@ use chrono::{
 };
 use config::{
     setup::{
-        DEFAULT_WORK_FILE_CONTENT,
-        SwelogPaths,
+        default_files::DEFAULT_WORK_FILE_CONTENT,
+        swelog_paths::SwelogPaths,
     },
     swelog_config::SwelogConfig,
     utils::{
@@ -43,7 +43,7 @@ pub async fn log_daily_work(
     log_daily_work_from_config(
         &swelog_config,
         language_model.as_ref(),
-        log_date,
+        &log_date,
         overwrite_existing_daily_log,
         keep_work_file,
     )
@@ -55,7 +55,7 @@ pub async fn log_daily_work(
 async fn log_daily_work_from_config(
     swelog_config: &SwelogConfig,
     language_model: &dyn LanguageModel,
-    log_date: NaiveDate,
+    log_date: &NaiveDate,
     overwrite_existing_daily_log: bool,
     keep_work_file: bool,
 ) -> Result<()> {
@@ -65,7 +65,7 @@ async fn log_daily_work_from_config(
     ensure_swelog_file_exists(&swelog_paths.work_file)?;
     ensure_swelog_directory_exists(&swelog_paths.daily_log_directory)?;
 
-    let daily_log_file_name = get_daily_log_file_name(&log_date);
+    let daily_log_file_name = get_daily_log_file_name(log_date);
 
     let daily_log_file = swelog_paths.daily_log_directory.join(daily_log_file_name);
 
@@ -85,7 +85,7 @@ async fn log_daily_work_from_config(
             format!("failed to read work file at {}", swelog_paths.work_file.display())
         })?;
 
-    let prompt = get_daily_log_prompt(&work_file_content, &context_file_content, &log_date);
+    let prompt = get_daily_log_prompt(&work_file_content, &context_file_content, log_date);
 
     let daily_log_content = language_model.generate_response(&prompt).await?;
 

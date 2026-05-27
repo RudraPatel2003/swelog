@@ -1,0 +1,27 @@
+{
+  "name": "swelog",
+  "version": "0.1.0",
+  "description": "A Rust CLI to track your daily accomplishments in Obsidian",
+  "license": "MIT",
+  "homepage": "https://github.com/RudraPatel2003/swelog",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RudraPatel2003/swelog.git"
+  },
+  "bugs": {
+    "url": "https://github.com/RudraPatel2003/swelog/issues"
+  },
+  "bin": {
+    "swelog": "bin/swelog.js"
+  },
+  "scripts": {
+    "postinstall": "node scripts/install.js"
+  },
+  "files": [
+    "bin/",
+    "scripts/"
+  ],
+  "engines": {
+    "node": ">=22"
+  }
+}

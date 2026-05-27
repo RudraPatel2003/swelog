@@ -17,6 +17,14 @@ The tool creates a small set of Markdown files in your Obsidian vault. Collect r
 
 Then, aggregate the daily logs into a weekly log for more long-term tracking.
 
+## Installation
+
+Install with npm:
+
+```sh
+npm install -g swelog
+```
+
 ## Usage
 
 1. Run `swelog init` to create a default config file

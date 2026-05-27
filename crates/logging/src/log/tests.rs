@@ -8,8 +8,8 @@ use chrono::NaiveDate;
 use config::{
     errors::SwelogFileNotFound,
     setup::{
-        DEFAULT_WORK_FILE_CONTENT,
-        SwelogPaths,
+        default_files::DEFAULT_WORK_FILE_CONTENT,
+        swelog_paths::SwelogPaths,
     },
     swelog_config::SwelogConfig,
 };
@@ -100,7 +100,7 @@ async fn log_daily_work_writes_generated_daily_log() {
     log_daily_work_from_config(
         &test_context.config,
         &FakeLanguageModel,
-        test_log_date(),
+        &test_log_date(),
         false,
         false,
     )
@@ -127,7 +127,7 @@ async fn log_daily_work_fails_when_context_file_is_missing() {
     let error = log_daily_work_from_config(
         &test_context.config,
         &FakeLanguageModel,
-        test_log_date(),
+        &test_log_date(),
         false,
         false,
     )
@@ -153,7 +153,7 @@ async fn log_daily_work_fails_when_work_file_is_missing() {
     let error = log_daily_work_from_config(
         &test_context.config,
         &FakeLanguageModel,
-        test_log_date(),
+        &test_log_date(),
         false,
         false,
     )
@@ -180,7 +180,7 @@ async fn log_daily_work_fails_when_daily_log_directory_is_missing() {
     let error = log_daily_work_from_config(
         &test_context.config,
         &FakeLanguageModel,
-        test_log_date(),
+        &test_log_date(),
         false,
         false,
     )
@@ -207,7 +207,7 @@ async fn log_daily_work_fails_when_daily_log_exists_without_force() {
     let error = log_daily_work_from_config(
         &test_context.config,
         &FakeLanguageModel,
-        test_log_date(),
+        &test_log_date(),
         false,
         false,
     )
@@ -240,7 +240,7 @@ async fn log_daily_work_overwrites_existing_daily_log_with_force() {
     log_daily_work_from_config(
         &test_context.config,
         &FakeLanguageModel,
-        test_log_date(),
+        &test_log_date(),
         true,
         false,
     )
@@ -265,7 +265,7 @@ async fn log_daily_work_resets_work_file_by_default() {
     log_daily_work_from_config(
         &test_context.config,
         &FakeLanguageModel,
-        test_log_date(),
+        &test_log_date(),
         false,
         false,
     )
@@ -289,7 +289,7 @@ async fn log_daily_work_keeps_work_file_when_keep_is_set() {
     log_daily_work_from_config(
         &test_context.config,
         &FakeLanguageModel,
-        test_log_date(),
+        &test_log_date(),
         false,
         true,
     )

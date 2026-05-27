@@ -1,0 +1,118 @@
+name: release
+
+on:
+  release:
+    types:
+      - published
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            asset: swelog-x86_64-unknown-linux-gnu
+            executable: swelog
+
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            asset: swelog-x86_64-apple-darwin
+            executable: swelog
+
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            asset: swelog-aarch64-apple-darwin
+            executable: swelog
+
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            asset: swelog-x86_64-pc-windows-msvc.exe
+            executable: swelog.exe
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@nightly
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Build release binary
+        shell: bash
+        run: cargo build --package cli --bin swelog --locked --release --target "${{ matrix.target }}"
+
+      - name: Stage release asset
+        shell: bash
+        run: |
+          mkdir -p dist
+          cp "target/${{ matrix.target }}/release/${{ matrix.executable }}" "dist/${{ matrix.asset }}"
+          chmod 755 "dist/${{ matrix.asset }}"
+
+      - name: Upload release asset artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.asset }}
+          path: dist/${{ matrix.asset }}
+          if-no-files-found: error
+
+  publish-npm:
+    name: Publish npm package
+    runs-on: ubuntu-latest
+    needs:
+      - build
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Just
+        uses: extractions/setup-just@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@nightly
+        with:
+          components: clippy, rustfmt
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+
+      - name: Check release version
+        run: npx tsx ./scripts/checkReleaseVersion.ts "${{ github.event.release.tag_name }}"
+
+      - name: Run release checks
+        run: just npm-release-check
+
+      - name: Download release assets
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Generate checksums
+        run: |
+          cd dist
+          sha256sum swelog-* > SHA256SUMS
+
+      - name: Upload assets to GitHub Release
+        uses: softprops/action-gh-release@v3
+        with:
+          files: |
+            dist/swelog-*
+            dist/SHA256SUMS
+
+      - name: Publish npm package
+        run: just npm-publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

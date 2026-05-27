@@ -17,3 +17,14 @@ build:
     cargo build --workspace
 
 pr: check-format clippy test
+
+npm-pack:
+    npm pack ./npm
+
+npm-pack-dry-run:
+    npm pack ./npm --dry-run
+
+npm-publish:
+    npm publish ./npm --access public
+
+npm-release-check: pr npm-pack-dry-run
