@@ -1,17 +1,17 @@
 <!-- markdownlint-disable MD033-->
 
-# swelog
+# swelog-cli
 
 <h1 align="center">
   <br>
     <img src="./assets/repository-banner.png" alt="Repository Banner" width="20%">
   <br>
-    swelog
+    swelog-cli
 </h1>
 
 ## Description
 
-`swelog` is a Rust CLI for tracking daily accomplishments in Obsidian.
+`swelog-cli` is a Rust CLI for tracking daily accomplishments in Obsidian.
 
 The tool creates a small set of Markdown files in your Obsidian vault. Collect raw work notes throughout the day, and use LLMs to summarize the notes into a daily work log.
 
@@ -22,7 +22,7 @@ Then, aggregate the daily logs into a weekly log for more long-term tracking.
 Install with npm:
 
 ```sh
-npm install -g swelog
+npm install -g swelog-cli
 ```
 
 ## Usage

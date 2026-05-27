@@ -102,7 +102,7 @@ function getAssetName() {
 }
 
 function getDownloadUrl(version, assetName) {
-  return `https://github.com/RudraPatel2003/swelog/releases/download/v${version}/${assetName}`;
+  return `https://github.com/RudraPatel2003/swelog-cli/releases/download/v${version}/${assetName}`;
 }
 
 async function download(url, filePath, packageJson) {
