@@ -30,7 +30,7 @@ use miette::{
     WrapErr,
 };
 
-pub async fn log_daily_work(
+pub async fn summarize_daily_work(
     overwrite_existing_daily_log: bool,
     keep_work_file: bool,
 ) -> Result<NaiveDate> {
@@ -40,7 +40,7 @@ pub async fn log_daily_work(
 
     let log_date = Local::now().date_naive();
 
-    log_daily_work_from_config(
+    summarize_daily_work_from_config(
         &swelog_config,
         language_model.as_ref(),
         &log_date,
@@ -52,7 +52,7 @@ pub async fn log_daily_work(
     Ok(log_date)
 }
 
-async fn log_daily_work_from_config(
+async fn summarize_daily_work_from_config(
     swelog_config: &SwelogConfig,
     language_model: &dyn LanguageModel,
     log_date: &NaiveDate,

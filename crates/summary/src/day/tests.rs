@@ -92,12 +92,12 @@ fn test_log_date() -> NaiveDate {
 }
 
 #[tokio::test]
-async fn log_daily_work_writes_generated_daily_log() {
+async fn summarize_daily_work_writes_generated_daily_log() {
     let test_context = get_test_context();
 
     test_context.write_swelog_files();
 
-    log_daily_work_from_config(
+    summarize_daily_work_from_config(
         &test_context.config,
         &FakeLanguageModel,
         &test_log_date(),
@@ -117,14 +117,14 @@ async fn log_daily_work_writes_generated_daily_log() {
 }
 
 #[tokio::test]
-async fn log_daily_work_fails_when_context_file_is_missing() {
+async fn summarize_daily_work_fails_when_context_file_is_missing() {
     let test_context = get_test_context();
 
     test_context.write_swelog_files();
 
     fs::remove_file(test_context.context_file()).expect("context file should be removed");
 
-    let error = log_daily_work_from_config(
+    let error = summarize_daily_work_from_config(
         &test_context.config,
         &FakeLanguageModel,
         &test_log_date(),
@@ -143,14 +143,14 @@ async fn log_daily_work_fails_when_context_file_is_missing() {
 }
 
 #[tokio::test]
-async fn log_daily_work_fails_when_work_file_is_missing() {
+async fn summarize_daily_work_fails_when_work_file_is_missing() {
     let test_context = get_test_context();
 
     test_context.write_swelog_files();
 
     fs::remove_file(test_context.work_file()).expect("work file should be removed");
 
-    let error = log_daily_work_from_config(
+    let error = summarize_daily_work_from_config(
         &test_context.config,
         &FakeLanguageModel,
         &test_log_date(),
@@ -169,7 +169,7 @@ async fn log_daily_work_fails_when_work_file_is_missing() {
 }
 
 #[tokio::test]
-async fn log_daily_work_fails_when_daily_log_directory_is_missing() {
+async fn summarize_daily_work_fails_when_daily_log_directory_is_missing() {
     let test_context = get_test_context();
 
     test_context.write_swelog_files();
@@ -177,7 +177,7 @@ async fn log_daily_work_fails_when_daily_log_directory_is_missing() {
     fs::remove_dir(test_context.daily_log_directory())
         .expect("daily log directory should be removed");
 
-    let error = log_daily_work_from_config(
+    let error = summarize_daily_work_from_config(
         &test_context.config,
         &FakeLanguageModel,
         &test_log_date(),
@@ -196,7 +196,7 @@ async fn log_daily_work_fails_when_daily_log_directory_is_missing() {
 }
 
 #[tokio::test]
-async fn log_daily_work_fails_when_daily_log_exists_without_force() {
+async fn summarize_daily_work_fails_when_daily_log_exists_without_force() {
     let test_context = get_test_context();
 
     test_context.write_swelog_files();
@@ -204,7 +204,7 @@ async fn log_daily_work_fails_when_daily_log_exists_without_force() {
     fs::write(test_context.daily_log_file(), EXISTING_DAILY_LOG_CONTENT)
         .expect("existing daily log should be written");
 
-    let error = log_daily_work_from_config(
+    let error = summarize_daily_work_from_config(
         &test_context.config,
         &FakeLanguageModel,
         &test_log_date(),
@@ -229,7 +229,7 @@ async fn log_daily_work_fails_when_daily_log_exists_without_force() {
 }
 
 #[tokio::test]
-async fn log_daily_work_overwrites_existing_daily_log_with_force() {
+async fn summarize_daily_work_overwrites_existing_daily_log_with_force() {
     let test_context = get_test_context();
 
     test_context.write_swelog_files();
@@ -237,7 +237,7 @@ async fn log_daily_work_overwrites_existing_daily_log_with_force() {
     fs::write(test_context.daily_log_file(), EXISTING_DAILY_LOG_CONTENT)
         .expect("existing daily log should be written");
 
-    log_daily_work_from_config(
+    summarize_daily_work_from_config(
         &test_context.config,
         &FakeLanguageModel,
         &test_log_date(),
@@ -257,12 +257,12 @@ async fn log_daily_work_overwrites_existing_daily_log_with_force() {
 }
 
 #[tokio::test]
-async fn log_daily_work_resets_work_file_by_default() {
+async fn summarize_daily_work_resets_work_file_by_default() {
     let test_context = get_test_context();
 
     test_context.write_swelog_files();
 
-    log_daily_work_from_config(
+    summarize_daily_work_from_config(
         &test_context.config,
         &FakeLanguageModel,
         &test_log_date(),
@@ -281,12 +281,12 @@ async fn log_daily_work_resets_work_file_by_default() {
 }
 
 #[tokio::test]
-async fn log_daily_work_keeps_work_file_when_keep_is_set() {
+async fn summarize_daily_work_keeps_work_file_when_keep_is_set() {
     let test_context = get_test_context();
 
     test_context.write_swelog_files();
 
-    log_daily_work_from_config(
+    summarize_daily_work_from_config(
         &test_context.config,
         &FakeLanguageModel,
         &test_log_date(),

@@ -9,12 +9,13 @@ use config::{
     init::initialize_config_file,
     setup::setup_swelog_files,
 };
-use logging::log::{
-    get_daily_log_file_name,
-    log_daily_work,
-};
+use logging::log_work_item;
 use miette::Result;
 use owo_colors::OwoColorize;
+use summary::day::{
+    get_daily_log_file_name,
+    summarize_daily_work,
+};
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -36,12 +37,27 @@ async fn main() -> Result<()> {
             );
         }
 
-        Commands::Log { overwrite_existing_daily_log, keep_work_file } => {
-            let log_date = log_daily_work(overwrite_existing_daily_log, keep_work_file).await?;
+        Commands::Summarize { daily_summary_options, command } => {
+            let daily_summary_options = match command {
+                Some(cli::SummarizeCommands::Day(daily_summary_options)) => daily_summary_options,
+                None => daily_summary_options,
+            };
+
+            let log_date = summarize_daily_work(
+                daily_summary_options.overwrite_existing_daily_log,
+                daily_summary_options.keep_work_file,
+            )
+            .await?;
 
             let daily_log_file_name = get_daily_log_file_name(&log_date);
 
-            println!("Succesfully logged your daily work into {}", daily_log_file_name.cyan());
+            println!("Successfully summarized your daily work into {}", daily_log_file_name.cyan());
+        }
+
+        Commands::Log { work_item } => {
+            log_work_item(&work_item)?;
+
+            println!("Logged work item to your work file");
         }
     }
 

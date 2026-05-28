@@ -33,9 +33,11 @@ npm install -g swelog-cli
 
 3. Run `swelog setup` to create the default swelog files in your Obsidian vault
 
-4. Write notes in your work file throughout the day and run `swelog log` to generate a daily log
+4. Add notes throughout the day with `swelog log "Meeting with manager"`
 
-> Note: Please have Ollama downloaded and running on your machine before running `swelog log`.
+5. Run `swelog summarize` or `swelog summarize day` to generate a daily log
+
+> Note: Please have Ollama downloaded and running on your machine before running `swelog summarize`.
 
 ## Contributing
 

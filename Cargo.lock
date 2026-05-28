@@ -253,6 +253,7 @@ dependencies = [
  "logging",
  "miette",
  "owo-colors",
+ "summary",
  "tokio",
 ]
 
@@ -803,14 +804,9 @@ checksum = "5e5032e24019045c762d3c0f28f5b6b8bbf38563a65908389bf7978758920897"
 name = "logging"
 version = "0.2.0"
 dependencies = [
- "async-trait",
- "chrono",
  "config",
- "llm",
  "miette",
  "tempfile",
- "thiserror",
- "tokio",
 ]
 
 [[package]]
@@ -1331,6 +1327,20 @@ name = "strsim"
 version = "0.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7da8b5736845d9f2fcb837ea5d9e2628564b3b043a70948a3f0b778838c5fb4f"
+
+[[package]]
+name = "summary"
+version = "0.2.0"
+dependencies = [
+ "async-trait",
+ "chrono",
+ "config",
+ "llm",
+ "miette",
+ "tempfile",
+ "thiserror",
+ "tokio",
+]
 
 [[package]]
 name = "supports-color"
