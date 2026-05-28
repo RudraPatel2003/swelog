@@ -47,7 +47,7 @@ impl SummarizeArgs {
 
         let swelog_config = read_config_file()?;
 
-        let language_model = get_language_model_from_config(&swelog_config);
+        let language_model = get_language_model_from_config(&swelog_config)?;
 
         let log_date = Local::now().date_naive();
 
