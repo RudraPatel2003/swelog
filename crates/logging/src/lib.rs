@@ -9,10 +9,7 @@ use std::{
 use config::{
     setup::swelog_paths::SwelogPaths,
     swelog_config::SwelogConfig,
-    utils::{
-        ensure_swelog_file_exists,
-        read_config_file,
-    },
+    utils::ensure_swelog_file_exists,
 };
 use miette::{
     IntoDiagnostic,
@@ -20,13 +17,7 @@ use miette::{
     WrapErr,
 };
 
-pub fn log_work_item(work_item: &str) -> Result<()> {
-    let swelog_config = read_config_file()?;
-
-    log_work_item_from_config(&swelog_config, work_item)
-}
-
-fn log_work_item_from_config(swelog_config: &SwelogConfig, work_item: &str) -> Result<()> {
+pub fn log_work_item_from_config(swelog_config: &SwelogConfig, work_item: &str) -> Result<()> {
     let swelog_paths = SwelogPaths::new(swelog_config);
 
     ensure_swelog_file_exists(&swelog_paths.work_file)?;

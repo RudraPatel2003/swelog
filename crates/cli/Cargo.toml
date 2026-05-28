@@ -16,10 +16,12 @@ name = "swelog"
 path = "src/main.rs"
 
 [dependencies]
+chrono = { workspace = true }
 clap = { workspace = true, features = ["derive"] }
 config = { path = "../config" }
-miette = { workspace = true, features = ["fancy"] }
+llm = { path = "../llm" }
 logging = { path = "../logging" }
+miette = { workspace = true, features = ["fancy"] }
 owo-colors = { workspace = true }
 summary = { path = "../summary" }
 tokio = { workspace = true }
