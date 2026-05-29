@@ -33,10 +33,7 @@ pub struct SwelogConfig {
 
     #[serde(rename = "llm")]
     pub language_model_provider: LanguageModelProvider,
-
     pub ollama_model: String,
-
-    #[serde(default = "default_open_ai_model")]
     pub open_ai_model: String,
 }
 
@@ -51,14 +48,7 @@ impl SwelogConfig {
             weekly_log_folder_name: String::from(DEFAULT_WEEKLY_LOG_FOLDER_NAME),
             language_model_provider: LanguageModelProvider::Ollama,
             ollama_model: String::from(DEFAULT_OLLAMA_MODEL),
-            open_ai_model: default_open_ai_model(),
+            open_ai_model: String::from(DEFAULT_OPEN_AI_MODEL),
         }
     }
 }
-
-fn default_open_ai_model() -> String {
-    String::from(DEFAULT_OPEN_AI_MODEL)
-}
-
-#[cfg(test)]
-mod tests;

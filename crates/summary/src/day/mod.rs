@@ -14,7 +14,10 @@ use config::{
         ensure_swelog_file_exists,
     },
 };
-use errors::DailyLogAlreadyExists;
+use errors::{
+    DailyLogAlreadyExists,
+    WorkFileNotUpdated,
+};
 use llm::{
     language_model::LanguageModel,
     prompts::get_daily_log_prompt,
@@ -57,6 +60,12 @@ pub async fn summarize_daily_work_from_config(
         fs::read_to_string(&swelog_paths.work_file).into_diagnostic().wrap_err_with(|| {
             format!("failed to read work file at {}", swelog_paths.work_file.display())
         })?;
+
+    if work_file_content == DEFAULT_WORK_FILE_CONTENT {
+        let work_file_not_updated_error = WorkFileNotUpdated;
+
+        return Err(work_file_not_updated_error.into());
+    }
 
     let prompt = get_daily_log_prompt(&work_file_content, &context_file_content, log_date);
 

@@ -12,3 +12,11 @@ use thiserror::Error;
 pub struct DailyLogAlreadyExists {
     pub daily_log_file: PathBuf,
 }
+
+#[derive(Debug, Diagnostic, Error)]
+#[error("work file not updated")]
+#[diagnostic(
+    code(swelog::summary::work_file_not_updated),
+    help("Update the work file with your work notes before running `swelog summarize day`")
+)]
+pub struct WorkFileNotUpdated;

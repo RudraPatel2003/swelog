@@ -7,10 +7,12 @@ use config::swelog_config::{
 use miette::Result;
 
 use crate::{
-    errors::MissingOpenAiApiKey,
     language_model::LanguageModel,
     ollama_language_model::OllamaLanguageModel,
-    open_ai_language_model::OpenAiLanguageModel,
+    open_ai_language_model::{
+        OpenAiLanguageModel,
+        errors::MissingOpenAiApiKey,
+    },
 };
 
 const OPEN_AI_API_KEY_ENVIRONMENT_VARIABLE: &str = "OPENAI_API_KEY";
@@ -26,6 +28,7 @@ pub fn get_language_model_from_config(
 
             Ok(Box::new(ollama_language_model))
         }
+
         LanguageModelProvider::OpenAi => {
             let open_ai_model = swelog_config.open_ai_model.clone();
 
