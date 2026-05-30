@@ -1,5 +1,7 @@
+set positional-arguments
+
 run *args:
-    cargo run -p cli -- {{args}}
+    cargo run -p cli -- "$@"
 
 format:
     cargo +nightly fmt --all

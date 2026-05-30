@@ -29,13 +29,42 @@ npm install -g swelog-cli
 
 1. Run `swelog init` to create a default config file
 
-2. Update the config file with your Obsidian vault path
+2. Update the config file with your Obsidian vault path and model provider
 
 3. Run `swelog setup` to create the default swelog files in your Obsidian vault
 
-4. Write notes in your work file throughout the day and run `swelog log` to generate a daily log
+4. Add notes throughout the day with `swelog log "Meeting with manager"`
 
-> Note: Please have Ollama downloaded and running on your machine before running `swelog log`.
+5. Run `swelog summarize` or `swelog summarize day` to generate a daily log
+
+By default, swelog uses Ollama:
+
+```json
+{
+  "llm": "ollama",
+  "ollamaModel": "llama3.2"
+}
+```
+
+To use OpenAI instead, set the provider and model in your config:
+
+```json
+{
+  "llm": "openAi",
+  "openAiModel": "gpt-5.4-mini"
+}
+```
+
+Then provide your OpenAI API key through the environment before running
+`swelog summarize`:
+
+```sh
+export OPENAI_API_KEY="your_api_key_here"
+```
+
+Do not store your OpenAI API key in the swelog config file.
+
+> Note: When using Ollama, please have Ollama downloaded and running on your machine before running `swelog summarize`.
 
 ## Contributing
 
@@ -45,7 +74,7 @@ Please have the following installed on your machine:
 
 - Rust
 - Just
-- Ollama
+- Ollama, when using the default Ollama provider
 - Obsidian
 
 ### Development

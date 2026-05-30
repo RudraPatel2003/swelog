@@ -12,20 +12,9 @@ use miette::{
 use crate::{
     errors::ConfigAlreadyExists,
     swelog_config::SwelogConfig,
-    utils::get_config_file_path,
 };
 
-pub fn initialize_config_file(overwrite_existing_config: bool) -> Result<PathBuf> {
-    let default_config = SwelogConfig::get_default_config();
-
-    let config_file_path = get_config_file_path()?;
-
-    write_default_config(&config_file_path, &default_config, overwrite_existing_config)?;
-
-    Ok(config_file_path)
-}
-
-fn write_default_config(
+pub fn write_default_config(
     config_file_path: &PathBuf,
     config: &SwelogConfig,
     overwrite_existing_config: bool,

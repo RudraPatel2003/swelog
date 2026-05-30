@@ -1,5 +1,5 @@
 [package]
-name = "config"
+name = "summary"
 version = "0.3.0"
 publish = false
 authors = { workspace = true }
@@ -13,11 +13,13 @@ readme = { workspace = true }
 license = { workspace = true }
 
 [dependencies]
-dirs = { workspace = true }
+async-trait = { workspace = true }
+chrono = { workspace = true }
+config = { path = "../config" }
 miette = { workspace = true, features = ["derive"] }
-serde = { workspace = true, features = ["derive"] }
-serde_json = { workspace = true }
+llm = { path = "../llm" }
 thiserror = { workspace = true }
 
 [dev-dependencies]
 tempfile = { workspace = true }
+tokio = { workspace = true }

@@ -2,10 +2,7 @@ mod errors;
 
 use std::fs;
 
-use chrono::{
-    Local,
-    NaiveDate,
-};
+use chrono::NaiveDate;
 use config::{
     setup::{
         default_files::DEFAULT_WORK_FILE_CONTENT,
@@ -15,13 +12,14 @@ use config::{
     utils::{
         ensure_swelog_directory_exists,
         ensure_swelog_file_exists,
-        read_config_file,
     },
 };
-use errors::DailyLogAlreadyExists;
+use errors::{
+    DailyLogAlreadyExists,
+    WorkFileNotUpdated,
+};
 use llm::{
     language_model::LanguageModel,
-    language_model_factory::get_language_model_from_config,
     prompts::get_daily_log_prompt,
 };
 use miette::{
@@ -30,29 +28,7 @@ use miette::{
     WrapErr,
 };
 
-pub async fn log_daily_work(
-    overwrite_existing_daily_log: bool,
-    keep_work_file: bool,
-) -> Result<NaiveDate> {
-    let swelog_config = read_config_file()?;
-
-    let language_model = get_language_model_from_config(&swelog_config);
-
-    let log_date = Local::now().date_naive();
-
-    log_daily_work_from_config(
-        &swelog_config,
-        language_model.as_ref(),
-        &log_date,
-        overwrite_existing_daily_log,
-        keep_work_file,
-    )
-    .await?;
-
-    Ok(log_date)
-}
-
-async fn log_daily_work_from_config(
+pub async fn summarize_daily_work_from_config(
     swelog_config: &SwelogConfig,
     language_model: &dyn LanguageModel,
     log_date: &NaiveDate,
@@ -84,6 +60,12 @@ async fn log_daily_work_from_config(
         fs::read_to_string(&swelog_paths.work_file).into_diagnostic().wrap_err_with(|| {
             format!("failed to read work file at {}", swelog_paths.work_file.display())
         })?;
+
+    if work_file_content == DEFAULT_WORK_FILE_CONTENT {
+        let work_file_not_updated_error = WorkFileNotUpdated;
+
+        return Err(work_file_not_updated_error.into());
+    }
 
     let prompt = get_daily_log_prompt(&work_file_content, &context_file_content, log_date);
 

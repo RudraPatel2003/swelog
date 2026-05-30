@@ -21,6 +21,7 @@ Obsidian. Workspace crates live under `crates/*`.
 - Prefer white space between lines of code unless they are related to each other.
 - Prefer extracting logic into files so that core logic remains readable.
 - When importing other modules in this repository, import the whole item rather than qualifying it.
+- When creating new features, if the content is self-contained, place it in a sub-module of the crate. This keeps files small and focused.
 
 ## Testing
 

@@ -17,18 +17,9 @@ use swelog_paths::SwelogPaths;
 use crate::{
     errors::SwelogFilesAlreadyExist,
     swelog_config::SwelogConfig,
-    utils::read_config_file,
 };
 
-pub fn setup_swelog_files(overwrite_existing_files: bool) -> Result<SwelogConfig> {
-    let swelog_config = read_config_file()?;
-
-    setup_swelog_files_from_config(&swelog_config, overwrite_existing_files)?;
-
-    Ok(swelog_config)
-}
-
-fn setup_swelog_files_from_config(
+pub fn setup_swelog_files_from_config(
     swelog_config: &SwelogConfig,
     overwrite_existing_files: bool,
 ) -> Result<()> {

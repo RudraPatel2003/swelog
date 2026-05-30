@@ -1,6 +1,6 @@
 [package]
 name = "logging"
-version = "0.2.0"
+version = "0.3.0"
 publish = false
 authors = { workspace = true }
 edition = { workspace = true }
@@ -13,13 +13,8 @@ readme = { workspace = true }
 license = { workspace = true }
 
 [dependencies]
-async-trait = { workspace = true }
-chrono = { workspace = true }
 config = { path = "../config" }
-miette = { workspace = true, features = ["derive"] }
-llm = { path = "../llm" }
-thiserror = { workspace = true }
+miette = { workspace = true }
 
 [dev-dependencies]
 tempfile = { workspace = true }
-tokio = { workspace = true }

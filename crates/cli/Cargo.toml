@@ -1,6 +1,6 @@
 [package]
 name = "cli"
-version = "0.2.0"
+version = "0.3.0"
 authors = { workspace = true }
 edition = { workspace = true }
 description = { workspace = true }
@@ -16,9 +16,12 @@ name = "swelog"
 path = "src/main.rs"
 
 [dependencies]
+chrono = { workspace = true }
 clap = { workspace = true, features = ["derive"] }
 config = { path = "../config" }
-miette = { workspace = true, features = ["fancy"] }
+llm = { path = "../llm" }
 logging = { path = "../logging" }
+miette = { workspace = true, features = ["fancy"] }
 owo-colors = { workspace = true }
+summary = { path = "../summary" }
 tokio = { workspace = true }

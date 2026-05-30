@@ -48,7 +48,7 @@ pub struct SwelogFilesAlreadyExist {
 #[derive(Debug, Diagnostic, Error)]
 #[error("swelog setup file not found at {swelog_path}")]
 #[diagnostic(
-    code(swelog::logging::swelog_file_not_found),
+    code(swelog::config::swelog_file_not_found),
     help("run `swelog setup` to create the required swelog files")
 )]
 pub struct SwelogFileNotFound {

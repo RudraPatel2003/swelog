@@ -1,39 +1,10 @@
-use clap::{
-    Parser,
-    Subcommand,
-};
+use clap::Parser;
+
+use crate::commands::Commands;
 
 #[derive(Debug, Parser)]
 #[command(name = "swelog", version, about)]
 pub(crate) struct Cli {
     #[command(subcommand)]
     pub command: Commands,
-}
-
-#[derive(Debug, Subcommand)]
-pub(crate) enum Commands {
-    /// Create a default swelog config file.
-    Init {
-        /// Overwrite an existing config file with defaults.
-        #[arg(long = "force")]
-        overwrite_existing_config: bool,
-    },
-
-    /// Setup the swelog files in your Obsidian vault.
-    Setup {
-        /// Overwrite existing swelog files.
-        #[arg(long = "force")]
-        overwrite_existing_files: bool,
-    },
-
-    /// Summarize your configured work file and log it into the daily folder.
-    Log {
-        /// Overwrite existing daily log file.
-        #[arg(long = "force")]
-        overwrite_existing_daily_log: bool,
-
-        /// Keep the current contents of the configured work file.
-        #[arg(long = "keep")]
-        keep_work_file: bool,
-    },
 }
