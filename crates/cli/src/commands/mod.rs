@@ -1,9 +1,11 @@
+mod fetch;
 mod init;
 mod log;
 mod setup;
 mod summarize;
 
 use clap::Subcommand;
+use fetch::FetchArgs;
 use init::InitArgs;
 use log::LogArgs;
 use setup::SetupArgs;
@@ -23,4 +25,7 @@ pub enum Commands {
 
     /// Add a work item to your configured work file.
     Log(LogArgs),
+
+    /// Add data from external sources to your work file
+    Fetch(FetchArgs),
 }
