@@ -7,13 +7,22 @@ use miette::{
 };
 use reqwest::{
     Client,
-    header::ACCEPT,
+    header::{
+        ACCEPT,
+        USER_AGENT,
+    },
 };
 use structs::UserResponse;
 
 use crate::{
-    errors::FailedToSendGitHubRequest,
-    utils::GITHUB_ACCEPT_HEADER,
+    errors::{
+        FailedToSendGitHubRequest,
+        UnsuccessfulGitHubResponse,
+    },
+    utils::{
+        GITHUB_ACCEPT_HEADER,
+        SWELOG_USER_AGENT,
+    },
 };
 
 const USER_API_URL: &str = "https://api.github.com/user";
@@ -25,13 +34,24 @@ pub async fn get_github_username(github_token: &str) -> Result<String> {
         .get(USER_API_URL)
         .bearer_auth(github_token)
         .header(ACCEPT, GITHUB_ACCEPT_HEADER)
+        .header(USER_AGENT, SWELOG_USER_AGENT)
         .send()
         .await
         .into_diagnostic()
         .wrap_err_with(|| FailedToSendGitHubRequest)?;
 
+    // check for success
+    let status_code = response.status();
+
     let response_text =
         response.text().await.into_diagnostic().wrap_err("failed to read GitHub response body")?;
+
+    if !status_code.is_success() {
+        let unsuccessful_github_response_error =
+            UnsuccessfulGitHubResponse { status_code, response_text };
+
+        return Err(unsuccessful_github_response_error.into());
+    }
 
     let username = parse_user_response_text(&response_text)?;
 

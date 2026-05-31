@@ -1,4 +1,5 @@
 use miette::Diagnostic;
+use reqwest::StatusCode;
 use thiserror::Error;
 
 #[derive(Debug, Diagnostic, Error)]
@@ -16,3 +17,11 @@ pub struct MissingGitHubToken;
     help("check your GitHub token and network connection and try again")
 )]
 pub struct FailedToSendGitHubRequest;
+
+#[derive(Debug, Diagnostic, Error)]
+#[error("Unsuccessful GitHub response with status {status_code} and body {response_text}")]
+#[diagnostic(code(swelog::github::unsuccessful_github_response))]
+pub struct UnsuccessfulGitHubResponse {
+    pub status_code: StatusCode,
+    pub response_text: String,
+}

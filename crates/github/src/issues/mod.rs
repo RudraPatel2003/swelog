@@ -9,7 +9,10 @@ use miette::{
 };
 use reqwest::{
     Client,
-    header::ACCEPT,
+    header::{
+        ACCEPT,
+        USER_AGENT,
+    },
 };
 use structs::{
     Issue,
@@ -17,14 +20,19 @@ use structs::{
 };
 
 use crate::{
-    errors::FailedToSendGitHubRequest,
+    errors::{
+        FailedToSendGitHubRequest,
+        UnsuccessfulGitHubResponse,
+    },
     utils::{
         GITHUB_ACCEPT_HEADER,
+        SWELOG_USER_AGENT,
         get_current_date_in_iso_8601,
     },
 };
 
 const MERGED_PRS_API_URL: &str = "https://api.github.com/search/issues";
+const OPENED_PRS_API_URL: &str = "https://api.github.com/search/issues";
 
 pub async fn get_merged_prs(github_token: &str, github_username: &str) -> Result<Vec<Issue>> {
     let client = Client::new();
@@ -45,13 +53,23 @@ pub async fn get_merged_prs(github_token: &str, github_username: &str) -> Result
         .query(&query_parameters)
         .bearer_auth(github_token)
         .header(ACCEPT, GITHUB_ACCEPT_HEADER)
+        .header(USER_AGENT, SWELOG_USER_AGENT)
         .send()
         .await
         .into_diagnostic()
         .wrap_err_with(|| FailedToSendGitHubRequest)?;
 
+    let status_code = response.status();
+
     let response_text =
         response.text().await.into_diagnostic().wrap_err("failed to read GitHub response body")?;
+
+    if !status_code.is_success() {
+        let unsuccessful_github_response_error =
+            UnsuccessfulGitHubResponse { status_code, response_text };
+
+        return Err(unsuccessful_github_response_error.into());
+    }
 
     let issues = parse_search_issues_response_text(&response_text)?;
 
@@ -72,17 +90,27 @@ pub async fn get_opened_prs(github_token: &str, github_username: &str) -> Result
     query_parameters.insert("order", String::from("desc"));
 
     let response = client
-        .get(MERGED_PRS_API_URL)
+        .get(OPENED_PRS_API_URL)
         .query(&query_parameters)
         .bearer_auth(github_token)
         .header(ACCEPT, GITHUB_ACCEPT_HEADER)
+        .header(USER_AGENT, SWELOG_USER_AGENT)
         .send()
         .await
         .into_diagnostic()
         .wrap_err_with(|| FailedToSendGitHubRequest)?;
 
+    let status_code = response.status();
+
     let response_text =
         response.text().await.into_diagnostic().wrap_err("failed to read GitHub response body")?;
+
+    if !status_code.is_success() {
+        let unsuccessful_github_response_error =
+            UnsuccessfulGitHubResponse { status_code, response_text };
+
+        return Err(unsuccessful_github_response_error.into());
+    }
 
     let issues = parse_search_issues_response_text(&response_text)?;
 
