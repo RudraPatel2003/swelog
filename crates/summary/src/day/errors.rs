@@ -17,6 +17,8 @@ pub struct DailyLogAlreadyExists {
 #[error("work file not updated")]
 #[diagnostic(
     code(swelog::summary::work_file_not_updated),
-    help("Update the work file with your work notes before running `swelog summarize day`")
+    help(
+        "Update the work file with your work notes before running `swelog summarize` or `swelog summarize day`"
+    )
 )]
 pub struct WorkFileNotUpdated;

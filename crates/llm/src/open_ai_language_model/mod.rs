@@ -37,16 +37,6 @@ impl OpenAiLanguageModel {
     pub fn new(model: String, api_key: String) -> Self {
         Self { client: Client::new(), model, api_key }
     }
-
-    fn get_authorization_header(&self) -> Result<HeaderValue> {
-        let mut authorization_header = HeaderValue::from_str(&format!("Bearer {}", self.api_key))
-            .into_diagnostic()
-            .wrap_err("failed to prepare OpenAI authorization header")?;
-
-        authorization_header.set_sensitive(true);
-
-        Ok(authorization_header)
-    }
 }
 
 #[async_trait]
@@ -55,12 +45,10 @@ impl LanguageModel for OpenAiLanguageModel {
         let request =
             OpenAiResponseRequest { model: self.model.clone(), input: String::from(prompt) };
 
-        let authorization_header = self.get_authorization_header()?;
-
         let response = self
             .client
             .post(OPEN_AI_RESPONSES_URL)
-            .header(AUTHORIZATION, authorization_header)
+            .bearer_auth(self.api_key.clone())
             .json(&request)
             .send()
             .await

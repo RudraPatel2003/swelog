@@ -281,6 +281,7 @@ dependencies = [
  "chrono",
  "clap",
  "config",
+ "github",
  "llm",
  "logging",
  "miette",
@@ -564,10 +565,12 @@ checksum = "e629b9b98ef3dd8afe6ca2bd0f89306cec16d43d907889945bc5d6687f2f13c7"
 name = "github"
 version = "0.3.0"
 dependencies = [
+ "miette",
  "reqwest 0.13.4",
  "serde",
  "serde_json",
  "thiserror",
+ "tokio",
 ]
 
 [[package]]
@@ -1513,6 +1516,7 @@ dependencies = [
  "rustls-platform-verifier",
  "serde",
  "serde_json",
+ "serde_urlencoded",
  "sync_wrapper",
  "tokio",
  "tokio-rustls",
