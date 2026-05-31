@@ -1,5 +1,7 @@
 mod structs;
 
+use std::collections::HashMap;
+
 use miette::{
     IntoDiagnostic,
     Result,
@@ -16,17 +18,62 @@ use structs::{
 
 use crate::{
     errors::FailedToSendGitHubRequest,
-    utils::GITHUB_ACCEPT_HEADER,
+    utils::{
+        GITHUB_ACCEPT_HEADER,
+        get_current_date_in_iso_8601,
+    },
 };
 
 const MERGED_PRS_API_URL: &str = "https://api.github.com/search/issues";
 
-pub async fn get_merged_prs(github_token: &str) -> Result<Vec<Issue>> {
+pub async fn get_merged_prs(github_token: &str, github_username: &str) -> Result<Vec<Issue>> {
     let client = Client::new();
+
+    let current_iso_8601_date = get_current_date_in_iso_8601();
+
+    let search_query =
+        format!("author:{github_username} is:pr is:merged updated:>={current_iso_8601_date}");
+
+    let mut query_parameters = HashMap::new();
+
+    query_parameters.insert("q", search_query);
+    query_parameters.insert("sort", String::from("updated"));
+    query_parameters.insert("order", String::from("desc"));
 
     let response = client
         .get(MERGED_PRS_API_URL)
-        .query(&[("q", "is:pr is:merged author:@me")])
+        .query(&query_parameters)
+        .bearer_auth(github_token)
+        .header(ACCEPT, GITHUB_ACCEPT_HEADER)
+        .send()
+        .await
+        .into_diagnostic()
+        .wrap_err_with(|| FailedToSendGitHubRequest)?;
+
+    let response_text =
+        response.text().await.into_diagnostic().wrap_err("failed to read GitHub response body")?;
+
+    let issues = parse_search_issues_response_text(&response_text)?;
+
+    Ok(issues)
+}
+
+pub async fn get_opened_prs(github_token: &str, github_username: &str) -> Result<Vec<Issue>> {
+    let client = Client::new();
+
+    let current_iso_8601_date = get_current_date_in_iso_8601();
+
+    let search_query = format!("author:{github_username} is:pr created:>={current_iso_8601_date}");
+
+    let mut query_parameters = HashMap::new();
+
+    query_parameters.insert("q", search_query);
+    query_parameters.insert("sort", String::from("updated"));
+    query_parameters.insert("order", String::from("desc"));
+
+    let response = client
+        .get(MERGED_PRS_API_URL)
+        .query(&query_parameters)
         .bearer_auth(github_token)
         .header(ACCEPT, GITHUB_ACCEPT_HEADER)
         .send()
