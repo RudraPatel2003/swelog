@@ -1039,6 +1039,7 @@ dependencies = [
  "config",
  "miette",
  "tempfile",
+ "thiserror",
 ]
 
 [[package]]

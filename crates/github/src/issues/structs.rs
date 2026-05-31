@@ -1,17 +1,18 @@
-pub struct UserResponse {
-    pub login: String,
-}
+use serde::Deserialize;
 
+#[derive(Deserialize)]
 pub struct SearchIssuesResponse {
     pub items: Vec<Issue>,
 }
 
+#[derive(Deserialize)]
 pub struct Issue {
     pub title: String,
     pub number: u64,
     pub pull_request: PullRequest,
 }
 
+#[derive(Deserialize)]
 pub struct PullRequest {
-    pub merged_at: Option<String>,
+    pub html_url: String,
 }

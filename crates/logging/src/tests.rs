@@ -54,10 +54,12 @@ fn get_test_context() -> TestContext {
 }
 
 #[test]
-fn log_work_item_appends_bullet_to_work_file() {
+fn log_work_item_appends_bullet_to_log_section() {
     let test_context = get_test_context();
 
-    test_context.write_work_file("# Today's Work\n\n## Notes\n");
+    test_context.write_work_file(
+        "# Today's Work\n\n## Focus\n- Finish report\n\n## Log\n<!-- Quick capture. -->\n\n## Follow-ups\n- Update ticket\n",
+    );
 
     log_work_item_from_config(&test_context.config, WORK_ITEM)
         .expect("work item should be appended");
@@ -65,16 +67,19 @@ fn log_work_item_appends_bullet_to_work_file() {
     let work_file_content =
         fs::read_to_string(test_context.work_file()).expect("work file should be readable");
 
-    assert_eq!(work_file_content, "# Today's Work\n\n## Notes\n- Meeting with manager\n");
+    assert_eq!(
+        work_file_content,
+        "# Today's Work\n\n## Focus\n- Finish report\n\n## Log\n<!-- Quick capture. -->\n- Meeting with manager\n\n## Follow-ups\n- Update ticket\n"
+    );
 
     drop(test_context.temporary_directory);
 }
 
 #[test]
-fn log_work_item_inserts_newline_when_work_file_has_no_trailing_newline() {
+fn log_work_item_inserts_newline_when_log_section_has_no_trailing_newline() {
     let test_context = get_test_context();
 
-    test_context.write_work_file("# Today's Work");
+    test_context.write_work_file("# Today's Work\n\n## Log");
 
     log_work_item_from_config(&test_context.config, WORK_ITEM)
         .expect("work item should be appended");
@@ -82,7 +87,7 @@ fn log_work_item_inserts_newline_when_work_file_has_no_trailing_newline() {
     let work_file_content =
         fs::read_to_string(test_context.work_file()).expect("work file should be readable");
 
-    assert_eq!(work_file_content, "# Today's Work\n- Meeting with manager\n");
+    assert_eq!(work_file_content, "# Today's Work\n\n## Log\n- Meeting with manager\n");
 
     drop(test_context.temporary_directory);
 }
@@ -103,4 +108,30 @@ fn log_work_item_fails_when_work_file_is_missing() {
     assert_eq!(error.swelog_path, test_context.work_file());
 
     drop(test_context.temporary_directory);
+}
+
+#[test]
+fn append_to_section_does_not_insert_blank_line_after_existing_content() {
+    let markdown = "# Today's Work\n\n## Log\n- Existing item\n\n## Follow-ups\n- Update ticket\n";
+
+    let updated_markdown = append_to_section(markdown, "Log", "- Meeting with manager")
+        .expect("append to section should succeed");
+
+    assert_eq!(
+        updated_markdown,
+        "# Today's Work\n\n## Log\n- Existing item\n- Meeting with manager\n\n## Follow-ups\n- Update ticket\n"
+    );
+}
+
+#[test]
+fn append_to_section_keeps_blank_line_before_next_section() {
+    let markdown = "# Today's Work\n\n## Log\n\n## Follow-ups\n- Update ticket\n";
+
+    let updated_markdown = append_to_section(markdown, "Log", "- Meeting with manager")
+        .expect("append to section should succeed");
+
+    assert_eq!(
+        updated_markdown,
+        "# Today's Work\n\n## Log\n- Meeting with manager\n\n## Follow-ups\n- Update ticket\n"
+    );
 }

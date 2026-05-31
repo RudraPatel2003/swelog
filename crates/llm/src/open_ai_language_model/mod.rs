@@ -11,13 +11,7 @@ use miette::{
     Result,
     WrapErr,
 };
-use reqwest::{
-    Client,
-    header::{
-        AUTHORIZATION,
-        HeaderValue,
-    },
-};
+use reqwest::Client;
 use structs::{
     OpenAiResponse,
     OpenAiResponseRequest,

@@ -1,16 +1,12 @@
-use std::{
-    fs::{
-        self,
-        OpenOptions,
-    },
-    io::Write,
-};
+mod errors;
+use std::fs;
 
 use config::{
     setup::swelog_paths::SwelogPaths,
     swelog_config::SwelogConfig,
     utils::ensure_swelog_file_exists,
 };
+use errors::SectionNotFound;
 use miette::{
     IntoDiagnostic,
     Result,
@@ -23,37 +19,42 @@ pub fn log_work_item_from_config(swelog_config: &SwelogConfig, work_item: &str) 
     ensure_swelog_file_exists(&swelog_paths.work_file)?;
 
     let work_file_content =
-        fs::read(&swelog_paths.work_file).into_diagnostic().wrap_err_with(|| {
+        fs::read_to_string(&swelog_paths.work_file).into_diagnostic().wrap_err_with(|| {
             format!("failed to read work file at {}", swelog_paths.work_file.display())
         })?;
 
-    let mut appended_content = String::new();
+    let work_item_content = format!("- {work_item}");
 
-    if work_file_needs_preceding_newline(&work_file_content) {
-        appended_content.push('\n');
-    }
+    let updated_work_file_content =
+        append_to_section(&work_file_content, "Log", &work_item_content)?;
 
-    appended_content.push_str("- ");
-    appended_content.push_str(work_item);
-    appended_content.push('\n');
-
-    let mut work_file = OpenOptions::new()
-        .append(true)
-        .open(&swelog_paths.work_file)
-        .into_diagnostic()
-        .wrap_err_with(|| {
-            format!("failed to open work file at {}", swelog_paths.work_file.display())
-        })?;
-
-    work_file.write_all(appended_content.as_bytes()).into_diagnostic().wrap_err_with(|| {
-        format!("failed to append work item to {}", swelog_paths.work_file.display())
-    })?;
+    fs::write(&swelog_paths.work_file, updated_work_file_content).into_diagnostic().wrap_err_with(
+        || format!("failed to write work file at {}", swelog_paths.work_file.display()),
+    )?;
 
     Ok(())
 }
 
-fn work_file_needs_preceding_newline(work_file_content: &[u8]) -> bool {
-    !work_file_content.is_empty() && work_file_content.last() != Some(&b'\n')
+fn append_to_section(markdown: &str, section: &str, content: &str) -> Result<String> {
+    let heading = format!("## {section}");
+
+    let start = markdown.find(&heading).ok_or(SectionNotFound { section: section.to_string() })?;
+    let after_heading = &markdown[start + heading.len()..];
+
+    let next_section = after_heading
+        .find("\n## ")
+        .map(|index| start + heading.len() + index)
+        .unwrap_or(markdown.len());
+
+    let mut result = String::new();
+
+    result.push_str(markdown[..next_section].trim_end_matches('\n'));
+    result.push('\n');
+    result.push_str(content);
+    result.push('\n');
+    result.push_str(&markdown[next_section..]);
+
+    Ok(result)
 }
 
 #[cfg(test)]
