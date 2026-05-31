@@ -10,6 +10,7 @@ fn parse_search_issues_response_text_extracts_issues() {
                 {
                   "title": "Add daily summary command",
                   "number": 42,
+                  "repository_url": "https://api.github.com/repos/example/swelog",
                   "pull_request": {
                     "html_url": "https://github.com/example/swelog/pull/42"
                   }
@@ -17,6 +18,7 @@ fn parse_search_issues_response_text_extracts_issues() {
                 {
                   "title": "Fix work log formatting",
                   "number": 43,
+                  "repository_url": "https://api.github.com/repos/example/swelog",
                   "pull_request": {
                     "html_url": "https://github.com/example/swelog/pull/43"
                   }
@@ -31,9 +33,11 @@ fn parse_search_issues_response_text_extracts_issues() {
     assert_eq!(issues.len(), 2);
     assert_eq!(issues[0].title, "Add daily summary command");
     assert_eq!(issues[0].number, 42);
+    assert_eq!(issues[0].repository_url, "https://api.github.com/repos/example/swelog");
     assert_eq!(issues[0].pull_request.html_url, "https://github.com/example/swelog/pull/42");
     assert_eq!(issues[1].title, "Fix work log formatting");
     assert_eq!(issues[1].number, 43);
+    assert_eq!(issues[1].repository_url, "https://api.github.com/repos/example/swelog");
     assert_eq!(issues[1].pull_request.html_url, "https://github.com/example/swelog/pull/43");
 }
 

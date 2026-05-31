@@ -10,6 +10,7 @@ pub struct Issue {
     pub title: String,
     pub number: u64,
     pub pull_request: PullRequest,
+    pub repository_url: String,
 }
 
 #[derive(Debug, Deserialize)]
