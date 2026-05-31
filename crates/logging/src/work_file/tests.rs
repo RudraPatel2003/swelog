@@ -15,7 +15,7 @@ use tempfile::{
 
 use super::*;
 
-const WORK_ITEM: &str = "Meeting with manager";
+const WORK_ITEM: &str = "- Meeting with manager";
 
 struct TestContext {
     temporary_directory: TempDir,
@@ -61,7 +61,7 @@ fn log_work_item_appends_bullet_to_log_section() {
         "# Today's Work\n\n## Focus\n- Finish report\n\n## Log\n<!-- Quick capture. -->\n\n## Follow-ups\n- Update ticket\n",
     );
 
-    log_work_item_from_config(&test_context.config, WORK_ITEM)
+    log_to_work_file_from_config(&test_context.config, WORK_ITEM, "Log")
         .expect("work item should be appended");
 
     let work_file_content =
@@ -81,7 +81,7 @@ fn log_work_item_inserts_newline_when_log_section_has_no_trailing_newline() {
 
     test_context.write_work_file("# Today's Work\n\n## Log");
 
-    log_work_item_from_config(&test_context.config, WORK_ITEM)
+    log_to_work_file_from_config(&test_context.config, WORK_ITEM, "Log")
         .expect("work item should be appended");
 
     let work_file_content =
@@ -99,7 +99,7 @@ fn log_work_item_fails_when_work_file_is_missing() {
     fs::create_dir_all(test_context.swelog_directory())
         .expect("swelog directory should be created");
 
-    let error = log_work_item_from_config(&test_context.config, WORK_ITEM)
+    let error = log_to_work_file_from_config(&test_context.config, WORK_ITEM, "Log")
         .expect_err("missing work file should fail");
 
     let error =

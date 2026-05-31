@@ -16,7 +16,7 @@ license = { workspace = true }
 async-trait = { workspace = true }
 chrono = { workspace = true }
 config = { path = "../config" }
-miette = { workspace = true, features = ["derive"] }
+miette = { workspace = true }
 llm = { path = "../llm" }
 thiserror = { workspace = true }
 
