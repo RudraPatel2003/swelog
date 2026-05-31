@@ -89,7 +89,7 @@ jobs:
           registry-url: https://registry.npmjs.org
 
       - name: Check release version
-        run: npx tsx ./scripts/checkReleaseVersion.ts "${{ github.event.release.tag_name }}"
+        run: just release-version-check "${{ github.event.release.tag_name }}"
 
       - name: Run release checks
         run: just npm-release-check
