@@ -3,6 +3,7 @@ mod check_release_version;
 use std::env;
 
 use miette::{
+    Error,
     Result,
     miette,
 };
@@ -22,6 +23,6 @@ fn main() -> Result<()> {
     }
 }
 
-fn usage_error() -> miette::Error {
+fn usage_error() -> Error {
     miette!("usage: cargo run -p xtask -- <command> [...args]")
 }
