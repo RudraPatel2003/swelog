@@ -27,6 +27,10 @@ async fn main() -> Result<()> {
             log_args.run()?;
         }
 
+        Commands::Reset(reset_args) => {
+            reset_args.run()?;
+        }
+
         Commands::Fetch(fetch_args) => {
             fetch_args.run().await?;
         }
