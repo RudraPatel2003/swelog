@@ -9,7 +9,7 @@ use summary::day::{
     summarize_daily_work_from_config,
 };
 
-#[derive(Clone, Copy, Debug, Args)]
+#[derive(Debug, Args)]
 pub struct DailySummaryArgs {
     /// Overwrite existing daily log file.
     #[arg(long = "force")]

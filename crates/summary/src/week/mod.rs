@@ -1,7 +1,128 @@
-use chrono::NaiveDate;
+mod errors;
+
+use std::fs;
+
+use chrono::{
+    Duration,
+    NaiveDate,
+};
+use config::{
+    setup::{
+        default_files::DEFAULT_WORK_FILE_CONTENT,
+        swelog_paths::SwelogPaths,
+    },
+    swelog_config::SwelogConfig,
+    utils::{
+        ensure_swelog_directory_exists,
+        ensure_swelog_file_exists,
+    },
+};
+use errors::{
+    NoDailyLogsFound,
+    WeeklyLogAlreadyExists,
+    WorkFileNotDefault,
+};
+use llm::{
+    language_model::LanguageModel,
+    prompts::get_weekly_log_prompt,
+};
+use miette::{
+    IntoDiagnostic,
+    Result,
+    WrapErr,
+};
+
+use crate::day::get_daily_log_file_name;
+
+pub async fn summarize_weekly_work_from_config(
+    swelog_config: &SwelogConfig,
+    language_model: &dyn LanguageModel,
+    monday_date: &NaiveDate,
+    overwrite_existing_weekly_log: bool,
+) -> Result<()> {
+    let swelog_paths = SwelogPaths::new(swelog_config);
+
+    ensure_swelog_file_exists(&swelog_paths.context_file)?;
+    ensure_swelog_file_exists(&swelog_paths.work_file)?;
+    ensure_swelog_directory_exists(&swelog_paths.daily_log_directory)?;
+    ensure_swelog_directory_exists(&swelog_paths.weekly_log_directory)?;
+
+    let weekly_log_file_name = get_weekly_log_file_name(monday_date);
+
+    let weekly_log_file = swelog_paths.weekly_log_directory.join(weekly_log_file_name);
+
+    if weekly_log_file.exists() && !overwrite_existing_weekly_log {
+        let weekly_log_already_exists_error = WeeklyLogAlreadyExists { weekly_log_file };
+
+        return Err(weekly_log_already_exists_error.into());
+    }
+
+    let context_file_content =
+        fs::read_to_string(&swelog_paths.context_file).into_diagnostic().wrap_err_with(|| {
+            format!("failed to read context file at {}", swelog_paths.context_file.display())
+        })?;
+
+    let work_file_content =
+        fs::read_to_string(&swelog_paths.work_file).into_diagnostic().wrap_err_with(|| {
+            format!("failed to read work file at {}", swelog_paths.work_file.display())
+        })?;
+
+    if work_file_content != DEFAULT_WORK_FILE_CONTENT {
+        let work_file_not_default_error = WorkFileNotDefault;
+
+        return Err(work_file_not_default_error.into());
+    }
+
+    let daily_logs = collect_weekday_daily_logs(&swelog_paths, monday_date)?;
+
+    if daily_logs.is_empty() {
+        let no_daily_logs_found_error = NoDailyLogsFound { monday_date: *monday_date };
+
+        return Err(no_daily_logs_found_error.into());
+    }
+
+    let prompt = get_weekly_log_prompt(&daily_logs, &context_file_content, monday_date);
+
+    let generated_weekly_log_content = language_model.generate_response(&prompt).await?;
+
+    fs::write(&weekly_log_file, generated_weekly_log_content).into_diagnostic().wrap_err_with(
+        || format!("failed to write weekly log file at {}", weekly_log_file.display()),
+    )?;
+
+    Ok(())
+}
 
 pub fn get_weekly_log_file_name(monday_date: &NaiveDate) -> String {
     let monday_date_string = monday_date.format("%m-%d-%Y").to_string();
 
     format!("Week of {monday_date_string}.md")
 }
+
+fn collect_weekday_daily_logs(
+    swelog_paths: &SwelogPaths,
+    monday_date: &NaiveDate,
+) -> Result<Vec<String>> {
+    let mut daily_logs = Vec::new();
+
+    for day_offset in 0..5 {
+        let daily_log_date = *monday_date + Duration::days(day_offset);
+        let daily_log_file_name = get_daily_log_file_name(&daily_log_date);
+        let daily_log_file = swelog_paths.daily_log_directory.join(daily_log_file_name);
+
+        if !daily_log_file.exists() {
+            continue;
+        }
+
+        let daily_log_content =
+            fs::read_to_string(&daily_log_file).into_diagnostic().wrap_err_with(|| {
+                format!("failed to read daily log file at {}", daily_log_file.display())
+            })?;
+
+        daily_logs.push(daily_log_content);
+    }
+
+    Ok(daily_logs)
+}
+
+#[cfg(test)]
+mod tests;

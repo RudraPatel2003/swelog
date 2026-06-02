@@ -1,0 +1,393 @@
+use std::{
+    fs,
+    path::PathBuf,
+};
+
+use async_trait::async_trait;
+use chrono::{
+    Duration,
+    NaiveDate,
+};
+use config::{
+    errors::SwelogFileNotFound,
+    setup::{
+        default_files::DEFAULT_WORK_FILE_CONTENT,
+        swelog_paths::SwelogPaths,
+    },
+    swelog_config::SwelogConfig,
+};
+use llm::language_model::LanguageModel;
+use miette::Result;
+use tempfile::{
+    TempDir,
+    tempdir,
+};
+
+use super::*;
+
+const CONTEXT_FILE_CONTENT: &str = "backend engineer on platform team";
+const MONDAY_DAILY_LOG_CONTENT: &str = "# Daily Log - 06-01-2026\n\nDebugged API timeout";
+const WEDNESDAY_DAILY_LOG_CONTENT: &str = "# Daily Log - 06-03-2026\n\nReviewed auth PR";
+const FRIDAY_DAILY_LOG_CONTENT: &str = "# Daily Log - 06-05-2026\n\nPlanned release";
+const EXISTING_WEEKLY_LOG_CONTENT: &str = "existing weekly log";
+const UNSUMMARIZED_WORK_FILE_CONTENT: &str =
+    "# Today's Work\n\n## Log\n- Still needs a daily summary\n";
+
+struct TestContext {
+    temporary_directory: TempDir,
+    config: SwelogConfig,
+}
+
+struct FakeLanguageModel;
+
+#[async_trait]
+impl LanguageModel for FakeLanguageModel {
+    async fn generate_response(&self, prompt: &str) -> Result<String> {
+        Ok(format!("generated from prompt:\n{prompt}"))
+    }
+}
+
+impl TestContext {
+    fn swelog_paths(&self) -> SwelogPaths {
+        SwelogPaths::new(&self.config)
+    }
+
+    fn context_file(&self) -> PathBuf {
+        self.swelog_paths().context_file
+    }
+
+    fn work_file(&self) -> PathBuf {
+        self.swelog_paths().work_file
+    }
+
+    fn daily_log_directory(&self) -> PathBuf {
+        self.swelog_paths().daily_log_directory
+    }
+
+    fn weekly_log_directory(&self) -> PathBuf {
+        self.swelog_paths().weekly_log_directory
+    }
+
+    fn daily_log_file(&self, log_date: &NaiveDate) -> PathBuf {
+        let daily_log_file_name = get_daily_log_file_name(log_date);
+
+        self.daily_log_directory().join(daily_log_file_name)
+    }
+
+    fn weekly_log_file(&self) -> PathBuf {
+        let weekly_log_file_name = get_weekly_log_file_name(&test_monday_date());
+
+        self.weekly_log_directory().join(weekly_log_file_name)
+    }
+
+    fn write_swelog_files(&self) {
+        fs::create_dir_all(self.daily_log_directory())
+            .expect("daily log directory should be created");
+
+        fs::create_dir_all(self.weekly_log_directory())
+            .expect("weekly log directory should be created");
+
+        fs::write(self.context_file(), CONTEXT_FILE_CONTENT)
+            .expect("context file should be written");
+
+        fs::write(self.work_file(), DEFAULT_WORK_FILE_CONTENT)
+            .expect("work file should be written");
+    }
+
+    fn write_daily_log(&self, log_date: &NaiveDate, content: &str) {
+        fs::write(self.daily_log_file(log_date), content).expect("daily log should be written");
+    }
+
+    fn write_work_file(&self, content: &str) {
+        fs::write(self.work_file(), content).expect("work file should be written");
+    }
+}
+
+fn get_test_context() -> TestContext {
+    let temporary_directory = tempdir().expect("temp directory should be created");
+
+    let config = SwelogConfig {
+        obsidian_vault_path: temporary_directory.path().to_path_buf(),
+        ..SwelogConfig::get_default_config()
+    };
+
+    TestContext { temporary_directory, config }
+}
+
+fn test_monday_date() -> NaiveDate {
+    NaiveDate::from_ymd_opt(2026, 6, 1).expect("test date should be valid")
+}
+
+fn test_wednesday_date() -> NaiveDate {
+    test_monday_date() + Duration::days(2)
+}
+
+fn test_friday_date() -> NaiveDate {
+    test_monday_date() + Duration::days(4)
+}
+
+#[tokio::test]
+async fn summarize_weekly_work_writes_generated_weekly_log() {
+    let test_context = get_test_context();
+
+    test_context.write_swelog_files();
+    test_context.write_daily_log(&test_monday_date(), MONDAY_DAILY_LOG_CONTENT);
+    test_context.write_daily_log(&test_wednesday_date(), WEDNESDAY_DAILY_LOG_CONTENT);
+
+    summarize_weekly_work_from_config(
+        &test_context.config,
+        &FakeLanguageModel,
+        &test_monday_date(),
+        false,
+    )
+    .await
+    .expect("weekly log should be written");
+
+    let weekly_log_content =
+        fs::read_to_string(test_context.weekly_log_file()).expect("weekly log should be readable");
+
+    assert!(weekly_log_content.starts_with("generated from prompt:\n"));
+    assert!(weekly_log_content.contains(MONDAY_DAILY_LOG_CONTENT));
+    assert!(weekly_log_content.contains(WEDNESDAY_DAILY_LOG_CONTENT));
+    assert!(weekly_log_content.contains(CONTEXT_FILE_CONTENT));
+
+    drop(test_context.temporary_directory);
+}
+
+#[tokio::test]
+async fn summarize_weekly_work_skips_missing_weekday_logs() {
+    let test_context = get_test_context();
+
+    test_context.write_swelog_files();
+    test_context.write_daily_log(&test_friday_date(), FRIDAY_DAILY_LOG_CONTENT);
+
+    summarize_weekly_work_from_config(
+        &test_context.config,
+        &FakeLanguageModel,
+        &test_monday_date(),
+        false,
+    )
+    .await
+    .expect("weekly log should be written from available daily logs");
+
+    let weekly_log_content =
+        fs::read_to_string(test_context.weekly_log_file()).expect("weekly log should be readable");
+
+    assert!(weekly_log_content.contains(FRIDAY_DAILY_LOG_CONTENT));
+    assert!(!weekly_log_content.contains(MONDAY_DAILY_LOG_CONTENT));
+    assert!(!weekly_log_content.contains(WEDNESDAY_DAILY_LOG_CONTENT));
+
+    drop(test_context.temporary_directory);
+}
+
+#[tokio::test]
+async fn summarize_weekly_work_fails_when_no_daily_logs_exist() {
+    let test_context = get_test_context();
+
+    test_context.write_swelog_files();
+
+    let error = summarize_weekly_work_from_config(
+        &test_context.config,
+        &FakeLanguageModel,
+        &test_monday_date(),
+        false,
+    )
+    .await
+    .expect_err("missing daily logs should fail");
+
+    let error = error.downcast_ref::<NoDailyLogsFound>().expect("error should be NoDailyLogsFound");
+
+    assert_eq!(error.monday_date, test_monday_date());
+
+    drop(test_context.temporary_directory);
+}
+
+#[tokio::test]
+async fn summarize_weekly_work_fails_when_context_file_is_missing() {
+    let test_context = get_test_context();
+
+    test_context.write_swelog_files();
+    test_context.write_daily_log(&test_monday_date(), MONDAY_DAILY_LOG_CONTENT);
+
+    fs::remove_file(test_context.context_file()).expect("context file should be removed");
+
+    let error = summarize_weekly_work_from_config(
+        &test_context.config,
+        &FakeLanguageModel,
+        &test_monday_date(),
+        false,
+    )
+    .await
+    .expect_err("missing context file should fail");
+
+    let error =
+        error.downcast_ref::<SwelogFileNotFound>().expect("error should be SwelogFileNotFound");
+
+    assert_eq!(error.swelog_path, test_context.context_file());
+
+    drop(test_context.temporary_directory);
+}
+
+#[tokio::test]
+async fn summarize_weekly_work_fails_when_work_file_is_missing() {
+    let test_context = get_test_context();
+
+    test_context.write_swelog_files();
+    test_context.write_daily_log(&test_monday_date(), MONDAY_DAILY_LOG_CONTENT);
+
+    fs::remove_file(test_context.work_file()).expect("work file should be removed");
+
+    let error = summarize_weekly_work_from_config(
+        &test_context.config,
+        &FakeLanguageModel,
+        &test_monday_date(),
+        false,
+    )
+    .await
+    .expect_err("missing work file should fail");
+
+    let error =
+        error.downcast_ref::<SwelogFileNotFound>().expect("error should be SwelogFileNotFound");
+
+    assert_eq!(error.swelog_path, test_context.work_file());
+
+    drop(test_context.temporary_directory);
+}
+
+#[tokio::test]
+async fn summarize_weekly_work_fails_when_daily_log_directory_is_missing() {
+    let test_context = get_test_context();
+
+    test_context.write_swelog_files();
+
+    fs::remove_dir(test_context.daily_log_directory())
+        .expect("daily log directory should be removed");
+
+    let error = summarize_weekly_work_from_config(
+        &test_context.config,
+        &FakeLanguageModel,
+        &test_monday_date(),
+        false,
+    )
+    .await
+    .expect_err("missing daily log directory should fail");
+
+    let error =
+        error.downcast_ref::<SwelogFileNotFound>().expect("error should be SwelogFileNotFound");
+
+    assert_eq!(error.swelog_path, test_context.daily_log_directory());
+
+    drop(test_context.temporary_directory);
+}
+
+#[tokio::test]
+async fn summarize_weekly_work_fails_when_weekly_log_directory_is_missing() {
+    let test_context = get_test_context();
+
+    test_context.write_swelog_files();
+    test_context.write_daily_log(&test_monday_date(), MONDAY_DAILY_LOG_CONTENT);
+
+    fs::remove_dir(test_context.weekly_log_directory())
+        .expect("weekly log directory should be removed");
+
+    let error = summarize_weekly_work_from_config(
+        &test_context.config,
+        &FakeLanguageModel,
+        &test_monday_date(),
+        false,
+    )
+    .await
+    .expect_err("missing weekly log directory should fail");
+
+    let error =
+        error.downcast_ref::<SwelogFileNotFound>().expect("error should be SwelogFileNotFound");
+
+    assert_eq!(error.swelog_path, test_context.weekly_log_directory());
+
+    drop(test_context.temporary_directory);
+}
+
+#[tokio::test]
+async fn summarize_weekly_work_fails_when_weekly_log_exists_without_force() {
+    let test_context = get_test_context();
+
+    test_context.write_swelog_files();
+    test_context.write_daily_log(&test_monday_date(), MONDAY_DAILY_LOG_CONTENT);
+
+    fs::write(test_context.weekly_log_file(), EXISTING_WEEKLY_LOG_CONTENT)
+        .expect("existing weekly log should be written");
+
+    let error = summarize_weekly_work_from_config(
+        &test_context.config,
+        &FakeLanguageModel,
+        &test_monday_date(),
+        false,
+    )
+    .await
+    .expect_err("existing weekly log should fail without force");
+
+    let error = error
+        .downcast_ref::<WeeklyLogAlreadyExists>()
+        .expect("error should be WeeklyLogAlreadyExists");
+
+    assert_eq!(error.weekly_log_file, test_context.weekly_log_file());
+
+    let weekly_log_content =
+        fs::read_to_string(test_context.weekly_log_file()).expect("weekly log should be readable");
+
+    assert_eq!(weekly_log_content, EXISTING_WEEKLY_LOG_CONTENT);
+
+    drop(test_context.temporary_directory);
+}
+
+#[tokio::test]
+async fn summarize_weekly_work_overwrites_existing_weekly_log_with_force() {
+    let test_context = get_test_context();
+
+    test_context.write_swelog_files();
+    test_context.write_daily_log(&test_monday_date(), MONDAY_DAILY_LOG_CONTENT);
+
+    fs::write(test_context.weekly_log_file(), EXISTING_WEEKLY_LOG_CONTENT)
+        .expect("existing weekly log should be written");
+
+    summarize_weekly_work_from_config(
+        &test_context.config,
+        &FakeLanguageModel,
+        &test_monday_date(),
+        true,
+    )
+    .await
+    .expect("existing weekly log should be overwritten with force");
+
+    let weekly_log_content =
+        fs::read_to_string(test_context.weekly_log_file()).expect("weekly log should be readable");
+
+    assert_ne!(weekly_log_content, EXISTING_WEEKLY_LOG_CONTENT);
+    assert!(weekly_log_content.contains(MONDAY_DAILY_LOG_CONTENT));
+
+    drop(test_context.temporary_directory);
+}
+
+#[tokio::test]
+async fn summarize_weekly_work_fails_when_work_file_is_not_default() {
+    let test_context = get_test_context();
+
+    test_context.write_swelog_files();
+    test_context.write_daily_log(&test_monday_date(), MONDAY_DAILY_LOG_CONTENT);
+    test_context.write_work_file(UNSUMMARIZED_WORK_FILE_CONTENT);
+
+    let error = summarize_weekly_work_from_config(
+        &test_context.config,
+        &FakeLanguageModel,
+        &test_monday_date(),
+        false,
+    )
+    .await
+    .expect_err("unsummarized work file should fail");
+
+    error.downcast_ref::<WorkFileNotDefault>().expect("error should be WorkFileNotDefault");
+
+    assert!(!test_context.weekly_log_file().exists());
+
+    drop(test_context.temporary_directory);
+}

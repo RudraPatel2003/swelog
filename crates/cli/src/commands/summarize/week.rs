@@ -15,12 +15,20 @@ use miette::{
     miette,
 };
 use owo_colors::OwoColorize;
-use summary::week::get_weekly_log_file_name;
+use summary::week::{
+    get_weekly_log_file_name,
+    summarize_weekly_work_from_config,
+};
 
 #[derive(Debug, Args)]
 pub struct WeeklySummaryArgs {
+    /// The Monday of the week you want to summarize in the format MM-DD-YYYY.
     #[arg(long = "week-of")]
     monday_date_string: Option<String>,
+
+    /// Overwrite existing weekly log file.
+    #[arg(long = "force")]
+    overwrite_existing_weekly_log: bool,
 }
 
 impl WeeklySummaryArgs {
@@ -33,8 +41,13 @@ impl WeeklySummaryArgs {
 
         let language_model = get_language_model_from_config(&swelog_config)?;
 
-        summarize_weekly_work_from_config(&swelog_config, language_model.as_ref(), &monday_date)
-            .await?;
+        summarize_weekly_work_from_config(
+            &swelog_config,
+            language_model.as_ref(),
+            &monday_date,
+            self.overwrite_existing_weekly_log,
+        )
+        .await?;
 
         let weekly_log_file_name = get_weekly_log_file_name(&monday_date);
 
