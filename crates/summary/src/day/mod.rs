@@ -69,7 +69,10 @@ pub async fn summarize_daily_work_from_config(
 
     let prompt = get_daily_log_prompt(&work_file_content, &context_file_content, log_date);
 
-    let daily_log_content = language_model.generate_response(&prompt).await?;
+    let generated_daily_log_content = language_model.generate_response(&prompt).await?;
+
+    let daily_log_content =
+        build_daily_log_content(&generated_daily_log_content, &work_file_content);
 
     fs::write(&daily_log_file, daily_log_content).into_diagnostic().wrap_err_with(|| {
         format!("failed to write daily log file at {}", daily_log_file.display())
@@ -90,6 +93,36 @@ pub fn get_daily_log_file_name(log_date: &NaiveDate) -> String {
     let formatted_date = log_date.format("%m-%d-%Y").to_string();
 
     format!("{formatted_date}.md")
+}
+
+fn build_daily_log_content(generated_daily_log_content: &str, work_file_content: &str) -> String {
+    let original_notes_content = demote_markdown_headings(work_file_content);
+
+    format!(
+        "{}\n\n## Original Notes\n\n{}\n",
+        generated_daily_log_content.trim_end(),
+        original_notes_content.trim_end()
+    )
+}
+
+fn demote_markdown_headings(markdown: &str) -> String {
+    let mut demoted_lines = Vec::new();
+
+    for line in markdown.lines() {
+        demoted_lines.push(demote_markdown_heading(line));
+    }
+
+    let mut demoted_markdown = demoted_lines.join("\n");
+
+    if markdown.ends_with('\n') {
+        demoted_markdown.push('\n');
+    }
+
+    demoted_markdown
+}
+
+fn demote_markdown_heading(line: &str) -> String {
+    if line.starts_with('#') { format!("##{line}") } else { String::from(line) }
 }
 
 #[cfg(test)]

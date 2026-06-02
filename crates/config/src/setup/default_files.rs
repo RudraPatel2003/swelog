@@ -30,6 +30,9 @@ pub const DEFAULT_WORK_FILE_CONTENT: &str = "# Today's Work
 ## Follow-ups
 <!-- Optional: next steps or items to carry into tomorrow. -->
 
+## GitHub
+<!-- Optional: Fill out this section using `swelog fetch github` -->
+
 ## Log
 <!-- Quick capture. Use short bullets; include systems, outcomes, reviews, debugging, meetings, or support work when useful. -->
 ";

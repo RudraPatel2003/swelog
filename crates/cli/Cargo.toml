@@ -1,6 +1,6 @@
 [package]
 name = "cli"
-version = "0.3.0"
+version = "0.4.0"
 authors = { workspace = true }
 edition = { workspace = true }
 description = { workspace = true }
@@ -19,6 +19,7 @@ path = "src/main.rs"
 chrono = { workspace = true }
 clap = { workspace = true, features = ["derive"] }
 config = { path = "../config" }
+github = { path = "../github" }
 llm = { path = "../llm" }
 logging = { path = "../logging" }
 miette = { workspace = true, features = ["fancy"] }

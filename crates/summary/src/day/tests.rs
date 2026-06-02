@@ -23,7 +23,12 @@ use tempfile::{
 use super::*;
 
 const CONTEXT_FILE_CONTENT: &str = "backend engineer on platform team";
-const WORK_FILE_CONTENT: &str = "debugged API timeout and reviewed auth PR";
+
+const WORK_FILE_CONTENT: &str =
+    "# Today's Work\n\n## Focus\n- Debug API timeout\n\n## Log\n- Reviewed auth PR\n";
+
+const DEMOTED_WORK_FILE_CONTENT: &str =
+    "### Today's Work\n\n#### Focus\n- Debug API timeout\n\n#### Log\n- Reviewed auth PR";
 const EXISTING_DAILY_LOG_CONTENT: &str = "existing daily log";
 
 struct TestContext {
@@ -110,8 +115,12 @@ async fn summarize_daily_work_writes_generated_daily_log() {
     let daily_log_content =
         fs::read_to_string(test_context.daily_log_file()).expect("daily log should be readable");
 
+    assert!(daily_log_content.starts_with("generated from prompt:\n"));
     assert!(daily_log_content.contains(WORK_FILE_CONTENT));
     assert!(daily_log_content.contains(CONTEXT_FILE_CONTENT));
+    assert!(
+        daily_log_content.contains(&format!("## Original Notes\n\n{DEMOTED_WORK_FILE_CONTENT}\n"))
+    );
 
     drop(test_context.temporary_directory);
 }
@@ -277,6 +286,12 @@ async fn summarize_daily_work_resets_work_file_by_default() {
 
     assert_eq!(work_file_content, DEFAULT_WORK_FILE_CONTENT);
 
+    let daily_log_content =
+        fs::read_to_string(test_context.daily_log_file()).expect("daily log should be readable");
+
+    assert!(daily_log_content.contains("## Original Notes"));
+    assert!(daily_log_content.contains(DEMOTED_WORK_FILE_CONTENT));
+
     drop(test_context.temporary_directory);
 }
 
@@ -302,4 +317,13 @@ async fn summarize_daily_work_keeps_work_file_when_keep_is_set() {
     assert_eq!(work_file_content, WORK_FILE_CONTENT);
 
     drop(test_context.temporary_directory);
+}
+
+#[test]
+fn demote_markdown_headings_demotes_headings_by_two_levels() {
+    let markdown = "# Today\n\n## Focus\n### Details\n- Reviewed auth PR\n";
+
+    let demoted_markdown = demote_markdown_headings(markdown);
+
+    assert_eq!(demoted_markdown, "### Today\n\n#### Focus\n##### Details\n- Reviewed auth PR\n");
 }

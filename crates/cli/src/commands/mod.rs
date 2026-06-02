@@ -1,11 +1,15 @@
+mod fetch;
 mod init;
 mod log;
+mod reset;
 mod setup;
 mod summarize;
 
 use clap::Subcommand;
+use fetch::FetchArgs;
 use init::InitArgs;
 use log::LogArgs;
+use reset::ResetArgs;
 use setup::SetupArgs;
 use summarize::SummarizeArgs;
 
@@ -23,4 +27,10 @@ pub enum Commands {
 
     /// Add a work item to your configured work file.
     Log(LogArgs),
+
+    /// Reset your work file to the default content.
+    Reset(ResetArgs),
+
+    /// Add data from external sources to your work file
+    Fetch(FetchArgs),
 }
