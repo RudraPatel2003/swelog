@@ -321,6 +321,7 @@ version = "0.5.0"
 dependencies = [
  "dirs",
  "miette",
+ "owo-colors",
  "serde",
  "serde_json",
  "tempfile",

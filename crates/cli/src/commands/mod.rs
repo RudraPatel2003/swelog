@@ -1,3 +1,4 @@
+mod config;
 mod fetch;
 mod init;
 mod log;
@@ -12,6 +13,8 @@ use log::LogArgs;
 use reset::ResetArgs;
 use setup::SetupArgs;
 use summarize::SummarizeArgs;
+
+use self::config::ConfigArgs;
 
 #[derive(Debug, Subcommand)]
 pub enum Commands {
@@ -31,6 +34,9 @@ pub enum Commands {
     /// Reset your work file to the default content.
     Reset(ResetArgs),
 
-    /// Add data from external sources to your work file
+    /// Add data from external sources to your work file.
     Fetch(FetchArgs),
+
+    /// Display your current swelog configuration and where it is stored.
+    Config(ConfigArgs),
 }
