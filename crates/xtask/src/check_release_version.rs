@@ -1,6 +1,5 @@
 use std::{
     env::Args,
-    fs,
     process::Command,
 };
 
@@ -12,8 +11,14 @@ use miette::{
 };
 use serde_json::Value;
 
+use crate::utils::{
+    get_release_tag_from_args,
+    get_release_version_from_tag,
+    read_npm_package_json,
+};
+
 pub fn run(mut args: Args) -> Result<()> {
-    let release_tag = get_release_tag_from_args(&mut args)?;
+    let release_tag = get_release_tag_from_args(&mut args, "check-release-version")?;
 
     let release_version = get_release_version_from_tag(&release_tag)?;
 
@@ -36,26 +41,6 @@ pub fn run(mut args: Args) -> Result<()> {
     println!("Release tag {release_tag} matches CLI and npm package versions");
 
     Ok(())
-}
-
-fn get_release_tag_from_args(args: &mut Args) -> Result<String> {
-    let Some(release_tag) = args.next() else {
-        return Err(miette!("usage: cargo run -p xtask -- check-release-version <release-tag>"));
-    };
-
-    if let Some(extra_arg) = args.next() {
-        return Err(miette!("unexpected argument: {extra_arg}"));
-    }
-
-    Ok(release_tag)
-}
-
-fn get_release_version_from_tag(release_tag: &str) -> Result<&str> {
-    let Some(release_version) = release_tag.strip_prefix('v') else {
-        return Err(miette!("release tag must look like vX.Y.Z"));
-    };
-
-    Ok(release_version)
 }
 
 fn get_rust_cli_version() -> Result<String> {
@@ -87,13 +72,7 @@ fn get_rust_cli_version() -> Result<String> {
 }
 
 fn get_npm_cli_version() -> Result<String> {
-    let package_json = fs::read_to_string("./npm/package.json")
-        .into_diagnostic()
-        .wrap_err("failed to read npm/package.json")?;
-
-    let package_json: Value = serde_json::from_str(&package_json)
-        .into_diagnostic()
-        .wrap_err("failed to parse npm/package.json")?;
+    let package_json = read_npm_package_json()?;
 
     let Some(version) = package_json.get("version").and_then(Value::as_str) else {
         return Err(miette!("npm/package.json is missing a version"));

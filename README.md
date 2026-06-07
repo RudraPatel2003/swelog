@@ -53,27 +53,46 @@ npm install -g swelog-cli
 
 ## Configuration
 
-### AI Summarization
-
-By default, swelog uses Ollama:
+`swelog init` writes a config file to your OS config directory at
+`swelog/swelog.json` (for example `~/.config/swelog/swelog.json` on Linux). The
+default config looks like this:
 
 ```json
 {
+  "obsidianVaultPath": "",
+  "swelogFolderName": "swelog",
+  "workFileName": "WORK.md",
+  "contextFileName": "CONTEXT.md",
+  "dailyLogFolderName": "Daily",
+  "weeklyLogFolderName": "Weekly",
   "llm": "ollama",
-  "ollamaModel": "llama3.2"
-}
-```
-
-To use OpenAI instead, set the provider and model in your config:
-
-```json
-{
-  "llm": "openAi",
+  "ollamaModel": "llama3.2",
   "openAiModel": "gpt-5.4-mini"
 }
 ```
 
-Then provide your OpenAI API key through the environment before running
+Every field is described below. All of the swelog files and folders live inside
+`<obsidianVaultPath>/<swelogFolderName>`.
+
+| Field | Description |
+| --- | --- |
+| `obsidianVaultPath` | Absolute path to your Obsidian vault. Empty by default; you must set this before running other commands, otherwise swelog errors out. |
+| `swelogFolderName` | Name of the folder created inside your vault that holds all swelog files. |
+| `workFileName` | Name of the file where you collect raw daily work notes. |
+| `contextFileName` | Name of the file holding context about your role, team, and priorities, which is fed to the LLM during summarization. |
+| `dailyLogFolderName` | Name of the folder (inside the swelog folder) where generated daily logs are stored. |
+| `weeklyLogFolderName` | Name of the folder (inside the swelog folder) where generated weekly logs are stored. |
+| `llm` | LLM provider used for summarization. One of `ollama` or `openAi`. |
+| `ollamaModel` | Model name used when `llm` is `ollama`. |
+| `openAiModel` | Model name used when `llm` is `openAi`. |
+
+### AI Summarization
+
+Configure your desired LLM provider and model in your config file.
+
+To use Ollama, ensure it is up and running at `localhost:11434` before running `swelog summarize`.
+
+To use OpenAI, provide your OpenAI API key through the environment before running
 `swelog summarize`:
 
 ```sh
@@ -139,6 +158,12 @@ Run the full pull request check:
 
 ```sh
 just pr
+```
+
+Update the version of the CLI when preparing for a release:
+
+```sh
+just update-release-version <release-tag>
 ```
 
 ### Pull Request Process

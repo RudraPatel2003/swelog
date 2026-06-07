@@ -20,7 +20,7 @@ Obsidian. Workspace crates live under `crates/*`.
 - Prefer explicit variable names such as `directory` over abbreviations like `dir`.
 - Prefer white space between lines of code unless they are related to each other.
 - Prefer extracting logic into files so that core logic remains readable.
-- When importing other modules in this repository, import the whole item rather than qualifying it.
+- When importing items from other modules in this repository, fully qualify the import path and call the item unqualified. For example, write `use crate::utils::read_npm_package_json;` then call `read_npm_package_json()`, rather than `use crate::utils;` then `utils::read_npm_package_json()`.
 - When creating new features, if the content is self-contained, place it in a sub-module of the crate. This keeps files small and focused.
 
 ## Testing
