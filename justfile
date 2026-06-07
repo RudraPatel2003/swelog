@@ -20,11 +20,11 @@ build:
 
 pr: check-format clippy test
 
-release-version-check *args:
+check-release-version *args:
     cargo run -p xtask -- check-release-version "$@"
 
-npm-pack:
-    npm pack ./npm
+update-release-version *args:
+    cargo run -p xtask -- update-release-version "$@"
 
 npm-pack-dry-run:
     npm pack ./npm --dry-run

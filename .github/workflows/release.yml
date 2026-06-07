@@ -95,7 +95,7 @@ jobs:
           registry-url: https://registry.npmjs.org
 
       - name: Check release version
-        run: just release-version-check "${{ github.event.release.tag_name }}"
+        run: just check-release-version "${{ github.event.release.tag_name }}"
 
       - name: Run release checks
         run: just npm-release-check

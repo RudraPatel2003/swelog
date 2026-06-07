@@ -1,4 +1,6 @@
 mod check_release_version;
+mod update_release_version;
+mod utils;
 
 use std::env;
 
@@ -14,15 +16,16 @@ fn main() -> Result<()> {
     let _ = args.next();
 
     let Some(command) = args.next() else {
-        return Err(usage_error());
+        return Err(get_usage_error());
     };
 
     match command.as_str() {
         "check-release-version" => check_release_version::run(args),
-        _ => Err(usage_error()),
+        "update-release-version" => update_release_version::run(args),
+        _ => Err(get_usage_error()),
     }
 }
 
-fn usage_error() -> Error {
+fn get_usage_error() -> Error {
     miette!("usage: cargo run -p xtask -- <command> [...args]")
 }

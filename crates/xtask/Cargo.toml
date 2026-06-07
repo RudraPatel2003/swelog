@@ -1,10 +1,10 @@
 [package]
 name = "xtask"
-version = "0.1.0"
+version = "0.5.0"
 authors = { workspace = true }
 edition = { workspace = true }
 publish = false
 
 [dependencies]
 miette = { workspace = true, features = ["fancy"] }
-serde_json = { workspace = true }
+serde_json = { workspace = true, features = ["preserve_order"] }
