@@ -48,6 +48,8 @@ jobs:
 
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "rust-dependencies-cache"
 
       - name: Build release binary
         shell: bash
@@ -87,6 +89,8 @@ jobs:
 
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "rust-dependencies-cache"
 
       - name: Setup Node
         uses: actions/setup-node@v6
