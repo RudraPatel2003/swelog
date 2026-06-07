@@ -49,7 +49,7 @@ npm install -g swelog-cli
 
 ### Other
 
-- un `swelog reset` to reset your work file to its default content
+- Run `swelog reset` to reset your work file to its default content
 
 ## Configuration
 
