@@ -1,0 +1,31 @@
+#
+# The purpose of this workflow is to cache the dependencies of the main branch so that it can speed up PRs.
+# When a PR is opened, it can only look for caches in its own branch (which doesn't exist yet) and the main branch.
+# https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/caching-dependencies-to-speed-up-workflows#restrictions-for-accessing-a-cache
+#
+
+name: cache
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  cache:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Just
+        uses: extractions/setup-just@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@nightly
+        with:
+          components: clippy, rustfmt
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2

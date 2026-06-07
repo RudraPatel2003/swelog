@@ -42,7 +42,7 @@ jobs:
         uses: dtolnay/rust-toolchain@nightly
         with:
           components: clippy, rustfmt
-      
+
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
 
