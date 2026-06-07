@@ -51,6 +51,8 @@ npm install -g swelog-cli
 
 - Run `swelog reset` to reset your work file to its default content
 
+- Run `swelog config` to display your current configuration and where it is stored
+
 ## Configuration
 
 `swelog init` writes a config file to your OS config directory at

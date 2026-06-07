@@ -34,6 +34,10 @@ async fn main() -> Result<()> {
         Commands::Fetch(fetch_args) => {
             fetch_args.run().await?;
         }
+
+        Commands::Config(config_args) => {
+            config_args.run()?;
+        }
     }
 
     Ok(())
