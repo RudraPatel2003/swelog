@@ -26,3 +26,5 @@ jobs:
 
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "rust-dependencies-cache"
