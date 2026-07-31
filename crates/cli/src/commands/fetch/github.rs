@@ -28,6 +28,12 @@ impl GithubArgs {
             get_merged_prs(&github_token, &github_username),
         )?;
 
+        if opened_prs.is_empty() && merged_prs.is_empty() {
+            println!("No GitHub activity found.");
+
+            return Ok(());
+        }
+
         let mut github_activity_lines = Vec::new();
 
         for opened_pr in opened_prs {
