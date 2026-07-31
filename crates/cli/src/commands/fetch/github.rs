@@ -2,10 +2,7 @@ use clap::Args;
 use config::utils::read_config_file;
 use github::{
     github_token::get_github_token,
-    issues::{
-        get_merged_prs,
-        get_opened_prs,
-    },
+    issues::{get_merged_prs, get_opened_prs},
     users::get_github_username,
     utils::get_repository_name_from_repository_url,
 };
@@ -27,6 +24,12 @@ impl GithubArgs {
             get_opened_prs(&github_token, &github_username),
             get_merged_prs(&github_token, &github_username),
         )?;
+
+        if opened_prs.is_empty() && merged_prs.is_empty() {
+            println!("No GitHub activity found.");
+
+            return Ok(());
+        }
 
         let mut github_activity_lines = Vec::new();
 
