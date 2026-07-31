@@ -27,6 +27,7 @@ fn format_config(config: &SwelogConfig) -> String {
     let language_model_provider = match config.language_model_provider {
         LanguageModelProvider::Ollama => "Ollama",
         LanguageModelProvider::OpenAi => "OpenAI",
+        LanguageModelProvider::OpenRouter => "OpenRouter",
     };
 
     let mut output = String::new();
@@ -53,6 +54,7 @@ fn format_config(config: &SwelogConfig) -> String {
     output.push_str(&format_row("Provider", language_model_provider));
     output.push_str(&format_row("Ollama model", &config.ollama_model));
     output.push_str(&format_row("OpenAI model", &config.open_ai_model));
+    output.push_str(&format_row("OpenRouter model", &config.open_router_model));
 
     output
 }

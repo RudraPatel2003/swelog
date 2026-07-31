@@ -74,25 +74,10 @@ Use the following structure:
 
 3-5 sentence overview of the day's primary engineering themes, outcomes, and notable context.
 
-## Technical Highlights
-
-- Key technical work, investigations, implementations, debugging efforts, design decisions, or operational activities.
-- Include specific systems, components, bugs, workflows, or technical tradeoffs when supported by the notes.
-
 ## Wins
 
 - Resume-style bullets focused on meaningful outcomes, shipped work, resolved issues, risk reduction, productivity improvements, or impactful contributions.
 - Do not include routine activity unless it had clear impact.
-
-## Collaboration
-
-- Reviews, mentoring, pairing, design discussions, meetings, cross-team coordination, stakeholder communication, or support work.
-- Omit this section if there was no meaningful collaboration in the notes.
-
-## Follow-ups
-
-- Open questions, blockers, unfinished work, next steps, or risks.
-- Omit this section if there are no clear follow-ups.
 ```
 
 CONTEXT:
@@ -182,25 +167,11 @@ Use the following structure:
 
 1-2 paragraphs summarizing the week's primary engineering themes, major outcomes, notable investigations, and overall progress.
 
-## Major Technical Work
-
-- Significant implementations, debugging efforts, architecture/design work, operational improvements, investigations, or technical decisions.
-- Group related work into coherent themes.
-
 ## Key Outcomes
 
 - Resume-style bullets highlighting meaningful accomplishments, risk reduction, productivity gains, reliability improvements, customer impact, or delivered value.
-
-## Collaboration
-
-- Reviews, mentoring, pairing, design discussions, stakeholder communication, cross-team coordination, and support work.
-- Omit this section if collaboration was not a meaningful theme.
-
-## Ongoing Work / Follow-ups
-
-- Open investigations, unfinished work, blockers, risks, and next steps.
-- Omit this section if there are no clear follow-ups.
 ```
+
 CONTEXT:
 
 weekly daily logs:

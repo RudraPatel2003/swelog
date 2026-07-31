@@ -1,9 +1,6 @@
 use std::path::PathBuf;
 
-use serde::{
-    Deserialize,
-    Serialize,
-};
+use serde::{Deserialize, Serialize};
 
 const DEFAULT_OBSIDIAN_VAULT_PATH: &str = "";
 pub const DEFAULT_SWELOG_FOLDER_NAME: &str = "swelog";
@@ -13,12 +10,14 @@ pub const DEFAULT_WORK_FILE_NAME: &str = "WORK.md";
 pub const DEFAULT_CONTEXT_FILE_NAME: &str = "CONTEXT.md";
 pub const DEFAULT_OLLAMA_MODEL: &str = "llama3.2";
 pub const DEFAULT_OPEN_AI_MODEL: &str = "gpt-5.4-mini";
+pub const DEFAULT_OPEN_ROUTER_MODEL: &str = "gpt-5.4-mini";
 
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub enum LanguageModelProvider {
     Ollama,
     OpenAi,
+    OpenRouter,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
@@ -35,6 +34,7 @@ pub struct SwelogConfig {
     pub language_model_provider: LanguageModelProvider,
     pub ollama_model: String,
     pub open_ai_model: String,
+    pub open_router_model: String,
 }
 
 impl SwelogConfig {
@@ -49,6 +49,7 @@ impl SwelogConfig {
             language_model_provider: LanguageModelProvider::Ollama,
             ollama_model: String::from(DEFAULT_OLLAMA_MODEL),
             open_ai_model: String::from(DEFAULT_OPEN_AI_MODEL),
+            open_router_model: String::from(DEFAULT_OPEN_ROUTER_MODEL),
         }
     }
 }

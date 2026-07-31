@@ -69,7 +69,8 @@ default config looks like this:
   "weeklyLogFolderName": "Weekly",
   "llm": "ollama",
   "ollamaModel": "llama3.2",
-  "openAiModel": "gpt-5.4-mini"
+  "openAiModel": "gpt-5.4-mini",
+  "openRouterModel": "openai/gpt-5.4-mini"
 }
 ```
 
@@ -84,15 +85,20 @@ Every field is described below. All of the swelog files and folders live inside
 | `contextFileName` | Name of the file holding context about your role, team, and priorities, which is fed to the LLM during summarization. |
 | `dailyLogFolderName` | Name of the folder (inside the swelog folder) where generated daily logs are stored. |
 | `weeklyLogFolderName` | Name of the folder (inside the swelog folder) where generated weekly logs are stored. |
-| `llm` | LLM provider used for summarization. One of `ollama` or `openAi`. |
+| `llm` | LLM provider used for summarization. One of `ollama`, `openAi`, or `openRouter`. |
 | `ollamaModel` | Model name used when `llm` is `ollama`. |
 | `openAiModel` | Model name used when `llm` is `openAi`. |
+| `openRouterModel` | Model name used when `llm` is `openRouter`. Must be an OpenAI model slug (e.g. `openai/gpt-5.4-mini`) since swelog talks to OpenRouter using OpenAI's Responses API format. |
 
 ### AI Summarization
 
 Configure your desired LLM provider and model in your config file.
 
+#### Ollama
+
 To use Ollama, ensure it is up and running at `localhost:11434` before running `swelog summarize`.
+
+#### OpenAI
 
 To use OpenAI, provide your OpenAI API key through the environment before running
 `swelog summarize`:
@@ -102,6 +108,20 @@ export OPENAI_API_KEY="your_api_key_here"
 ```
 
 Do not store your OpenAI API key in the swelog config file.
+
+#### OpenRouter
+
+To use OpenRouter, provide your OpenRouter API key through the environment before running
+`swelog summarize`:
+
+```sh
+export OPENROUTER_API_KEY="your_api_key_here"
+```
+
+Do not store your OpenRouter API key in the swelog config file.
+
+`openRouterModel` must be an OpenAI model slug (for example `gpt-5.4-mini`), since swelog
+talks to OpenRouter using OpenAI's Responses API format. Non-OpenAI models will not work.
 
 ### GitHub Integration
 
@@ -122,6 +142,7 @@ Please have the following installed on your machine:
 - Rust
 - Just
 - Ollama, when using the default Ollama provider
+- An OpenAI / OpenRouter API key, when using the OpenAI / OpenRouter provider
 - Obsidian
 
 ### Development

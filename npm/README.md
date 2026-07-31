@@ -49,31 +49,58 @@ npm install -g swelog-cli
 
 ### Other
 
-- un `swelog reset` to reset your work file to its default content
+- Run `swelog reset` to reset your work file to its default content
+
+- Run `swelog config` to display your current configuration and where it is stored
 
 ## Configuration
 
+`swelog init` writes a config file to your OS config directory at
+`swelog/swelog.json` (for example `~/.config/swelog/swelog.json` on Linux). The
+default config looks like this:
+
+```json
+{
+  "obsidianVaultPath": "",
+  "swelogFolderName": "swelog",
+  "workFileName": "WORK.md",
+  "contextFileName": "CONTEXT.md",
+  "dailyLogFolderName": "Daily",
+  "weeklyLogFolderName": "Weekly",
+  "llm": "ollama",
+  "ollamaModel": "llama3.2",
+  "openAiModel": "gpt-5.4-mini",
+  "openRouterModel": "openai/gpt-5.4-mini"
+}
+```
+
+Every field is described below. All of the swelog files and folders live inside
+`<obsidianVaultPath>/<swelogFolderName>`.
+
+| Field | Description |
+| --- | --- |
+| `obsidianVaultPath` | Absolute path to your Obsidian vault. Empty by default; you must set this before running other commands, otherwise swelog errors out. |
+| `swelogFolderName` | Name of the folder created inside your vault that holds all swelog files. |
+| `workFileName` | Name of the file where you collect raw daily work notes. |
+| `contextFileName` | Name of the file holding context about your role, team, and priorities, which is fed to the LLM during summarization. |
+| `dailyLogFolderName` | Name of the folder (inside the swelog folder) where generated daily logs are stored. |
+| `weeklyLogFolderName` | Name of the folder (inside the swelog folder) where generated weekly logs are stored. |
+| `llm` | LLM provider used for summarization. One of `ollama`, `openAi`, or `openRouter`. |
+| `ollamaModel` | Model name used when `llm` is `ollama`. |
+| `openAiModel` | Model name used when `llm` is `openAi`. |
+| `openRouterModel` | Model name used when `llm` is `openRouter`. Must be an OpenAI model slug (e.g. `openai/gpt-5.4-mini`) since swelog talks to OpenRouter using OpenAI's Responses API format. |
+
 ### AI Summarization
 
-By default, swelog uses Ollama:
+Configure your desired LLM provider and model in your config file.
 
-```json
-{
-  "llm": "ollama",
-  "ollamaModel": "llama3.2"
-}
-```
+#### Ollama
 
-To use OpenAI instead, set the provider and model in your config:
+To use Ollama, ensure it is up and running at `localhost:11434` before running `swelog summarize`.
 
-```json
-{
-  "llm": "openAi",
-  "openAiModel": "gpt-5.4-mini"
-}
-```
+#### OpenAI
 
-Then provide your OpenAI API key through the environment before running
+To use OpenAI, provide your OpenAI API key through the environment before running
 `swelog summarize`:
 
 ```sh
@@ -81,6 +108,20 @@ export OPENAI_API_KEY="your_api_key_here"
 ```
 
 Do not store your OpenAI API key in the swelog config file.
+
+#### OpenRouter
+
+To use OpenRouter, provide your OpenRouter API key through the environment before running
+`swelog summarize`:
+
+```sh
+export OPENROUTER_API_KEY="your_api_key_here"
+```
+
+Do not store your OpenRouter API key in the swelog config file.
+
+`openRouterModel` must be an OpenAI model slug (for example `gpt-5.4-mini`), since swelog
+talks to OpenRouter using OpenAI's Responses API format. Non-OpenAI models will not work.
 
 ### GitHub Integration
 
@@ -101,6 +142,7 @@ Please have the following installed on your machine:
 - Rust
 - Just
 - Ollama, when using the default Ollama provider
+- An OpenAI / OpenRouter API key, when using the OpenAI / OpenRouter provider
 - Obsidian
 
 ### Development
@@ -139,6 +181,12 @@ Run the full pull request check:
 
 ```sh
 just pr
+```
+
+Update the version of the CLI when preparing for a release:
+
+```sh
+just update-release-version <release-tag>
 ```
 
 ### Pull Request Process
