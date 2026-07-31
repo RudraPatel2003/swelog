@@ -2,7 +2,10 @@ use clap::Args;
 use config::utils::read_config_file;
 use github::{
     github_token::get_github_token,
-    issues::{get_merged_prs, get_opened_prs},
+    issues::{
+        get_merged_prs,
+        get_opened_prs,
+    },
     users::get_github_username,
     utils::get_repository_name_from_repository_url,
 };
