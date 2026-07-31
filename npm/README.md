@@ -68,9 +68,7 @@ default config looks like this:
   "dailyLogFolderName": "Daily",
   "weeklyLogFolderName": "Weekly",
   "llm": "ollama",
-  "ollamaModel": "llama3.2",
-  "openAiModel": "gpt-5.4-mini",
-  "openRouterModel": "openai/gpt-5.4-mini"
+  "llmModel": "llama3.2"
 }
 ```
 
@@ -86,9 +84,7 @@ Every field is described below. All of the swelog files and folders live inside
 | `dailyLogFolderName` | Name of the folder (inside the swelog folder) where generated daily logs are stored. |
 | `weeklyLogFolderName` | Name of the folder (inside the swelog folder) where generated weekly logs are stored. |
 | `llm` | LLM provider used for summarization. One of `ollama`, `openAi`, or `openRouter`. |
-| `ollamaModel` | Model name used when `llm` is `ollama`. |
-| `openAiModel` | Model name used when `llm` is `openAi`. |
-| `openRouterModel` | Model name used when `llm` is `openRouter`. Must be an OpenAI model slug (e.g. `openai/gpt-5.4-mini`) since swelog talks to OpenRouter using OpenAI's Responses API format. |
+| `llmModel` | Model used for summarization, interpreted by whichever provider `llm` names. Examples: `llama3.2` for `ollama`, `gpt-5.4-mini` for `openAi`, `gpt-5.4-mini` for `openRouter`. |
 
 ### AI Summarization
 
@@ -120,8 +116,9 @@ export OPENROUTER_API_KEY="your_api_key_here"
 
 Do not store your OpenRouter API key in the swelog config file.
 
-`openRouterModel` must be an OpenAI model slug (for example `gpt-5.4-mini`), since swelog
-talks to OpenRouter using OpenAI's Responses API format. Non-OpenAI models will not work.
+`llmModel` must be an OpenAI model slug prefixed with `openai/` (for example
+`openai/gpt-5.4-mini`), since swelog talks to OpenRouter using OpenAI's Responses API
+format. Non-OpenAI models will not work.
 
 ### GitHub Integration
 

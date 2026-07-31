@@ -18,4 +18,5 @@ fn format_config_groups_fields_under_section_headings() {
     assert!(output.contains("Obsidian vault path  /home/user/vault\n"));
     assert!(output.contains("Provider"));
     assert!(output.contains("Ollama\n"));
+    assert!(output.contains("Model                llama3.2\n"));
 }
