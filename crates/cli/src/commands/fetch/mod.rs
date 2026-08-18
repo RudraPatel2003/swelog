@@ -15,7 +15,7 @@ pub struct FetchArgs {
 
 #[derive(Debug, Subcommand)]
 enum FetchCommands {
-    /// Fetch the PRs you opened and merged today in GitHub
+    /// Fetch the PRs you opened and merged on a date in GitHub
     Github(GithubArgs),
 }
 

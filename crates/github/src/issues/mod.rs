@@ -2,6 +2,7 @@ mod structs;
 
 use std::collections::HashMap;
 
+use chrono::NaiveDate;
 use miette::{
     IntoDiagnostic,
     Result,
@@ -27,20 +28,20 @@ use crate::{
     utils::{
         GITHUB_ACCEPT_HEADER,
         SWELOG_USER_AGENT,
-        get_current_date_in_iso_8601,
     },
 };
 
 const MERGED_PRS_API_URL: &str = "https://api.github.com/search/issues";
 const OPENED_PRS_API_URL: &str = "https://api.github.com/search/issues";
 
-pub async fn get_merged_prs(github_token: &str, github_username: &str) -> Result<Vec<Issue>> {
+pub async fn get_merged_prs(
+    github_token: &str,
+    github_username: &str,
+    activity_date: &NaiveDate,
+) -> Result<Vec<Issue>> {
     let client = Client::new();
 
-    let current_iso_8601_date = get_current_date_in_iso_8601();
-
-    let search_query =
-        format!("author:{github_username} is:pr is:merged updated:>={current_iso_8601_date}");
+    let search_query = get_merged_prs_search_query(github_username, activity_date);
 
     let mut query_parameters = HashMap::new();
 
@@ -76,12 +77,14 @@ pub async fn get_merged_prs(github_token: &str, github_username: &str) -> Result
     Ok(issues)
 }
 
-pub async fn get_opened_prs(github_token: &str, github_username: &str) -> Result<Vec<Issue>> {
+pub async fn get_opened_prs(
+    github_token: &str,
+    github_username: &str,
+    activity_date: &NaiveDate,
+) -> Result<Vec<Issue>> {
     let client = Client::new();
 
-    let current_iso_8601_date = get_current_date_in_iso_8601();
-
-    let search_query = format!("author:{github_username} is:pr created:>={current_iso_8601_date}");
+    let search_query = get_opened_prs_search_query(github_username, activity_date);
 
     let mut query_parameters = HashMap::new();
 
@@ -115,6 +118,14 @@ pub async fn get_opened_prs(github_token: &str, github_username: &str) -> Result
     let issues = parse_search_issues_response_text(&response_text)?;
 
     Ok(issues)
+}
+
+fn get_merged_prs_search_query(github_username: &str, activity_date: &NaiveDate) -> String {
+    format!("author:{github_username} is:pr merged:{activity_date}")
+}
+
+fn get_opened_prs_search_query(github_username: &str, activity_date: &NaiveDate) -> String {
+    format!("author:{github_username} is:pr created:{activity_date}")
 }
 
 fn parse_search_issues_response_text(response_text: &str) -> Result<Vec<Issue>> {

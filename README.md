@@ -43,6 +43,8 @@ npm install -g swelog-cli
 
 - Run `swelog fetch github` to fetch your GitHub PR activity and add it to your work file
 
+- Use `swelog fetch github --date MM-DD-YYYY` to fetch activity for a previous date
+
 - Run `swelog summarize` or `swelog summarize day` to generate a daily log
 
 - Run `swelog summarize week` to generate a weekly log

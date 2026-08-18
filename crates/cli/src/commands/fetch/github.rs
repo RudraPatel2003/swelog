@@ -1,3 +1,7 @@
+use chrono::{
+    Local,
+    NaiveDate,
+};
 use clap::Args;
 use config::utils::read_config_file;
 use github::{
@@ -13,7 +17,11 @@ use logging::work_file::overwrite_work_file_section_from_config;
 use miette::Result;
 
 #[derive(Debug, Args)]
-pub struct GithubArgs {}
+pub struct GithubArgs {
+    /// Date to fetch GitHub activity for in the format MM-DD-YYYY.
+    #[arg(long, value_name = "MM-DD-YYYY", value_parser = parse_activity_date)]
+    date: Option<NaiveDate>,
+}
 
 impl GithubArgs {
     pub async fn run(self) -> Result<()> {
@@ -23,9 +31,11 @@ impl GithubArgs {
 
         let github_username = get_github_username(&github_token).await?;
 
+        let activity_date = self.date.unwrap_or_else(|| Local::now().date_naive());
+
         let (opened_prs, merged_prs) = tokio::try_join!(
-            get_opened_prs(&github_token, &github_username),
-            get_merged_prs(&github_token, &github_username),
+            get_opened_prs(&github_token, &github_username, &activity_date),
+            get_merged_prs(&github_token, &github_username, &activity_date),
         )?;
 
         if opened_prs.is_empty() && merged_prs.is_empty() {
@@ -68,6 +78,11 @@ impl GithubArgs {
     }
 }
 
+fn parse_activity_date(date: &str) -> Result<NaiveDate, String> {
+    NaiveDate::parse_from_str(date, "%m-%d-%Y")
+        .map_err(|_| format!("invalid date `{date}`; expected MM-DD-YYYY"))
+}
+
 fn format_pull_request_activity(
     action: &str,
     title: &str,
@@ -83,3 +98,6 @@ fn format_pull_request_activity(
         "- {action} \"{title}\" ([#{number}]({pull_request_url})) in [{repository_name}]({repository_html_url})"
     )
 }
+
+#[cfg(test)]
+mod tests;

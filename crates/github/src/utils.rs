@@ -1,14 +1,6 @@
-use chrono::Local;
-
 pub const GITHUB_ACCEPT_HEADER: &str = "application/vnd.github.v3+json";
 
 pub const SWELOG_USER_AGENT: &str = "RudraPatel2003/swelog-cli";
-
-pub fn get_current_date_in_iso_8601() -> String {
-    let now = Local::now();
-
-    now.format("%Y-%m-%d").to_string()
-}
 
 const GITHUB_REPOS_API_URL: &str = "https://api.github.com/repos/";
 
