@@ -36,6 +36,9 @@ pub struct SwelogConfig {
 
     #[serde(rename = "llmModel")]
     pub language_model: String,
+
+    #[serde(default)]
+    pub linear_username: Option<String>,
 }
 
 impl SwelogConfig {
@@ -49,6 +52,7 @@ impl SwelogConfig {
             weekly_log_folder_name: String::from(DEFAULT_WEEKLY_LOG_FOLDER_NAME),
             language_model_provider: LanguageModelProvider::Ollama,
             language_model: String::from(DEFAULT_LLM_MODEL),
+            linear_username: None,
         }
     }
 }

@@ -53,6 +53,13 @@ fn format_config(config: &SwelogConfig) -> String {
     output.push_str("Language Model\n");
     output.push_str(&format_row("Provider", language_model_provider));
     output.push_str(&format_row("Model", &config.language_model));
+    output.push('\n');
+
+    output.push_str("Integrations\n");
+    output.push_str(&format_row(
+        "Linear username",
+        config.linear_username.as_deref().unwrap_or("Not configured"),
+    ));
 
     output
 }

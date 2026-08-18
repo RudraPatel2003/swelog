@@ -13,7 +13,7 @@ use github::{
     users::get_github_username,
     utils::get_repository_name_from_repository_url,
 };
-use logging::work_file::overwrite_work_file_section_from_config;
+use logging::work_file::upsert_managed_work_file_section_from_config;
 use miette::Result;
 
 #[derive(Debug, Args)]
@@ -72,7 +72,12 @@ impl GithubArgs {
 
         let github_activity = github_activity_lines.join("\n");
 
-        overwrite_work_file_section_from_config(&swelog_config, &github_activity, "GitHub")?;
+        upsert_managed_work_file_section_from_config(
+            &swelog_config,
+            "github",
+            "GitHub",
+            &github_activity,
+        )?;
 
         Ok(())
     }

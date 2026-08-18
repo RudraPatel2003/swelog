@@ -21,8 +21,10 @@ clap = { workspace = true, features = ["derive"] }
 config = { path = "../config" }
 github = { path = "../github" }
 llm = { path = "../llm" }
+linear = { path = "../linear" }
 logging = { path = "../logging" }
 miette = { workspace = true, features = ["fancy"] }
 owo-colors = { workspace = true }
 summary = { path = "../summary" }
+thiserror = { workspace = true }
 tokio = { workspace = true }

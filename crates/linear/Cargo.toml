@@ -1,5 +1,5 @@
 [package]
-name = "logging"
+name = "linear"
 version = "0.8.0"
 publish = false
 authors = { workspace = true }
@@ -13,10 +13,15 @@ readme = { workspace = true }
 license = { workspace = true }
 
 [dependencies]
-config = { path = "../config" }
+async-trait = { workspace = true }
 miette = { workspace = true }
-pulldown-cmark = { workspace = true }
+reqwest = { workspace = true }
+rmcp = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
 thiserror = { workspace = true }
+tokio = { workspace = true }
+webbrowser = { workspace = true }
 
 [dev-dependencies]
 tempfile = { workspace = true }

@@ -180,3 +180,78 @@ fn overwrite_section_replaces_last_section() {
 
     assert_eq!(updated_markdown, "# Today's Work\n\n## Log\n- Meeting with manager\n");
 }
+
+#[test]
+fn upsert_managed_section_inserts_before_log() {
+    let markdown = "# Today's Work\n\n## Focus\n- Ship it\n\n## Log\n- Existing log\n";
+
+    let updated_markdown = upsert_managed_section(
+        markdown,
+        "linear",
+        "Linear",
+        "### In Progress\n- [ENG-123](https://linear.app/issue/ENG-123) Ship it",
+    )
+    .expect("managed section should be inserted");
+
+    assert_eq!(
+        updated_markdown,
+        "# Today's Work\n\n## Focus\n- Ship it\n\n<!-- swelog:managed linear:start -->\n## Linear\n### In Progress\n- [ENG-123](https://linear.app/issue/ENG-123) Ship it\n<!-- swelog:managed linear:end -->\n\n## Log\n- Existing log\n"
+    );
+}
+
+#[test]
+fn upsert_managed_section_replaces_existing_managed_block() {
+    let markdown = "# Today's Work\n\n<!-- swelog:managed linear:start -->\n## Linear\n- Old\n<!-- swelog:managed linear:end -->\n\n## Log\n";
+
+    let updated_markdown = upsert_managed_section(markdown, "linear", "Linear", "- New")
+        .expect("managed section should be replaced");
+
+    assert_eq!(
+        updated_markdown,
+        "# Today's Work\n\n<!-- swelog:managed linear:start -->\n## Linear\n- New\n<!-- swelog:managed linear:end -->\n\n## Log\n"
+    );
+}
+
+#[test]
+fn upsert_managed_section_adopts_exact_existing_heading() {
+    let markdown = "# Today's Work\n\n## Linear\n- Manual placeholder\n\n## Log\n";
+
+    let updated_markdown = upsert_managed_section(markdown, "linear", "Linear", "- New")
+        .expect("existing section should be adopted");
+
+    assert_eq!(
+        updated_markdown,
+        "# Today's Work\n\n<!-- swelog:managed linear:start -->\n## Linear\n- New\n<!-- swelog:managed linear:end -->\n\n## Log\n"
+    );
+}
+
+#[test]
+fn upsert_managed_section_ignores_heading_in_code_block() {
+    let markdown = "# Today's Work\n\n```markdown\n## Linear\n```\n\n## Log\n";
+
+    let updated_markdown = upsert_managed_section(markdown, "linear", "Linear", "- New")
+        .expect("managed section should be inserted");
+
+    assert!(updated_markdown.contains("```markdown\n## Linear\n```"));
+    assert!(updated_markdown.contains("<!-- swelog:managed linear:start -->\n## Linear\n- New"));
+}
+
+#[test]
+fn remove_managed_section_removes_only_marked_block() {
+    let markdown = "# Today's Work\n\n<!-- swelog:managed linear:start -->\n## Linear\n- Issue\n<!-- swelog:managed linear:end -->\n\n## Log\n";
+
+    let updated_markdown =
+        remove_managed_section(markdown, "linear").expect("managed section should be removed");
+
+    assert_eq!(updated_markdown, "# Today's Work\n\n## Log\n");
+}
+
+#[test]
+fn remove_managed_section_preserves_unmarked_section() {
+    let markdown = "# Today's Work\n\n## Linear\n- Manual\n\n## Log\n";
+
+    let updated_markdown =
+        remove_managed_section(markdown, "linear").expect("unmarked section should be preserved");
+
+    assert_eq!(updated_markdown, markdown);
+}
