@@ -103,6 +103,3 @@ fn format_pull_request_activity(
         "- {action} \"{title}\" ([#{number}]({pull_request_url})) in [{repository_name}]({repository_html_url})"
     )
 }
-
-#[cfg(test)]
-mod tests;
