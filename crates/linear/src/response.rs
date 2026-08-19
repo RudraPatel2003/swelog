@@ -44,7 +44,7 @@ pub fn parse_issue_page(result: CallToolResult) -> Result<ParsedIssuePage> {
         .or_else(|| {
             value.get("pageInfo").and_then(|page_info| find_bool(page_info, &["hasNextPage"]))
         })
-        .unwrap_or(next_cursor.is_some());
+        .unwrap_or_else(|| next_cursor.is_some());
 
     Ok(ParsedIssuePage { issues, next_cursor: has_next_page.then_some(next_cursor).flatten() })
 }

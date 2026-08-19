@@ -38,7 +38,11 @@ pub fn run(mut args: Args) -> Result<()> {
 fn update_npm_version(release_version: &str) -> Result<()> {
     let mut package_json = read_npm_package_json()?;
 
-    package_json["version"] = Value::String(release_version.to_string());
+    let package_json_object = package_json
+        .as_object_mut()
+        .ok_or_else(|| miette!("npm/package.json is not a JSON object"))?;
+
+    package_json_object.insert(String::from("version"), Value::String(release_version.to_string()));
 
     let mut serialized = serde_json::to_string_pretty(&package_json)
         .into_diagnostic()

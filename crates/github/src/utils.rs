@@ -13,6 +13,7 @@ const GITHUB_REPOS_API_URL: &str = "https://api.github.com/repos/";
 ///
 /// assert_eq!(repository_name, "RudraPatel2003/swelog-cli");
 /// ```
+#[must_use]
 pub fn get_repository_name_from_repository_url(repository_url: &str) -> String {
     let Some(repo) = repository_url.strip_prefix(GITHUB_REPOS_API_URL) else {
         return String::from("Unknown repository");

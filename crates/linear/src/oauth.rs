@@ -46,7 +46,7 @@ struct FileCredentialStore {
 }
 
 impl FileCredentialStore {
-    fn new(path: PathBuf) -> Self {
+    const fn new(path: PathBuf) -> Self {
         Self { path }
     }
 
@@ -124,13 +124,18 @@ fn replace_credentials_file(source: &Path, destination: &Path) -> io::Result<()>
 }
 
 pub async fn get_authorization_manager(credentials_file: &Path) -> Result<AuthorizationManager> {
-    let mut authorization_manager =
-        AuthorizationManager::new(LINEAR_MCP_URL).await.map_err(map_authorization_error)?;
+    let mut authorization_manager = AuthorizationManager::new(LINEAR_MCP_URL)
+        .await
+        .map_err(|error| map_authorization_error(&error))?;
 
     authorization_manager
         .set_credential_store(FileCredentialStore::new(credentials_file.to_path_buf()));
 
-    if authorization_manager.initialize_from_store().await.map_err(map_authorization_error)? {
+    if authorization_manager
+        .initialize_from_store()
+        .await
+        .map_err(|error| map_authorization_error(&error))?
+    {
         return Ok(authorization_manager);
     }
 
@@ -148,15 +153,18 @@ async fn authorize_interactively(
         .map_err(|error| miette!("failed to determine Linear OAuth callback address: {error}"))?;
     let redirect_uri = format!("http://127.0.0.1:{}/callback", callback_address.port());
 
-    let metadata =
-        authorization_manager.resolve_metadata().await.map_err(map_authorization_error)?.metadata;
+    let metadata = authorization_manager
+        .resolve_metadata()
+        .await
+        .map_err(|error| map_authorization_error(&error))?
+        .metadata;
     authorization_manager.set_metadata(metadata);
 
     let authorization_request = AuthorizationRequest::new(&redirect_uri).with_client_name("swelog");
     let authorization_session =
         AuthorizationSession::new(authorization_manager, authorization_request)
             .await
-            .map_err(|(_, error)| map_authorization_error(error))?;
+            .map_err(|(_, error)| map_authorization_error(&error))?;
 
     let authorization_url = authorization_session.get_authorization_url();
 
@@ -174,7 +182,7 @@ async fn authorize_interactively(
     authorization_session
         .handle_callback_url(&callback_url)
         .await
-        .map_err(map_authorization_error)?;
+        .map_err(|error| map_authorization_error(&error))?;
 
     Ok(authorization_session.auth_manager)
 }
@@ -201,7 +209,11 @@ async fn receive_callback_url(
             break;
         }
 
-        request.extend_from_slice(&buffer[..bytes_read]);
+        let chunk = buffer
+            .get(..bytes_read)
+            .ok_or_else(|| miette!("Linear OAuth callback read exceeded the read buffer"))?;
+
+        request.extend_from_slice(chunk);
 
         if request.windows(4).any(|window| window == b"\r\n\r\n") {
             break;
@@ -235,11 +247,11 @@ async fn receive_callback_url(
     Ok(callback_url)
 }
 
-fn map_authorization_error(error: AuthError) -> miette::Report {
+fn map_authorization_error(error: &AuthError) -> miette::Report {
     LinearAuthorizationFailed { message: error.to_string() }.into()
 }
 
-pub fn linear_mcp_url() -> &'static str {
+pub const fn linear_mcp_url() -> &'static str {
     LINEAR_MCP_URL
 }
 

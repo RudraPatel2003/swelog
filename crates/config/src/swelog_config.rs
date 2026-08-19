@@ -13,7 +13,7 @@ pub const DEFAULT_WORK_FILE_NAME: &str = "WORK.md";
 pub const DEFAULT_CONTEXT_FILE_NAME: &str = "CONTEXT.md";
 pub const DEFAULT_LLM_MODEL: &str = "llama3.2";
 
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub enum LanguageModelProvider {
     Ollama,
@@ -21,7 +21,7 @@ pub enum LanguageModelProvider {
     OpenRouter,
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct SwelogConfig {
     pub obsidian_vault_path: PathBuf,
@@ -42,6 +42,7 @@ pub struct SwelogConfig {
 }
 
 impl SwelogConfig {
+    #[must_use]
     pub fn get_default_config() -> Self {
         Self {
             obsidian_vault_path: PathBuf::from(DEFAULT_OBSIDIAN_VAULT_PATH),

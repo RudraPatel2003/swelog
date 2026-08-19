@@ -41,7 +41,7 @@ pub async fn get_merged_prs(
 ) -> Result<Vec<Issue>> {
     let client = Client::new();
 
-    let search_query = get_merged_prs_search_query(github_username, activity_date);
+    let search_query = get_merged_prs_search_query(github_username, *activity_date);
 
     let mut query_parameters = HashMap::new();
 
@@ -84,7 +84,7 @@ pub async fn get_opened_prs(
 ) -> Result<Vec<Issue>> {
     let client = Client::new();
 
-    let search_query = get_opened_prs_search_query(github_username, activity_date);
+    let search_query = get_opened_prs_search_query(github_username, *activity_date);
 
     let mut query_parameters = HashMap::new();
 
@@ -120,11 +120,11 @@ pub async fn get_opened_prs(
     Ok(issues)
 }
 
-fn get_merged_prs_search_query(github_username: &str, activity_date: &NaiveDate) -> String {
+fn get_merged_prs_search_query(github_username: &str, activity_date: NaiveDate) -> String {
     format!("author:{github_username} is:pr merged:{activity_date}")
 }
 
-fn get_opened_prs_search_query(github_username: &str, activity_date: &NaiveDate) -> String {
+fn get_opened_prs_search_query(github_username: &str, activity_date: NaiveDate) -> String {
     format!("author:{github_username} is:pr created:{activity_date}")
 }
 

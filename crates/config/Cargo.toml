@@ -12,6 +12,9 @@ homepage = { workspace = true }
 readme = { workspace = true }
 license = { workspace = true }
 
+[lints]
+workspace = true
+
 [dependencies]
 dirs = { workspace = true }
 miette = { workspace = true }

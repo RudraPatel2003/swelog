@@ -18,7 +18,7 @@ pub fn print_config(config: &SwelogConfig) -> Result<()> {
 
     println!("Displaying config at {}:", config_file_path.display().cyan());
     println!();
-    print!("{}", formatted_config);
+    print!("{formatted_config}");
 
     Ok(())
 }

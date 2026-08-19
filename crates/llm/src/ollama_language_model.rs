@@ -17,6 +17,7 @@ pub struct OllamaLanguageModel {
 }
 
 impl OllamaLanguageModel {
+    #[must_use]
     pub fn new(model: String) -> Self {
         Self { client: Ollama::default(), model }
     }

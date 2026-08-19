@@ -28,6 +28,7 @@ pub struct OpenRouterLanguageModel {
 }
 
 impl OpenRouterLanguageModel {
+    #[must_use]
     pub fn new(model: String, api_key: String) -> Self {
         Self { client: Client::new(), model, api_key }
     }

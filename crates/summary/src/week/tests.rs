@@ -68,8 +68,8 @@ impl TestContext {
         self.swelog_paths().weekly_log_directory
     }
 
-    fn daily_log_file(&self, log_date: &NaiveDate) -> PathBuf {
-        let daily_log_file_name = get_daily_log_file_name(log_date);
+    fn daily_log_file(&self, log_date: NaiveDate) -> PathBuf {
+        let daily_log_file_name = get_daily_log_file_name(&log_date);
 
         self.daily_log_directory().join(daily_log_file_name)
     }
@@ -94,7 +94,7 @@ impl TestContext {
             .expect("work file should be written");
     }
 
-    fn write_daily_log(&self, log_date: &NaiveDate, content: &str) {
+    fn write_daily_log(&self, log_date: NaiveDate, content: &str) {
         fs::write(self.daily_log_file(log_date), content).expect("daily log should be written");
     }
 
@@ -119,11 +119,15 @@ fn test_monday_date() -> NaiveDate {
 }
 
 fn test_wednesday_date() -> NaiveDate {
-    test_monday_date() + Duration::days(2)
+    test_monday_date()
+        .checked_add_signed(Duration::days(2))
+        .expect("test wednesday date should be valid")
 }
 
 fn test_friday_date() -> NaiveDate {
-    test_monday_date() + Duration::days(4)
+    test_monday_date()
+        .checked_add_signed(Duration::days(4))
+        .expect("test friday date should be valid")
 }
 
 #[tokio::test]
@@ -131,8 +135,8 @@ async fn summarize_weekly_work_writes_generated_weekly_log() {
     let test_context = get_test_context();
 
     test_context.write_swelog_files();
-    test_context.write_daily_log(&test_monday_date(), MONDAY_DAILY_LOG_CONTENT);
-    test_context.write_daily_log(&test_wednesday_date(), WEDNESDAY_DAILY_LOG_CONTENT);
+    test_context.write_daily_log(test_monday_date(), MONDAY_DAILY_LOG_CONTENT);
+    test_context.write_daily_log(test_wednesday_date(), WEDNESDAY_DAILY_LOG_CONTENT);
 
     summarize_weekly_work_from_config(
         &test_context.config,
@@ -159,7 +163,7 @@ async fn summarize_weekly_work_skips_missing_weekday_logs() {
     let test_context = get_test_context();
 
     test_context.write_swelog_files();
-    test_context.write_daily_log(&test_friday_date(), FRIDAY_DAILY_LOG_CONTENT);
+    test_context.write_daily_log(test_friday_date(), FRIDAY_DAILY_LOG_CONTENT);
 
     summarize_weekly_work_from_config(
         &test_context.config,
@@ -207,7 +211,7 @@ async fn summarize_weekly_work_fails_when_context_file_is_missing() {
     let test_context = get_test_context();
 
     test_context.write_swelog_files();
-    test_context.write_daily_log(&test_monday_date(), MONDAY_DAILY_LOG_CONTENT);
+    test_context.write_daily_log(test_monday_date(), MONDAY_DAILY_LOG_CONTENT);
 
     fs::remove_file(test_context.context_file()).expect("context file should be removed");
 
@@ -233,7 +237,7 @@ async fn summarize_weekly_work_fails_when_work_file_is_missing() {
     let test_context = get_test_context();
 
     test_context.write_swelog_files();
-    test_context.write_daily_log(&test_monday_date(), MONDAY_DAILY_LOG_CONTENT);
+    test_context.write_daily_log(test_monday_date(), MONDAY_DAILY_LOG_CONTENT);
 
     fs::remove_file(test_context.work_file()).expect("work file should be removed");
 
@@ -285,7 +289,7 @@ async fn summarize_weekly_work_fails_when_weekly_log_directory_is_missing() {
     let test_context = get_test_context();
 
     test_context.write_swelog_files();
-    test_context.write_daily_log(&test_monday_date(), MONDAY_DAILY_LOG_CONTENT);
+    test_context.write_daily_log(test_monday_date(), MONDAY_DAILY_LOG_CONTENT);
 
     fs::remove_dir(test_context.weekly_log_directory())
         .expect("weekly log directory should be removed");
@@ -312,7 +316,7 @@ async fn summarize_weekly_work_fails_when_weekly_log_exists_without_force() {
     let test_context = get_test_context();
 
     test_context.write_swelog_files();
-    test_context.write_daily_log(&test_monday_date(), MONDAY_DAILY_LOG_CONTENT);
+    test_context.write_daily_log(test_monday_date(), MONDAY_DAILY_LOG_CONTENT);
 
     fs::write(test_context.weekly_log_file(), EXISTING_WEEKLY_LOG_CONTENT)
         .expect("existing weekly log should be written");
@@ -345,7 +349,7 @@ async fn summarize_weekly_work_overwrites_existing_weekly_log_with_force() {
     let test_context = get_test_context();
 
     test_context.write_swelog_files();
-    test_context.write_daily_log(&test_monday_date(), MONDAY_DAILY_LOG_CONTENT);
+    test_context.write_daily_log(test_monday_date(), MONDAY_DAILY_LOG_CONTENT);
 
     fs::write(test_context.weekly_log_file(), EXISTING_WEEKLY_LOG_CONTENT)
         .expect("existing weekly log should be written");
@@ -373,7 +377,7 @@ async fn summarize_weekly_work_fails_when_work_file_is_not_default() {
     let test_context = get_test_context();
 
     test_context.write_swelog_files();
-    test_context.write_daily_log(&test_monday_date(), MONDAY_DAILY_LOG_CONTENT);
+    test_context.write_daily_log(test_monday_date(), MONDAY_DAILY_LOG_CONTENT);
     test_context.write_work_file(UNSUMMARIZED_WORK_FILE_CONTENT);
 
     let error = summarize_weekly_work_from_config(

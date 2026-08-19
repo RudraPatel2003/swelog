@@ -68,7 +68,7 @@ fn fail_if_swelog_paths_exist(swelog_paths: &SwelogPaths) -> Result<()> {
     for swelog_path in swelog_paths.all_paths() {
         if swelog_path.exists() {
             let swelog_files_already_exist_error =
-                SwelogFilesAlreadyExist { swelog_path: swelog_path.to_path_buf() };
+                SwelogFilesAlreadyExist { swelog_path: swelog_path.clone() };
 
             return Err(swelog_files_already_exist_error.into());
         }

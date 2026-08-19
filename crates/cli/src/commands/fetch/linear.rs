@@ -92,20 +92,21 @@ fn format_linear_issues(issues: &[LinearIssue]) -> String {
     let mut group_indexes = HashMap::<String, usize>::new();
 
     for issue in issues {
-        let group_index = if let Some(group_index) = group_indexes.get(&issue.status_name) {
-            *group_index
-        } else {
+        let group_index = *group_indexes.entry(issue.status_name.clone()).or_insert_with(|| {
             let group_index = groups.len();
-            group_indexes.insert(issue.status_name.clone(), group_index);
+
             groups.push(IssueGroup {
                 status_name: issue.status_name.clone(),
                 status_type: issue.status_type.clone(),
                 issues: Vec::new(),
             });
-            group_index
-        };
 
-        groups[group_index].issues.push(issue);
+            group_index
+        });
+
+        if let Some(group) = groups.get_mut(group_index) {
+            group.issues.push(issue);
+        }
     }
 
     groups.sort_by(|left, right| {
@@ -138,7 +139,7 @@ fn escape_markdown_link_text(text: &str) -> String {
     text.replace('\\', "\\\\").replace('[', "\\[").replace(']', "\\]")
 }
 
-fn status_sort_key(status_type: &LinearStatusType) -> u8 {
+const fn status_sort_key(status_type: &LinearStatusType) -> u8 {
     match status_type {
         LinearStatusType::Started => 0,
         LinearStatusType::Unstarted => 1,

@@ -1,5 +1,6 @@
 use chrono::NaiveDate;
 
+#[must_use]
 pub fn get_daily_log_prompt(
     work_file_content: &str,
     context_file_content: &str,
@@ -58,6 +59,7 @@ context file content:
     )
 }
 
+#[must_use]
 pub fn get_weekly_log_prompt(
     daily_logs: &[String],
     context_file_content: &str,

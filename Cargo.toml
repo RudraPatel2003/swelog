@@ -2,6 +2,24 @@
 members = ["crates/*"]
 resolver = "3"
 
+[workspace.lints.clippy]
+pedantic = { level = "deny", priority = -1 }
+nursery = { level = "deny", priority = -1 }
+missing_errors_doc = "allow"
+unwrap_used = "deny"
+expect_used = "deny"
+indexing_slicing = "deny"
+arithmetic_side_effects = "deny"
+unreachable = "deny"
+unimplemented = "deny"
+unchecked_time_subtraction = "deny"
+todo = "deny"
+string_slice = "deny"
+panic_in_result_fn = "deny"
+panic = "deny"
+exit = "deny"
+as_conversions = "deny"
+
 [workspace.package]
 authors = ["Rudra Patel <patelrudra2003@gmail.com>"]
 edition = "2024"
@@ -23,7 +41,12 @@ ollama-rs = "0.3.4"
 owo-colors = "4.3.0"
 pulldown-cmark = { version = "0.13.4", default-features = false }
 reqwest = { version = "0.13.4", features = ["json", "query"] }
-rmcp = { version = "3.1.3", default-features = false, features = ["auth", "client", "reqwest", "transport-streamable-http-client-reqwest"] }
+rmcp = { version = "3.1.3", default-features = false, features = [
+    "auth",
+    "client",
+    "reqwest",
+    "transport-streamable-http-client-reqwest",
+] }
 serde = { version = "1.0.228", features = ["derive"] }
 serde_json = "1.0.149"
 tempfile = "3.27.0"

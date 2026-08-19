@@ -1,4 +1,5 @@
 mod errors;
+mod slicing;
 
 use std::{
     fs,
@@ -25,6 +26,10 @@ use pulldown_cmark::{
     Parser,
     Tag,
     TagEnd,
+};
+use slicing::{
+    slice_from,
+    slice_up_to,
 };
 
 pub fn append_work_file_section_from_config(
@@ -91,11 +96,11 @@ fn update_work_file_from_config(
 
 fn append_to_section(markdown: &str, section: &str, content: &str) -> Result<String> {
     let section_bounds = find_section_bounds(markdown, section)?;
-    let suffix = markdown[section_bounds.end..].trim_start_matches('\n');
+    let suffix = slice_from(markdown, section_bounds.end).trim_start_matches('\n');
 
     let mut result = String::new();
 
-    result.push_str(markdown[..section_bounds.end].trim_end_matches('\n'));
+    result.push_str(slice_up_to(markdown, section_bounds.end).trim_end_matches('\n'));
     result.push('\n');
     result.push_str(content);
 
@@ -111,11 +116,11 @@ fn append_to_section(markdown: &str, section: &str, content: &str) -> Result<Str
 
 fn overwrite_section(markdown: &str, section: &str, content: &str) -> Result<String> {
     let section_bounds = find_section_bounds(markdown, section)?;
-    let suffix = markdown[section_bounds.end..].trim_start_matches('\n');
+    let suffix = slice_from(markdown, section_bounds.end).trim_start_matches('\n');
 
     let mut result = String::new();
 
-    result.push_str(markdown[..section_bounds.content_start].trim_end_matches('\n'));
+    result.push_str(slice_up_to(markdown, section_bounds.content_start).trim_end_matches('\n'));
     result.push('\n');
     result.push_str(content);
 
@@ -146,8 +151,7 @@ fn upsert_managed_section(
     }
 
     let insertion_index = find_optional_section_bounds(markdown, "Log")
-        .map(|section_bounds| section_bounds.full.start)
-        .unwrap_or(markdown.len());
+        .map_or(markdown.len(), |section_bounds| section_bounds.full.start);
 
     Ok(insert_block(markdown, insertion_index, &managed_block))
 }
@@ -168,8 +172,8 @@ fn format_managed_section(section_id: &str, section_title: &str, content: &str) 
 }
 
 fn insert_block(markdown: &str, insertion_index: usize, block: &str) -> String {
-    let prefix = markdown[..insertion_index].trim_end_matches('\n');
-    let suffix = markdown[insertion_index..].trim_start_matches('\n');
+    let prefix = slice_up_to(markdown, insertion_index).trim_end_matches('\n');
+    let suffix = slice_from(markdown, insertion_index).trim_start_matches('\n');
 
     match (prefix.is_empty(), suffix.is_empty()) {
         (true, true) => format!("{block}\n"),
@@ -180,8 +184,8 @@ fn insert_block(markdown: &str, insertion_index: usize, block: &str) -> String {
 }
 
 fn replace_block(markdown: &str, range: Range<usize>, block: &str) -> String {
-    let prefix = markdown[..range.start].trim_end_matches('\n');
-    let suffix = markdown[range.end..].trim_start_matches('\n');
+    let prefix = slice_up_to(markdown, range.start).trim_end_matches('\n');
+    let suffix = slice_from(markdown, range.end).trim_start_matches('\n');
 
     match (prefix.is_empty(), suffix.is_empty()) {
         (true, true) => format!("{block}\n"),
@@ -192,8 +196,8 @@ fn replace_block(markdown: &str, range: Range<usize>, block: &str) -> String {
 }
 
 fn remove_block(markdown: &str, range: Range<usize>) -> String {
-    let prefix = markdown[..range.start].trim_end_matches('\n');
-    let suffix = markdown[range.end..].trim_start_matches('\n');
+    let prefix = slice_up_to(markdown, range.start).trim_end_matches('\n');
+    let suffix = slice_from(markdown, range.end).trim_start_matches('\n');
 
     match (prefix.is_empty(), suffix.is_empty()) {
         (true, true) => String::new(),
@@ -227,12 +231,12 @@ fn find_optional_section_bounds(markdown: &str, section: &str) -> Option<Section
         .iter()
         .position(|heading| heading.level == HeadingLevel::H2 && heading.title == section)?;
 
-    let heading = &headings[heading_index];
-    let end = headings[heading_index + 1..]
+    let heading = headings.get(heading_index)?;
+    let end = headings
         .iter()
+        .skip(heading_index.saturating_add(1))
         .find(|candidate| heading_level_number(candidate.level) <= 2)
-        .map(|candidate| candidate.range.start)
-        .unwrap_or(markdown.len());
+        .map_or(markdown.len(), |candidate| candidate.range.start);
 
     Some(SectionBounds { content_start: heading.range.end, end, full: heading.range.start..end })
 }
@@ -244,8 +248,7 @@ fn collect_headings(markdown: &str) -> Vec<Heading> {
     for (event, range) in Parser::new(markdown).into_offset_iter() {
         match event {
             Event::Start(Tag::Heading { level, .. }) => {
-                current_heading =
-                    Some(Heading { level, title: String::new(), range: range.start..range.end });
+                current_heading = Some(Heading { level, title: String::new(), range });
             }
             Event::Text(text) | Event::Code(text) => {
                 if let Some(heading) = &mut current_heading {
@@ -265,7 +268,7 @@ fn collect_headings(markdown: &str) -> Vec<Heading> {
     headings
 }
 
-fn heading_level_number(heading_level: HeadingLevel) -> u8 {
+const fn heading_level_number(heading_level: HeadingLevel) -> u8 {
     match heading_level {
         HeadingLevel::H1 => 1,
         HeadingLevel::H2 => 2,
@@ -297,8 +300,8 @@ fn find_exact_line(
 ) -> Option<Range<usize>> {
     let mut line_start = start_index;
 
-    for line in markdown[start_index..].split_inclusive('\n') {
-        let line_end = line_start + line.len();
+    for line in slice_from(markdown, start_index).split_inclusive('\n') {
+        let line_end = line_start.saturating_add(line.len());
         let line_without_ending = line.trim_end_matches(['\r', '\n']);
 
         if line_without_ending == expected_line {

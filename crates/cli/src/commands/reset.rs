@@ -20,6 +20,9 @@ pub struct ResetArgs {}
 
 impl ResetArgs {
     pub fn run(self) -> Result<()> {
+        // Silence the unused self warning
+        let _ = self;
+
         let swelog_config = read_config_file()?;
 
         let swelog_paths = SwelogPaths::new(&swelog_config);

@@ -66,10 +66,12 @@ fn get_monday_date_string(provided_monday_date: Option<String>) -> Result<String
 
     let days_since_monday = match today.weekday() {
         Weekday::Mon => 7, // last Monday
-        weekday => weekday.num_days_from_monday() as i64,
+        weekday => i64::from(weekday.num_days_from_monday()),
     };
 
-    let monday_date = today - Duration::days(days_since_monday);
+    let monday_date = today
+        .checked_sub_signed(Duration::days(days_since_monday))
+        .ok_or_else(|| miette!("failed to determine the Monday of the current week"))?;
 
     let monday_date_string = monday_date.format("%m-%d-%Y").to_string();
 
@@ -81,8 +83,7 @@ fn parse_monday_date_string(monday_date: &str) -> Result<NaiveDate> {
         .into_diagnostic()
         .wrap_err_with(|| {
             format!(
-                "failed to parse week start date: {}. Please use the format MM-DD-YYYY",
-                monday_date
+                "failed to parse week start date: {monday_date}. Please use the format MM-DD-YYYY"
             )
         })?;
 

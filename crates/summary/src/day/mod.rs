@@ -89,6 +89,7 @@ pub async fn summarize_daily_work_from_config(
     Ok(())
 }
 
+#[must_use]
 pub fn get_daily_log_file_name(log_date: &NaiveDate) -> String {
     let formatted_date = log_date.format("%m-%d-%Y").to_string();
 
