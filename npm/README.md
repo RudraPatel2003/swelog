@@ -21,17 +21,21 @@ swelog --help
 
 ## Getting Started
 
-Full documentation lives at **[the swelog docs site](https://google.com)**,
-including:
+Full documentation lives at
+**[the swelog docs site](https://swelog-cli.vercel.app/)**, including:
 
-- [Quick Start](https://google.com) — configure your vault and record your first
-  summarized day
-- [Configuration](https://google.com) — every field in `swelog.json`
-- [Summarization](https://google.com) — daily and weekly logs, and the Ollama,
-  OpenAI, and OpenRouter providers
-- [Integrations](https://google.com) — pull activity from GitHub and Linear
-- [Authentication](https://google.com) — how credentials are stored and cleared
-- [Command reference](https://google.com) — the full command tree
+- [Quick Start](https://swelog-cli.vercel.app/getting-started/quick-start/) —
+  configure your vault and record your first summarized day
+- [Configuration](https://swelog-cli.vercel.app/getting-started/configuration/)
+  — every field in `swelog.json`
+- [Summarization](https://swelog-cli.vercel.app/summarization/) — daily and
+  weekly logs, and the Ollama, OpenAI, and OpenRouter providers
+- [Integrations](https://swelog-cli.vercel.app/integrations/) — pull activity
+  from GitHub and Linear
+- [Authentication](https://swelog-cli.vercel.app/reference/authentication/) —
+  how credentials are stored and cleared
+- [Command reference](https://swelog-cli.vercel.app/reference/commands/) — the
+  full command tree
 
 ## Contributing
 
