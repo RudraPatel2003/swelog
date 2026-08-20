@@ -41,9 +41,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
 
+      # Keep the pinned toolchain in sync with rust-toolchain.toml.
       - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@nightly
+        uses: dtolnay/rust-toolchain@master
         with:
+          toolchain: nightly-2026-08-18
           targets: ${{ matrix.target }}
 
       - name: Cache Rust dependencies
@@ -82,9 +84,11 @@ jobs:
       - name: Setup Just
         uses: extractions/setup-just@v4
 
+      # Keep the pinned toolchain in sync with rust-toolchain.toml.
       - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@nightly
+        uses: dtolnay/rust-toolchain@master
         with:
+          toolchain: nightly-2026-08-18
           components: clippy, rustfmt
 
       - name: Cache Rust dependencies

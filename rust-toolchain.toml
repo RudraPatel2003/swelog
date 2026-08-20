@@ -1,3 +1,11 @@
+#
+# This nightly is pinned so that CI caches stay valid. A floating `nightly`
+# resolves to a new compiler every day, and the compiler version is part of the
+# Rust cache key, so every rollover would throw away the cached dependencies.
+#
+# Keep this version in sync with the `toolchain` input in `.github/workflows/`.
+#
+
 [toolchain]
-channel = "nightly"
+channel = "nightly-2026-08-18"
 components = ["rustfmt", "clippy"]

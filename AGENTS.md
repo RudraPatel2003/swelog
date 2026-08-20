@@ -11,7 +11,7 @@ separately to Vercel.
 
 ## Commands
 
-- `just format` formats all Rust code with nightly rustfmt.
+- `just format` formats all Rust code with the pinned nightly rustfmt.
 - `just build` builds the workspace.
 - `just test` runs all workspace tests with all features.
 - `just clippy` runs clippy with warnings denied.
@@ -60,5 +60,5 @@ separately to Vercel.
 
 ## Making Changes
 
-- Before finishing a task, run `just format` and then `just pr`.
+- Before finishing a task, run `just format` and then `just pr` and then `just docs-pr`.
 - Use Conventional Commit style for commit messages and PR titles, such as `feat: add init command`.
