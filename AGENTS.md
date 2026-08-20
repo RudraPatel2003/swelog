@@ -48,8 +48,11 @@ separately to Vercel.
 
 ## Documentation
 
-- `docs/` contains the Astro + Starlight documentation site. Content lives as
-  Markdown and MDX in `docs/src/content/docs/`.
+- `docs/` contains the Astro + Starlight documentation site. Content lives in
+  `docs/src/content/docs/`.
+- Documentation pages use the `.mdx` extension, never `.md`. New pages must be
+  created as `.mdx`, and any `.md` page that is touched should be renamed to
+  `.mdx`.
 - User-facing documentation belongs in `docs/`, not in `README.md`. The README
   covers installation, contributing, and links to the docs site.
 - `README.md` and `npm/README.md` are kept in sync by hand. Update both.
