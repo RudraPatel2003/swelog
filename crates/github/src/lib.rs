@@ -1,5 +1,5 @@
 pub mod errors;
-pub mod github_token;
 pub mod issues;
+mod response;
 pub mod users;
 pub mod utils;

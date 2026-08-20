@@ -4,8 +4,15 @@ use chrono::{
 };
 use clap::Args;
 use config::utils::read_config_file;
+use credentials::{
+    Credential,
+    get_or_prompt_for_credential,
+};
+use dates::{
+    DATE_VALUE_NAME,
+    parsing::parse_date,
+};
 use github::{
-    github_token::get_github_token,
     issues::{
         get_merged_prs,
         get_opened_prs,
@@ -13,13 +20,13 @@ use github::{
     users::get_github_username,
     utils::get_repository_name_from_repository_url,
 };
-use logging::work_file::overwrite_work_file_section_from_config;
+use logging::work_file::upsert_managed_work_file_section_from_config;
 use miette::Result;
 
 #[derive(Debug, Args)]
 pub struct GithubArgs {
     /// Date to fetch GitHub activity for in the format MM-DD-YYYY.
-    #[arg(long, value_name = "MM-DD-YYYY", value_parser = parse_activity_date)]
+    #[arg(long, value_name = DATE_VALUE_NAME, value_parser = parse_date)]
     date: Option<NaiveDate>,
 }
 
@@ -27,7 +34,7 @@ impl GithubArgs {
     pub async fn run(self) -> Result<()> {
         let swelog_config = read_config_file()?;
 
-        let github_token = get_github_token()?;
+        let github_token = get_or_prompt_for_credential(Credential::Github)?;
 
         let github_username = get_github_username(&github_token).await?;
 
@@ -72,15 +79,17 @@ impl GithubArgs {
 
         let github_activity = github_activity_lines.join("\n");
 
-        overwrite_work_file_section_from_config(&swelog_config, &github_activity, "GitHub")?;
+        upsert_managed_work_file_section_from_config(
+            &swelog_config,
+            "github",
+            "GitHub",
+            &github_activity,
+        )?;
+
+        println!("Recorded {} GitHub PRs in your work file.", github_activity_lines.len());
 
         Ok(())
     }
-}
-
-fn parse_activity_date(date: &str) -> Result<NaiveDate, String> {
-    NaiveDate::parse_from_str(date, "%m-%d-%Y")
-        .map_err(|_| format!("invalid date `{date}`; expected MM-DD-YYYY"))
 }
 
 fn format_pull_request_activity(
@@ -98,6 +107,3 @@ fn format_pull_request_activity(
         "- {action} \"{title}\" ([#{number}]({pull_request_url})) in [{repository_name}]({repository_html_url})"
     )
 }
-
-#[cfg(test)]
-mod tests;

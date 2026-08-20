@@ -1,11 +1,13 @@
 use chrono::NaiveDate;
+use dates::formatting::format_date;
 
+#[must_use]
 pub fn get_daily_log_prompt(
     work_file_content: &str,
     context_file_content: &str,
     log_date: &NaiveDate,
 ) -> String {
-    let formatted_date = log_date.format("%m-%d-%Y").to_string();
+    let formatted_date = format_date(log_date);
 
     format!(
         r#"
@@ -58,12 +60,13 @@ context file content:
     )
 }
 
+#[must_use]
 pub fn get_weekly_log_prompt(
     daily_logs: &[String],
     context_file_content: &str,
     log_date: &NaiveDate,
 ) -> String {
-    let formatted_date = log_date.format("%m-%d-%Y").to_string();
+    let formatted_date = format_date(log_date);
 
     let combined_daily_logs = daily_logs.join("\n\n--- DAILY LOG ---\n\n");
 

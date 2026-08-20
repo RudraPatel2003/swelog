@@ -10,6 +10,11 @@ use miette::{
     miette,
 };
 
+use crate::{
+    check_release_version::run_check_release_version,
+    update_release_version::run_update_release_version,
+};
+
 fn main() -> Result<()> {
     let mut args = env::args();
 
@@ -20,8 +25,8 @@ fn main() -> Result<()> {
     };
 
     match command.as_str() {
-        "check-release-version" => check_release_version::run(args),
-        "update-release-version" => update_release_version::run(args),
+        "check-release-version" => run_check_release_version(args),
+        "update-release-version" => run_update_release_version(args),
         _ => Err(get_usage_error()),
     }
 }

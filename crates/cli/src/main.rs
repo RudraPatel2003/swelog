@@ -38,6 +38,10 @@ async fn main() -> Result<()> {
         Commands::Config(config_args) => {
             config_args.run()?;
         }
+
+        Commands::Auth(auth_args) => {
+            auth_args.run()?;
+        }
     }
 
     Ok(())

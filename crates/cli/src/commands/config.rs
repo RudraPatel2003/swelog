@@ -10,6 +10,8 @@ pub struct ConfigArgs {}
 
 impl ConfigArgs {
     pub fn run(self) -> Result<()> {
+        let _ = self;
+
         let swelog_config = read_config_file()?;
 
         print_config(&swelog_config)?;

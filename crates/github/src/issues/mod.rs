@@ -21,10 +21,8 @@ use structs::{
 };
 
 use crate::{
-    errors::{
-        FailedToSendGitHubRequest,
-        UnsuccessfulGitHubResponse,
-    },
+    errors::FailedToSendGitHubRequest,
+    response::read_successful_response_body,
     utils::{
         GITHUB_ACCEPT_HEADER,
         SWELOG_USER_AGENT,
@@ -41,7 +39,7 @@ pub async fn get_merged_prs(
 ) -> Result<Vec<Issue>> {
     let client = Client::new();
 
-    let search_query = get_merged_prs_search_query(github_username, activity_date);
+    let search_query = get_merged_prs_search_query(github_username, *activity_date);
 
     let mut query_parameters = HashMap::new();
 
@@ -60,17 +58,7 @@ pub async fn get_merged_prs(
         .into_diagnostic()
         .wrap_err_with(|| FailedToSendGitHubRequest)?;
 
-    let status_code = response.status();
-
-    let response_text =
-        response.text().await.into_diagnostic().wrap_err("failed to read GitHub response body")?;
-
-    if !status_code.is_success() {
-        let unsuccessful_github_response_error =
-            UnsuccessfulGitHubResponse { status_code, response_text };
-
-        return Err(unsuccessful_github_response_error.into());
-    }
+    let response_text = read_successful_response_body(response).await?;
 
     let issues = parse_search_issues_response_text(&response_text)?;
 
@@ -84,7 +72,7 @@ pub async fn get_opened_prs(
 ) -> Result<Vec<Issue>> {
     let client = Client::new();
 
-    let search_query = get_opened_prs_search_query(github_username, activity_date);
+    let search_query = get_opened_prs_search_query(github_username, *activity_date);
 
     let mut query_parameters = HashMap::new();
 
@@ -103,28 +91,18 @@ pub async fn get_opened_prs(
         .into_diagnostic()
         .wrap_err_with(|| FailedToSendGitHubRequest)?;
 
-    let status_code = response.status();
-
-    let response_text =
-        response.text().await.into_diagnostic().wrap_err("failed to read GitHub response body")?;
-
-    if !status_code.is_success() {
-        let unsuccessful_github_response_error =
-            UnsuccessfulGitHubResponse { status_code, response_text };
-
-        return Err(unsuccessful_github_response_error.into());
-    }
+    let response_text = read_successful_response_body(response).await?;
 
     let issues = parse_search_issues_response_text(&response_text)?;
 
     Ok(issues)
 }
 
-fn get_merged_prs_search_query(github_username: &str, activity_date: &NaiveDate) -> String {
+fn get_merged_prs_search_query(github_username: &str, activity_date: NaiveDate) -> String {
     format!("author:{github_username} is:pr merged:{activity_date}")
 }
 
-fn get_opened_prs_search_query(github_username: &str, activity_date: &NaiveDate) -> String {
+fn get_opened_prs_search_query(github_username: &str, activity_date: NaiveDate) -> String {
     format!("author:{github_username} is:pr created:{activity_date}")
 }
 

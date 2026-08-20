@@ -1,6 +1,6 @@
 [package]
 name = "cli"
-version = "0.8.0"
+version = "0.9.0"
 authors = { workspace = true }
 edition = { workspace = true }
 description = { workspace = true }
@@ -11,6 +11,9 @@ homepage = { workspace = true }
 readme = { workspace = true }
 license = { workspace = true }
 
+[lints]
+workspace = true
+
 [[bin]]
 name = "swelog"
 path = "src/main.rs"
@@ -19,10 +22,14 @@ path = "src/main.rs"
 chrono = { workspace = true }
 clap = { workspace = true, features = ["derive"] }
 config = { path = "../config" }
+credentials = { path = "../credentials" }
+dates = { path = "../dates" }
 github = { path = "../github" }
 llm = { path = "../llm" }
+linear = { path = "../linear" }
 logging = { path = "../logging" }
 miette = { workspace = true, features = ["fancy"] }
 owo-colors = { workspace = true }
 summary = { path = "../summary" }
+thiserror = { workspace = true }
 tokio = { workspace = true }

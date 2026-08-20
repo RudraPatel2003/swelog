@@ -11,6 +11,7 @@ pub struct SwelogPaths {
 }
 
 impl SwelogPaths {
+    #[must_use]
     pub fn new(swelog_config: &SwelogConfig) -> Self {
         let swelog_directory =
             swelog_config.obsidian_vault_path.join(&swelog_config.swelog_folder_name);
@@ -24,7 +25,8 @@ impl SwelogPaths {
         }
     }
 
-    pub fn all_paths(&self) -> [&PathBuf; 4] {
+    #[must_use]
+    pub const fn all_paths(&self) -> [&PathBuf; 4] {
         [&self.context_file, &self.work_file, &self.daily_log_directory, &self.weekly_log_directory]
     }
 }

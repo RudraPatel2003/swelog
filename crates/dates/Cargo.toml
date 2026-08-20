@@ -1,0 +1,21 @@
+[package]
+name = "dates"
+version = "0.9.0"
+publish = false
+authors = { workspace = true }
+edition = { workspace = true }
+description = { workspace = true }
+keywords = { workspace = true }
+categories = { workspace = true }
+repository = { workspace = true }
+homepage = { workspace = true }
+readme = { workspace = true }
+license = { workspace = true }
+
+[lints]
+workspace = true
+
+[dependencies]
+chrono = { workspace = true }
+miette = { workspace = true }
+thiserror = { workspace = true }

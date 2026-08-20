@@ -1,3 +1,4 @@
+mod auth;
 mod config;
 mod fetch;
 mod init;
@@ -6,6 +7,7 @@ mod reset;
 mod setup;
 mod summarize;
 
+use auth::AuthArgs;
 use clap::Subcommand;
 use fetch::FetchArgs;
 use init::InitArgs;
@@ -39,4 +41,7 @@ pub enum Commands {
 
     /// Display your current swelog configuration and where it is stored.
     Config(ConfigArgs),
+
+    /// Manage the credentials swelog stores in your operating system keyring.
+    Auth(AuthArgs),
 }

@@ -35,3 +35,13 @@ pub struct WorkFileNotDefault;
 pub struct NoDailyLogsFound {
     pub monday_date: NaiveDate,
 }
+
+#[derive(Debug, Diagnostic, Error)]
+#[error("week of {monday_date} extends past the supported date range")]
+#[diagnostic(
+    code(swelog::summary::weekday_date_out_of_range),
+    help("use a Monday date within the supported calendar range")
+)]
+pub struct WeekdayDateOutOfRange {
+    pub monday_date: NaiveDate,
+}

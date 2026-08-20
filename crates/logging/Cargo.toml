@@ -1,6 +1,6 @@
 [package]
 name = "logging"
-version = "0.8.0"
+version = "0.9.0"
 publish = false
 authors = { workspace = true }
 edition = { workspace = true }
@@ -12,9 +12,13 @@ homepage = { workspace = true }
 readme = { workspace = true }
 license = { workspace = true }
 
+[lints]
+workspace = true
+
 [dependencies]
 config = { path = "../config" }
 miette = { workspace = true }
+pulldown-cmark = { workspace = true }
 thiserror = { workspace = true }
 
 [dev-dependencies]

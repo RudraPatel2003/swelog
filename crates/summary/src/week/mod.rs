@@ -17,8 +17,10 @@ use config::{
         ensure_swelog_file_exists,
     },
 };
+use dates::formatting::format_date;
 use errors::{
     NoDailyLogsFound,
+    WeekdayDateOutOfRange,
     WeeklyLogAlreadyExists,
     WorkFileNotDefault,
 };
@@ -73,7 +75,7 @@ pub async fn summarize_weekly_work_from_config(
         return Err(work_file_not_default_error.into());
     }
 
-    let daily_logs = collect_weekday_daily_logs(&swelog_paths, monday_date)?;
+    let daily_logs = collect_weekday_daily_logs(&swelog_paths, *monday_date)?;
 
     if daily_logs.is_empty() {
         let no_daily_logs_found_error = NoDailyLogsFound { monday_date: *monday_date };
@@ -92,20 +94,23 @@ pub async fn summarize_weekly_work_from_config(
     Ok(())
 }
 
+#[must_use]
 pub fn get_weekly_log_file_name(monday_date: &NaiveDate) -> String {
-    let monday_date_string = monday_date.format("%m-%d-%Y").to_string();
+    let monday_date_string = format_date(monday_date);
 
     format!("Week of {monday_date_string}.md")
 }
 
 fn collect_weekday_daily_logs(
     swelog_paths: &SwelogPaths,
-    monday_date: &NaiveDate,
+    monday_date: NaiveDate,
 ) -> Result<Vec<String>> {
     let mut daily_logs = Vec::new();
 
     for day_offset in 0..5 {
-        let daily_log_date = *monday_date + Duration::days(day_offset);
+        let daily_log_date = monday_date
+            .checked_add_signed(Duration::days(day_offset))
+            .ok_or(WeekdayDateOutOfRange { monday_date })?;
         let daily_log_file_name = get_daily_log_file_name(&daily_log_date);
         let daily_log_file = swelog_paths.daily_log_directory.join(daily_log_file_name);
 

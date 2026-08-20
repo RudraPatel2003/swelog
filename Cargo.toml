@@ -2,6 +2,24 @@
 members = ["crates/*"]
 resolver = "3"
 
+[workspace.lints.clippy]
+pedantic = { level = "deny", priority = -1 }
+nursery = { level = "deny", priority = -1 }
+missing_errors_doc = "allow"
+unwrap_used = "deny"
+expect_used = "deny"
+indexing_slicing = "deny"
+arithmetic_side_effects = "deny"
+unreachable = "deny"
+unimplemented = "deny"
+unchecked_time_subtraction = "deny"
+todo = "deny"
+string_slice = "deny"
+panic_in_result_fn = "deny"
+panic = "deny"
+exit = "deny"
+as_conversions = "deny"
+
 [workspace.package]
 authors = ["Rudra Patel <patelrudra2003@gmail.com>"]
 edition = "2024"
@@ -15,15 +33,25 @@ license = "MIT"
 
 [workspace.dependencies]
 async-trait = "0.1.89"
-chrono = "0.4.44"
+chrono = { version = "0.4.44", features = ["serde"] }
 clap = { version = "4.6.1", features = ["derive"] }
 dirs = "6.0.0"
+keyring = "4.1.6"
 miette = "7.6.0"
 ollama-rs = "0.3.4"
 owo-colors = "4.3.0"
+pulldown-cmark = { version = "0.13.4", default-features = false }
 reqwest = { version = "0.13.4", features = ["json", "query"] }
+rmcp = { version = "3.1.3", default-features = false, features = [
+    "auth",
+    "client",
+    "reqwest",
+    "transport-streamable-http-client-reqwest",
+] }
+rpassword = "7.5.4"
 serde = { version = "1.0.228", features = ["derive"] }
 serde_json = "1.0.149"
 tempfile = "3.27.0"
 thiserror = "2.0.18"
 tokio = { version = "1.52.3", features = ["full"] }
+webbrowser = "1.2.4"

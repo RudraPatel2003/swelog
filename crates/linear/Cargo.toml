@@ -1,0 +1,30 @@
+[package]
+name = "linear"
+version = "0.9.0"
+publish = false
+authors = { workspace = true }
+edition = { workspace = true }
+description = { workspace = true }
+keywords = { workspace = true }
+categories = { workspace = true }
+repository = { workspace = true }
+homepage = { workspace = true }
+readme = { workspace = true }
+license = { workspace = true }
+
+[lints]
+workspace = true
+
+[dependencies]
+async-trait = { workspace = true }
+chrono = { workspace = true }
+credentials = { path = "../credentials" }
+dates = { path = "../dates" }
+miette = { workspace = true }
+reqwest = { workspace = true }
+rmcp = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true }
+webbrowser = { workspace = true }

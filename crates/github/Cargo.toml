@@ -1,6 +1,6 @@
 [package]
 name = "github"
-version = "0.8.0"
+version = "0.9.0"
 publish = false
 authors = { workspace = true }
 edition = { workspace = true }
@@ -11,6 +11,9 @@ repository = { workspace = true }
 homepage = { workspace = true }
 readme = { workspace = true }
 license = { workspace = true }
+
+[lints]
+workspace = true
 
 [dependencies]
 chrono = { workspace = true }

@@ -15,10 +15,8 @@ use reqwest::{
 use structs::UserResponse;
 
 use crate::{
-    errors::{
-        FailedToSendGitHubRequest,
-        UnsuccessfulGitHubResponse,
-    },
+    errors::FailedToSendGitHubRequest,
+    response::read_successful_response_body,
     utils::{
         GITHUB_ACCEPT_HEADER,
         SWELOG_USER_AGENT,
@@ -40,18 +38,7 @@ pub async fn get_github_username(github_token: &str) -> Result<String> {
         .into_diagnostic()
         .wrap_err_with(|| FailedToSendGitHubRequest)?;
 
-    // check for success
-    let status_code = response.status();
-
-    let response_text =
-        response.text().await.into_diagnostic().wrap_err("failed to read GitHub response body")?;
-
-    if !status_code.is_success() {
-        let unsuccessful_github_response_error =
-            UnsuccessfulGitHubResponse { status_code, response_text };
-
-        return Err(unsuccessful_github_response_error.into());
-    }
+    let response_text = read_successful_response_body(response).await?;
 
     let username = parse_user_response_text(&response_text)?;
 

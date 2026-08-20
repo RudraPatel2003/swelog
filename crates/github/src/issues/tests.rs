@@ -12,14 +12,14 @@ fn test_activity_date() -> NaiveDate {
 
 #[test]
 fn opened_prs_search_query_filters_to_activity_date() {
-    let search_query = get_opened_prs_search_query("octocat", &test_activity_date());
+    let search_query = get_opened_prs_search_query("octocat", test_activity_date());
 
     assert_eq!(search_query, "author:octocat is:pr created:2026-07-04");
 }
 
 #[test]
 fn merged_prs_search_query_filters_to_activity_date() {
-    let search_query = get_merged_prs_search_query("octocat", &test_activity_date());
+    let search_query = get_merged_prs_search_query("octocat", test_activity_date());
 
     assert_eq!(search_query, "author:octocat is:pr merged:2026-07-04");
 }

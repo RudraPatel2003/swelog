@@ -9,3 +9,13 @@ use thiserror::Error;
 pub struct SectionNotFound {
     pub section: String,
 }
+
+#[derive(Debug, Diagnostic, Error)]
+#[error("Managed section {section_id} is missing its end marker")]
+#[diagnostic(
+    code(swelog::logging::malformed_managed_section),
+    help("restore the missing swelog managed-section marker or remove the managed block")
+)]
+pub struct MalformedManagedSection {
+    pub section_id: String,
+}

@@ -3,6 +3,7 @@ mod structs;
 
 use async_trait::async_trait;
 use errors::{
+    OpenRouterAuthorizationFailed,
     OpenRouterRequestFailed,
     OpenRouterResponseMissingText,
 };
@@ -11,7 +12,10 @@ use miette::{
     Result,
     WrapErr,
 };
-use reqwest::Client;
+use reqwest::{
+    Client,
+    StatusCode,
+};
 use structs::{
     OpenRouterResponse,
     OpenRouterResponseRequest,
@@ -28,6 +32,7 @@ pub struct OpenRouterLanguageModel {
 }
 
 impl OpenRouterLanguageModel {
+    #[must_use]
     pub fn new(model: String, api_key: String) -> Self {
         Self { client: Client::new(), model, api_key }
     }
@@ -51,9 +56,17 @@ impl LanguageModel for OpenRouterLanguageModel {
                 format!("failed to send OpenRouter request for model {}", self.model)
             })?;
 
-        if !response.status().is_success() {
+        let status = response.status();
+
+        if matches!(status, StatusCode::UNAUTHORIZED | StatusCode::FORBIDDEN) {
+            let open_router_authorization_failed_error = OpenRouterAuthorizationFailed { status };
+
+            return Err(open_router_authorization_failed_error.into());
+        }
+
+        if !status.is_success() {
             let open_router_request_failed_error =
-                OpenRouterRequestFailed { model: self.model.clone(), status: response.status() };
+                OpenRouterRequestFailed { model: self.model.clone(), status };
 
             return Err(open_router_request_failed_error.into());
         }

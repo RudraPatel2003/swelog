@@ -1,6 +1,13 @@
-use chrono::Local;
+use chrono::{
+    Local,
+    NaiveDate,
+};
 use clap::Args;
 use config::utils::read_config_file;
+use dates::{
+    DATE_VALUE_NAME,
+    parsing::parse_date,
+};
 use llm::language_model_factory::get_language_model_from_config;
 use miette::Result;
 use owo_colors::OwoColorize;
@@ -11,6 +18,10 @@ use summary::day::{
 
 #[derive(Debug, Args)]
 pub struct DailySummaryArgs {
+    /// Date to write the daily log for in the format MM-DD-YYYY. Defaults to today.
+    #[arg(long, value_name = DATE_VALUE_NAME, value_parser = parse_date)]
+    date: Option<NaiveDate>,
+
     /// Overwrite existing daily log file.
     #[arg(long = "force")]
     overwrite_existing_daily_log: bool,
@@ -26,7 +37,7 @@ impl DailySummaryArgs {
 
         let language_model = get_language_model_from_config(&swelog_config)?;
 
-        let log_date = Local::now().date_naive();
+        let log_date = self.date.unwrap_or_else(|| Local::now().date_naive());
 
         summarize_daily_work_from_config(
             &swelog_config,
