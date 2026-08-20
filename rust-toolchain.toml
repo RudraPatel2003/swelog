@@ -1,3 +1,6 @@
+# Keep this version in sync with the `toolchain` input in `.github/workflows/`
+# or things won't get cached right
+
 [toolchain]
-channel = "nightly"
+channel = "nightly-2026-08-18"
 components = ["rustfmt", "clippy"]

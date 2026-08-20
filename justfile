@@ -4,10 +4,10 @@ run *args:
     cargo run -p cli -- "$@"
 
 format:
-    cargo +nightly fmt --all
+    cargo fmt --all
 
 check-format:
-    cargo +nightly fmt --all -- --check
+    cargo fmt --all -- --check
 
 clippy:
     cargo clippy --workspace --all-targets --all-features -- -D warnings

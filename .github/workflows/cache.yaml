@@ -21,12 +21,20 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
 
+      # Keep the pinned toolchain in sync with rust-toolchain.toml.
       - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@nightly
+        uses: dtolnay/rust-toolchain@master
         with:
+          toolchain: nightly-2026-08-18
           components: clippy, rustfmt
 
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
         with:
           shared-key: "rust-dependencies-cache"
+
+      # Build dependencies to ensure the cache is valid
+      - name: Build dependencies
+        run: |
+          cargo clippy --workspace --all-targets --all-features
+          cargo test --workspace --all-features --no-run
