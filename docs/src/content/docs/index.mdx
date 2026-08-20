@@ -1,0 +1,39 @@
+---
+title: swelog
+description: A Rust CLI for tracking daily accomplishments in Obsidian.
+template: splash
+hero:
+  tagline: Track your daily accomplishments in Obsidian. Capture raw notes throughout the day, summarize them into daily logs with an LLM, and roll them up into weekly summaries.
+  image:
+    alt: The swelog terminal prompt mark
+    file: ../../assets/swelog-banner.svg
+  actions:
+    - text: Get Started
+      link: /getting-started/installation/
+      icon: right-arrow
+    - text: View on GitHub
+      link: https://github.com/RudraPatel2003/swelog-cli
+      icon: external
+      variant: minimal
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+
+<CardGrid stagger>
+  <Card title="Capture as you go" icon="pencil">
+    Add work items from the terminal with `swelog log`, or write them straight
+    into `WORK.md` in Obsidian.
+  </Card>
+  <Card title="Summarize with an LLM" icon="star">
+    Turn raw notes into a daily log using Ollama, OpenAI, or OpenRouter. Roll
+    daily logs into a weekly summary when the week is done.
+  </Card>
+  <Card title="Pull in real activity" icon="puzzle">
+    Fetch the pull requests you opened and merged from GitHub, and the issues
+    assigned to you from Linear.
+  </Card>
+  <Card title="Backfill missed days" icon="seti:clock">
+    Every day-scoped command takes `--date MM-DD-YYYY`, so a day you missed can
+    be reconstructed later.
+  </Card>
+</CardGrid>

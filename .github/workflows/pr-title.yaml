@@ -1,4 +1,10 @@
-name: pr-check
+#
+# This workflow deliberately has no path filters so that it runs on every pull
+# request. The Rust and docs checks are path-filtered, so neither is guaranteed
+# to run, and the title check must not be tied to either of them.
+#
+
+name: pr-title
 
 on:
   pull_request:
@@ -11,7 +17,7 @@ on:
       - main
 
 jobs:
-  lint-and-format:
+  title:
     runs-on: ubuntu-latest
 
     steps:
@@ -31,22 +37,3 @@ jobs:
             echo "See the following link for more information: https://www.conventionalcommits.org/en/v1.0.0/"
             exit 1
           fi
-
-      - name: Checkout repository
-        uses: actions/checkout@v6
-
-      - name: Setup Just
-        uses: extractions/setup-just@v4
-
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@nightly
-        with:
-          components: clippy, rustfmt
-
-      - name: Cache Rust dependencies
-        uses: Swatinem/rust-cache@v2
-        with:
-          shared-key: "rust-dependencies-cache"
-
-      - name: Run PR checks
-        run: just pr

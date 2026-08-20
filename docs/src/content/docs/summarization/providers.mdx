@@ -1,0 +1,69 @@
+---
+title: Providers and Models
+description: Configure Ollama, OpenAI, or OpenRouter as your summarization provider.
+---
+
+| Provider   | `llm`        | Example `llmModel`    | Setup                                                           | Authentication                 | Notes                                                           |
+| ---------- | ------------ | --------------------- | --------------------------------------------------------------- | ------------------------------ | --------------------------------------------------------------- |
+| Ollama     | `ollama`     | `llama3.2`            | Install Ollama, pull the model, and run the local service.      | None                           | Swelog connects to Ollama at `localhost:11434`.                 |
+| OpenAI     | `openAi`     | `gpt-5.4-mini`        | Select an OpenAI model supported by the Responses API.          | API key, prompted on first use | The model value is sent directly to OpenAI.                     |
+| OpenRouter | `openRouter` | `openai/gpt-5.4-mini` | Select an OpenAI Responses-compatible model through OpenRouter. | API key, prompted on first use | The current implementation expects OpenAI Responses API output. |
+
+Model names are examples, not a fixed allowlist. Set `llmModel` to a model that
+is installed locally or available from the selected provider.
+
+## Ollama
+
+1. Install and start Ollama.
+2. Pull the configured model:
+
+   ```sh
+   ollama pull llama3.2
+   ```
+
+3. Configure Swelog:
+
+   ```json
+   {
+     "llm": "ollama",
+     "llmModel": "llama3.2"
+   }
+   ```
+
+4. Run `swelog summarize`. Ensure Ollama remains available at `localhost:11434`
+   while the command runs.
+
+## OpenAI
+
+1. Configure the provider and model:
+
+   ```json
+   {
+     "llm": "openAi",
+     "llmModel": "gpt-5.4-mini"
+   }
+   ```
+
+2. Run `swelog summarize`. The first run asks for your
+   [OpenAI API key](https://platform.openai.com/api-keys) and stores it in your
+   operating system keyring.
+
+## OpenRouter
+
+1. Configure the provider and an OpenAI Responses-compatible model:
+
+   ```json
+   {
+     "llm": "openRouter",
+     "llmModel": "openai/gpt-5.4-mini"
+   }
+   ```
+
+2. Run `swelog summarize`. The first run asks for your
+   [OpenRouter API key](https://openrouter.ai/keys) and stores it in your
+   operating system keyring.
+
+:::danger[Never store API keys in `swelog.json`]
+See [Authentication](/reference/authentication/) for how Swelog stores and
+clears credentials.
+:::

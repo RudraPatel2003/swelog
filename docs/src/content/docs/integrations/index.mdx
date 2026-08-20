@@ -1,0 +1,51 @@
+---
+title: Integrations
+description: Optional sources that pull real activity into your work file.
+---
+
+import { CardGrid, LinkCard } from "@astrojs/starlight/components";
+
+Integrations are optional. Swelog works entirely on the notes you write
+yourself, and every command below is something you opt into when you want the
+day's log to include activity you would otherwise retype by hand.
+
+## Available integrations
+
+<CardGrid>
+  <LinkCard
+    title="GitHub"
+    href="/integrations/github/"
+    description="Record the pull requests you opened and merged."
+  />
+  <LinkCard
+    title="Linear"
+    href="/integrations/linear/"
+    description="Record the issues assigned to you, grouped by status."
+  />
+</CardGrid>
+
+## How they fit into the work file
+
+The default work file contains only `## Focus` and `## Log`. Integration
+sections are created lazily, the first time you fetch that integration's
+activity, and each one is managed by Swelog from then on:
+
+```sh
+swelog fetch github
+swelog fetch linear
+```
+
+Both commands accept `--date MM-DD-YYYY` to record a previous day. See
+[Backfilling a Missed Day](/guides/backfilling/).
+
+:::caution[Managed sections are generated data]
+Swelog surrounds generated sections with invisible HTML markers. Treat the
+content inside these managed blocks as generated, because future fetches replace
+it. Your own notes belong in `## Focus` and `## Log`.
+:::
+
+## Credentials
+
+Each integration asks for its credential the first time you use it and stores it
+in your operating system's credential store, never in `swelog.json`. See
+[Authentication](/reference/authentication/) for how to inspect and clear them.
