@@ -3,14 +3,6 @@ use reqwest::StatusCode;
 use thiserror::Error;
 
 #[derive(Debug, Diagnostic, Error)]
-#[error("OpenRouter API key is missing")]
-#[diagnostic(
-    code(swelog::llm::missing_open_router_api_key),
-    help("set the OPENROUTER_API_KEY environment variable before running `swelog summarize`")
-)]
-pub struct MissingOpenRouterApiKey;
-
-#[derive(Debug, Diagnostic, Error)]
 #[error("OpenRouter request failed for model {model} with status {status}")]
 #[diagnostic(code(swelog::llm::open_router_request_failed))]
 pub struct OpenRouterRequestFailed {
@@ -23,4 +15,14 @@ pub struct OpenRouterRequestFailed {
 #[diagnostic(code(swelog::llm::open_router_response_missing_text))]
 pub struct OpenRouterResponseMissingText {
     pub model: String,
+}
+
+#[derive(Debug, Diagnostic, Error)]
+#[error("OpenRouter rejected your API key with status {status}")]
+#[diagnostic(
+    code(swelog::llm::open_router_authorization_failed),
+    help("run `swelog auth clear open-router` and run the command again to enter a new API key")
+)]
+pub struct OpenRouterAuthorizationFailed {
+    pub status: StatusCode,
 }

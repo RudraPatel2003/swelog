@@ -21,7 +21,7 @@ use crate::utils::{
 
 const CRATES_DIRECTORY: &str = "./crates";
 
-pub fn run(mut args: Args) -> Result<()> {
+pub fn run_update_release_version(mut args: Args) -> Result<()> {
     let release_tag = get_release_tag_from_args(&mut args, "update-release-version")?;
 
     let release_version = get_release_version_from_tag(&release_tag)?;

@@ -7,11 +7,13 @@ use chrono::{
 };
 use clap::Args;
 use config::utils::read_config_file;
+use dates::{
+    DATE_VALUE_NAME,
+    parsing::parse_monday_date,
+};
 use llm::language_model_factory::get_language_model_from_config;
 use miette::{
-    IntoDiagnostic,
     Result,
-    WrapErr,
     miette,
 };
 use owo_colors::OwoColorize;
@@ -23,8 +25,8 @@ use summary::week::{
 #[derive(Debug, Args)]
 pub struct WeeklySummaryArgs {
     /// The Monday of the week you want to summarize in the format MM-DD-YYYY.
-    #[arg(long = "week-of")]
-    monday_date_string: Option<String>,
+    #[arg(long = "week-of", value_name = DATE_VALUE_NAME, value_parser = parse_monday_date)]
+    monday_date: Option<NaiveDate>,
 
     /// Overwrite existing weekly log file.
     #[arg(long = "force")]
@@ -35,9 +37,10 @@ impl WeeklySummaryArgs {
     pub async fn run(self) -> Result<()> {
         let swelog_config = read_config_file()?;
 
-        let monday_date_string = get_monday_date_string(self.monday_date_string)?;
-
-        let monday_date = parse_monday_date_string(&monday_date_string)?;
+        let monday_date = match self.monday_date {
+            Some(monday_date) => monday_date,
+            None => get_most_recent_monday_date()?,
+        };
 
         let language_model = get_language_model_from_config(&swelog_config)?;
 
@@ -57,11 +60,7 @@ impl WeeklySummaryArgs {
     }
 }
 
-fn get_monday_date_string(provided_monday_date: Option<String>) -> Result<String> {
-    if let Some(provided_monday_date) = provided_monday_date {
-        return Ok(provided_monday_date);
-    }
-
+fn get_most_recent_monday_date() -> Result<NaiveDate> {
     let today = Local::now().date_naive();
 
     let days_since_monday = match today.weekday() {
@@ -69,27 +68,7 @@ fn get_monday_date_string(provided_monday_date: Option<String>) -> Result<String
         weekday => i64::from(weekday.num_days_from_monday()),
     };
 
-    let monday_date = today
+    today
         .checked_sub_signed(Duration::days(days_since_monday))
-        .ok_or_else(|| miette!("failed to determine the Monday of the current week"))?;
-
-    let monday_date_string = monday_date.format("%m-%d-%Y").to_string();
-
-    Ok(monday_date_string)
-}
-
-fn parse_monday_date_string(monday_date: &str) -> Result<NaiveDate> {
-    let monday_date = NaiveDate::parse_from_str(monday_date, "%m-%d-%Y")
-        .into_diagnostic()
-        .wrap_err_with(|| {
-            format!(
-                "failed to parse week start date: {monday_date}. Please use the format MM-DD-YYYY"
-            )
-        })?;
-
-    if monday_date.weekday() != Weekday::Mon {
-        return Err(miette!("Week start date must be a Monday. Please use the format MM-DD-YYYY"));
-    }
-
-    Ok(monday_date)
+        .ok_or_else(|| miette!("failed to determine the Monday of the current week"))
 }

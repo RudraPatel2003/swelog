@@ -1,5 +1,3 @@
-use std::path::PathBuf;
-
 use miette::Diagnostic;
 use thiserror::Error;
 
@@ -7,7 +5,7 @@ use thiserror::Error;
 #[error("Failed to authorize with Linear: {message}")]
 #[diagnostic(
     code(swelog::linear::authorization_failed),
-    help("retry the command and complete authorization using the displayed URL")
+    help("run `swelog auth clear linear`, then run `swelog fetch linear` to authorize again")
 )]
 pub struct LinearAuthorizationFailed {
     pub message: String,
@@ -22,17 +20,12 @@ pub struct LinearAuthorizationFailed {
 pub struct LinearAuthorizationTimedOut;
 
 #[derive(Debug, Diagnostic, Error)]
-#[error("Failed to store Linear OAuth credentials at {path}")]
-#[diagnostic(code(swelog::linear::credential_store_failed))]
-pub struct LinearCredentialStoreFailed {
-    pub path: PathBuf,
-}
-
-#[derive(Debug, Diagnostic, Error)]
 #[error("Failed to communicate with the Linear MCP server: {message}")]
 #[diagnostic(
     code(swelog::linear::mcp_request_failed),
-    help("check your network connection and Linear authorization, then try again")
+    help(
+        "check your network connection, or run `swelog auth clear linear` if your authorization is stale"
+    )
 )]
 pub struct LinearMcpRequestFailed {
     pub message: String,

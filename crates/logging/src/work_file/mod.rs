@@ -32,6 +32,10 @@ use slicing::{
     slice_up_to,
 };
 
+/// Managed integration sections are inserted directly above this section so the
+/// user's own notes stay at the bottom of the work file.
+const LOG_SECTION_TITLE: &str = "Log";
+
 pub fn append_work_file_section_from_config(
     swelog_config: &SwelogConfig,
     content: &str,
@@ -39,16 +43,6 @@ pub fn append_work_file_section_from_config(
 ) -> Result<()> {
     update_work_file_from_config(swelog_config, |work_file_content| {
         append_to_section(work_file_content, section, content)
-    })
-}
-
-pub fn overwrite_work_file_section_from_config(
-    swelog_config: &SwelogConfig,
-    content: &str,
-    section: &str,
-) -> Result<()> {
-    update_work_file_from_config(swelog_config, |work_file_content| {
-        overwrite_section(work_file_content, section, content)
     })
 }
 
@@ -114,26 +108,6 @@ fn append_to_section(markdown: &str, section: &str, content: &str) -> Result<Str
     Ok(result)
 }
 
-fn overwrite_section(markdown: &str, section: &str, content: &str) -> Result<String> {
-    let section_bounds = find_section_bounds(markdown, section)?;
-    let suffix = slice_from(markdown, section_bounds.end).trim_start_matches('\n');
-
-    let mut result = String::new();
-
-    result.push_str(slice_up_to(markdown, section_bounds.content_start).trim_end_matches('\n'));
-    result.push('\n');
-    result.push_str(content);
-
-    if suffix.is_empty() {
-        result.push('\n');
-    } else {
-        result.push_str("\n\n");
-        result.push_str(suffix);
-    }
-
-    Ok(result)
-}
-
 fn upsert_managed_section(
     markdown: &str,
     section_id: &str,
@@ -147,13 +121,13 @@ fn upsert_managed_section(
     }
 
     if let Some(section_bounds) = find_optional_section_bounds(markdown, section_title) {
-        return Ok(replace_block(markdown, section_bounds.full, &managed_block));
+        return Ok(replace_block(markdown, section_bounds, &managed_block));
     }
 
-    let insertion_index = find_optional_section_bounds(markdown, "Log")
-        .map_or(markdown.len(), |section_bounds| section_bounds.full.start);
+    let insertion_index = find_optional_section_bounds(markdown, LOG_SECTION_TITLE)
+        .map_or(markdown.len(), |section_bounds| section_bounds.start);
 
-    Ok(insert_block(markdown, insertion_index, &managed_block))
+    Ok(replace_block(markdown, insertion_index..insertion_index, &managed_block))
 }
 
 fn remove_managed_section(markdown: &str, section_id: &str) -> Result<String> {
@@ -169,18 +143,6 @@ fn format_managed_section(section_id: &str, section_title: &str, content: &str) 
         "<!-- swelog:managed {section_id}:start -->\n## {section_title}\n{}\n<!-- swelog:managed {section_id}:end -->",
         content.trim_matches('\n')
     )
-}
-
-fn insert_block(markdown: &str, insertion_index: usize, block: &str) -> String {
-    let prefix = slice_up_to(markdown, insertion_index).trim_end_matches('\n');
-    let suffix = slice_from(markdown, insertion_index).trim_start_matches('\n');
-
-    match (prefix.is_empty(), suffix.is_empty()) {
-        (true, true) => format!("{block}\n"),
-        (true, false) => format!("{block}\n\n{suffix}"),
-        (false, true) => format!("{prefix}\n\n{block}\n"),
-        (false, false) => format!("{prefix}\n\n{block}\n\n{suffix}"),
-    }
 }
 
 fn replace_block(markdown: &str, range: Range<usize>, block: &str) -> String {
@@ -207,24 +169,20 @@ fn remove_block(markdown: &str, range: Range<usize>) -> String {
     }
 }
 
-struct SectionBounds {
-    content_start: usize,
-    end: usize,
-    full: Range<usize>,
-}
-
 struct Heading {
     level: HeadingLevel,
     title: String,
     range: Range<usize>,
 }
 
-fn find_section_bounds(markdown: &str, section: &str) -> Result<SectionBounds> {
+fn find_section_bounds(markdown: &str, section: &str) -> Result<Range<usize>> {
     find_optional_section_bounds(markdown, section)
         .ok_or_else(|| SectionNotFound { section: section.to_string() }.into())
 }
 
-fn find_optional_section_bounds(markdown: &str, section: &str) -> Option<SectionBounds> {
+/// Returns the byte range covering the `## {section}` heading and everything
+/// under it, up to the next heading of the same or a higher level.
+fn find_optional_section_bounds(markdown: &str, section: &str) -> Option<Range<usize>> {
     let headings = collect_headings(markdown);
 
     let heading_index = headings
@@ -232,13 +190,14 @@ fn find_optional_section_bounds(markdown: &str, section: &str) -> Option<Section
         .position(|heading| heading.level == HeadingLevel::H2 && heading.title == section)?;
 
     let heading = headings.get(heading_index)?;
+
     let end = headings
         .iter()
         .skip(heading_index.saturating_add(1))
         .find(|candidate| heading_level_number(candidate.level) <= 2)
         .map_or(markdown.len(), |candidate| candidate.range.start);
 
-    Some(SectionBounds { content_start: heading.range.end, end, full: heading.range.start..end })
+    Some(heading.range.start..end)
 }
 
 fn collect_headings(markdown: &str) -> Vec<Heading> {

@@ -14,6 +14,7 @@ use config::{
         ensure_swelog_file_exists,
     },
 };
+use dates::formatting::format_date;
 use errors::{
     DailyLogAlreadyExists,
     WorkFileNotUpdated,
@@ -91,7 +92,7 @@ pub async fn summarize_daily_work_from_config(
 
 #[must_use]
 pub fn get_daily_log_file_name(log_date: &NaiveDate) -> String {
-    let formatted_date = log_date.format("%m-%d-%Y").to_string();
+    let formatted_date = format_date(log_date);
 
     format!("{formatted_date}.md")
 }

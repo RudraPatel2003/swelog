@@ -24,7 +24,6 @@ use crate::{
 
 const APP_NAME: &str = "swelog";
 const CONFIG_FILE_NAME: &str = "swelog.json";
-const LINEAR_OAUTH_CREDENTIALS_FILE_NAME: &str = "linear-oauth.json";
 
 pub fn get_config_file_path() -> Result<PathBuf> {
     let config_directory =
@@ -33,12 +32,6 @@ pub fn get_config_file_path() -> Result<PathBuf> {
     let config_file_path = config_directory.join(APP_NAME).join(CONFIG_FILE_NAME);
 
     Ok(config_file_path)
-}
-
-pub fn get_linear_oauth_credentials_file_path() -> Result<PathBuf> {
-    let config_file_path = get_config_file_path()?;
-
-    Ok(config_file_path.with_file_name(LINEAR_OAUTH_CREDENTIALS_FILE_NAME))
 }
 
 pub fn read_config_file() -> Result<SwelogConfig> {

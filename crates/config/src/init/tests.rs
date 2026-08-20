@@ -39,8 +39,6 @@ fn write_config_creates_parent_directories_and_json_file() {
     let file_contents =
         fs::read_to_string(&config_file_path).expect("config file should be readable");
 
-    assert!(file_contents.contains("\"linearUsername\": null"));
-
     let parsed_config: SwelogConfig =
         serde_json::from_str(&file_contents).expect("config should contain valid JSON");
 
@@ -97,23 +95,4 @@ fn write_config_overwrites_when_force_is_set() {
     assert_eq!(parsed_config, config);
 
     drop(temporary_directory);
-}
-
-#[test]
-fn config_without_linear_username_remains_compatible() {
-    let config: SwelogConfig = serde_json::from_str(
-        r#"{
-            "obsidianVaultPath": "/vault",
-            "swelogFolderName": "swelog",
-            "workFileName": "WORK.md",
-            "contextFileName": "CONTEXT.md",
-            "dailyLogFolderName": "Daily",
-            "weeklyLogFolderName": "Weekly",
-            "llm": "ollama",
-            "llmModel": "llama3.2"
-        }"#,
-    )
-    .expect("legacy config should deserialize");
-
-    assert_eq!(config.linear_username, None);
 }

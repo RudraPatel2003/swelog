@@ -1,19 +1,13 @@
-use std::{
-    collections::{
-        HashMap,
-        HashSet,
-    },
-    path::Path,
-};
-
 use miette::Result;
 use reqwest::Client;
 use rmcp::{
+    RoleClient,
     ServiceExt,
     model::{
         CallToolRequestParams,
         JsonObject,
     },
+    service::RunningService,
     transport::{
         AuthClient,
         StreamableHttpClientTransport,
@@ -26,57 +20,19 @@ use crate::{
     LinearIssue,
     errors::LinearMcpRequestFailed,
     oauth::{
+        LINEAR_MCP_URL,
         clear_linear_authorization,
         get_authorization_manager,
-        linear_mcp_url,
     },
-    response::{
-        UnresolvedLinearIssue,
-        parse_issue_page,
-        parse_statuses,
-        resolve_issue,
-    },
+    response::parse_issue_page,
 };
 
 const PAGE_SIZE: u64 = 50;
 
-pub async fn get_active_assigned_issues(
-    username: &str,
-    credentials_file: &Path,
-) -> Result<Vec<LinearIssue>> {
-    let mut reauthorization_attempted = false;
+pub async fn get_active_assigned_issues(username: &str) -> Result<Vec<LinearIssue>> {
+    let client = connect_to_linear_mcp().await?;
 
-    let client = loop {
-        let authorization_manager = get_authorization_manager(credentials_file).await?;
-        let http_client = Client::new();
-        let authorized_client = AuthClient::new(http_client, authorization_manager);
-        let transport = StreamableHttpClientTransport::with_client(
-            authorized_client,
-            StreamableHttpClientTransportConfig::with_uri(linear_mcp_url()),
-        );
-
-        match ().serve(transport).await {
-            Ok(client) => break client,
-            Err(error) if error.is_authorization_required() && !reauthorization_attempted => {
-                clear_linear_authorization(credentials_file)?;
-                reauthorization_attempted = true;
-            }
-            Err(error) => {
-                return Err(LinearMcpRequestFailed { message: error.to_string() }.into());
-            }
-        }
-    };
-
-    let unresolved_issues = fetch_all_issues(&client, username).await?;
-    let statuses = if unresolved_issues.iter().any(|issue| issue.status_type.is_none()) {
-        fetch_statuses(&client).await?
-    } else {
-        HashMap::new()
-    };
-    let mut issues = unresolved_issues
-        .into_iter()
-        .map(|issue| resolve_issue(issue, &statuses))
-        .collect::<Result<Vec<_>>>()?;
+    let mut issues = fetch_all_issues(&client, username).await?;
 
     issues.retain(|issue| issue.status_type.is_active());
 
@@ -85,40 +41,60 @@ pub async fn get_active_assigned_issues(
     Ok(issues)
 }
 
-async fn fetch_all_issues<S>(
-    client: &rmcp::service::RunningService<rmcp::RoleClient, S>,
-    username: &str,
-) -> Result<Vec<UnresolvedLinearIssue>>
-where
-    S: rmcp::Service<rmcp::RoleClient>,
-{
-    let mut issues = Vec::new();
-    let mut cursor: Option<String> = None;
-    let mut seen_cursors = HashSet::new();
+/// Connects to the Linear MCP server, discarding stored credentials and
+/// reauthorizing once if the server rejects them.
+async fn connect_to_linear_mcp() -> Result<RunningService<RoleClient, ()>> {
+    let mut reauthorization_attempted = false;
 
     loop {
-        let mut arguments = JsonObject::new();
-        arguments.insert("assignee".to_string(), Value::String(username.to_string()));
-        arguments.insert("includeArchived".to_string(), Value::Bool(false));
-        arguments.insert("limit".to_string(), Value::Number(PAGE_SIZE.into()));
+        let authorization_manager = get_authorization_manager().await?;
+        let authorized_client = AuthClient::new(Client::new(), authorization_manager);
+        let transport = StreamableHttpClientTransport::with_client(
+            authorized_client,
+            StreamableHttpClientTransportConfig::with_uri(LINEAR_MCP_URL),
+        );
 
-        if let Some(cursor) = &cursor {
-            arguments.insert("cursor".to_string(), Value::String(cursor.clone()));
+        match ().serve(transport).await {
+            Ok(client) => return Ok(client),
+
+            Err(error) if error.is_authorization_required() && !reauthorization_attempted => {
+                clear_linear_authorization()?;
+
+                reauthorization_attempted = true;
+            }
+
+            Err(error) => {
+                return Err(LinearMcpRequestFailed { message: error.to_string() }.into());
+            }
         }
+    }
+}
 
+async fn fetch_all_issues(
+    client: &RunningService<RoleClient, ()>,
+    username: &str,
+) -> Result<Vec<LinearIssue>> {
+    let mut issues = Vec::new();
+    let mut cursor: Option<String> = None;
+
+    loop {
         let result = client
-            .call_tool(CallToolRequestParams::new("list_issues").with_arguments(arguments))
+            .call_tool(
+                CallToolRequestParams::new("list_issues")
+                    .with_arguments(list_issues_arguments(username, cursor.as_deref())),
+            )
             .await
             .map_err(|error| LinearMcpRequestFailed { message: error.to_string() })?;
-        let page = parse_issue_page(result)?;
 
-        issues.extend(page.issues);
+        let mut page = parse_issue_page(result)?;
 
-        let Some(next_cursor) = page.next_cursor else {
-            break;
+        issues.append(&mut page.issues);
+
+        let Some(next_cursor) = page.take_next_cursor() else {
+            return Ok(issues);
         };
 
-        if !seen_cursors.insert(next_cursor.clone()) {
+        if cursor.as_deref() == Some(next_cursor.as_str()) {
             return Err(LinearMcpRequestFailed {
                 message: "Linear MCP returned a repeated pagination cursor".to_string(),
             }
@@ -127,20 +103,18 @@ where
 
         cursor = Some(next_cursor);
     }
-
-    Ok(issues)
 }
 
-async fn fetch_statuses<S>(
-    client: &rmcp::service::RunningService<rmcp::RoleClient, S>,
-) -> Result<HashMap<String, crate::LinearStatusType>>
-where
-    S: rmcp::Service<rmcp::RoleClient>,
-{
-    let result = client
-        .call_tool(CallToolRequestParams::new("list_issue_statuses"))
-        .await
-        .map_err(|error| LinearMcpRequestFailed { message: error.to_string() })?;
+fn list_issues_arguments(username: &str, cursor: Option<&str>) -> JsonObject {
+    let mut arguments = JsonObject::new();
 
-    parse_statuses(result)
+    arguments.insert("assignee".to_string(), Value::String(username.to_string()));
+    arguments.insert("includeArchived".to_string(), Value::Bool(false));
+    arguments.insert("limit".to_string(), Value::Number(PAGE_SIZE.into()));
+
+    if let Some(cursor) = cursor {
+        arguments.insert("cursor".to_string(), Value::String(cursor.to_string()));
+    }
+
+    arguments
 }

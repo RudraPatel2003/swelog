@@ -17,6 +17,7 @@ use config::{
         ensure_swelog_file_exists,
     },
 };
+use dates::formatting::format_date;
 use errors::{
     NoDailyLogsFound,
     WeekdayDateOutOfRange,
@@ -95,7 +96,7 @@ pub async fn summarize_weekly_work_from_config(
 
 #[must_use]
 pub fn get_weekly_log_file_name(monday_date: &NaiveDate) -> String {
-    let monday_date_string = monday_date.format("%m-%d-%Y").to_string();
+    let monday_date_string = format_date(monday_date);
 
     format!("Week of {monday_date_string}.md")
 }

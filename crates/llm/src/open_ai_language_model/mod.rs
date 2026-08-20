@@ -3,6 +3,7 @@ mod structs;
 
 use async_trait::async_trait;
 use errors::{
+    OpenAiAuthorizationFailed,
     OpenAiRequestFailed,
     OpenAiResponseMissingText,
 };
@@ -11,7 +12,10 @@ use miette::{
     Result,
     WrapErr,
 };
-use reqwest::Client;
+use reqwest::{
+    Client,
+    StatusCode,
+};
 use structs::{
     OpenAiResponse,
     OpenAiResponseRequest,
@@ -50,9 +54,17 @@ impl LanguageModel for OpenAiLanguageModel {
             .into_diagnostic()
             .wrap_err_with(|| format!("failed to send OpenAI request for model {}", self.model))?;
 
-        if !response.status().is_success() {
+        let status = response.status();
+
+        if matches!(status, StatusCode::UNAUTHORIZED | StatusCode::FORBIDDEN) {
+            let open_ai_authorization_failed_error = OpenAiAuthorizationFailed { status };
+
+            return Err(open_ai_authorization_failed_error.into());
+        }
+
+        if !status.is_success() {
             let open_ai_request_failed_error =
-                OpenAiRequestFailed { model: self.model.clone(), status: response.status() };
+                OpenAiRequestFailed { model: self.model.clone(), status };
 
             return Err(open_ai_request_failed_error.into());
         }

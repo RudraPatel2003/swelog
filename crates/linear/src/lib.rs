@@ -3,31 +3,47 @@ mod errors;
 mod oauth;
 mod response;
 
-pub use client::get_active_assigned_issues;
-pub use oauth::clear_linear_authorization;
+use serde::Deserialize;
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+pub use crate::{
+    client::get_active_assigned_issues,
+    oauth::clear_linear_authorization,
+};
+
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
 pub struct LinearIssue {
+    #[serde(rename = "id")]
     pub identifier: String,
+
     pub title: String,
+
     pub url: String,
+
+    #[serde(rename = "status")]
     pub status_name: String,
+
     pub status_type: LinearStatusType,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "lowercase")]
 pub enum LinearStatusType {
-    Started,
-    Unstarted,
     Backlog,
+    Unstarted,
+    Started,
     Completed,
+
+    #[serde(alias = "cancelled")]
     Canceled,
-    Other(String),
+
+    #[serde(other)]
+    Other,
 }
 
 impl LinearStatusType {
     #[must_use]
-    pub const fn is_active(&self) -> bool {
+    pub const fn is_active(self) -> bool {
         !matches!(self, Self::Completed | Self::Canceled)
     }
 }

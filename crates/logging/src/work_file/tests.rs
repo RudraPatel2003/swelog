@@ -93,28 +93,6 @@ fn log_work_item_inserts_newline_when_log_section_has_no_trailing_newline() {
 }
 
 #[test]
-fn overwrite_work_file_section_from_config_replaces_section_content() {
-    let test_context = get_test_context();
-
-    test_context.write_work_file(
-        "# Today's Work\n\n## GitHub\n- Existing GitHub item\n\n## Log\n- Existing log item\n",
-    );
-
-    overwrite_work_file_section_from_config(&test_context.config, "- New GitHub item", "GitHub")
-        .expect("GitHub section should be replaced");
-
-    let work_file_content =
-        fs::read_to_string(test_context.work_file()).expect("work file should be readable");
-
-    assert_eq!(
-        work_file_content,
-        "# Today's Work\n\n## GitHub\n- New GitHub item\n\n## Log\n- Existing log item\n"
-    );
-
-    drop(test_context.temporary_directory);
-}
-
-#[test]
 fn log_work_item_fails_when_work_file_is_missing() {
     let test_context = get_test_context();
 
@@ -156,29 +134,6 @@ fn append_to_section_keeps_blank_line_before_next_section() {
         updated_markdown,
         "# Today's Work\n\n## Log\n- Meeting with manager\n\n## Follow-ups\n- Update ticket\n"
     );
-}
-
-#[test]
-fn overwrite_section_replaces_existing_content() {
-    let markdown = "# Today's Work\n\n## Log\n- Existing item\n\n## Follow-ups\n- Update ticket\n";
-
-    let updated_markdown = overwrite_section(markdown, "Log", "- Meeting with manager")
-        .expect("overwrite section should succeed");
-
-    assert_eq!(
-        updated_markdown,
-        "# Today's Work\n\n## Log\n- Meeting with manager\n\n## Follow-ups\n- Update ticket\n"
-    );
-}
-
-#[test]
-fn overwrite_section_replaces_last_section() {
-    let markdown = "# Today's Work\n\n## Log\n- Existing item\n";
-
-    let updated_markdown = overwrite_section(markdown, "Log", "- Meeting with manager")
-        .expect("overwrite section should succeed");
-
-    assert_eq!(updated_markdown, "# Today's Work\n\n## Log\n- Meeting with manager\n");
 }
 
 #[test]

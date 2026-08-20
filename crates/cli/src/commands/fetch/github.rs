@@ -4,8 +4,15 @@ use chrono::{
 };
 use clap::Args;
 use config::utils::read_config_file;
+use credentials::{
+    Credential,
+    get_or_prompt_for_credential,
+};
+use dates::{
+    DATE_VALUE_NAME,
+    parsing::parse_date,
+};
 use github::{
-    github_token::get_github_token,
     issues::{
         get_merged_prs,
         get_opened_prs,
@@ -19,7 +26,7 @@ use miette::Result;
 #[derive(Debug, Args)]
 pub struct GithubArgs {
     /// Date to fetch GitHub activity for in the format MM-DD-YYYY.
-    #[arg(long, value_name = "MM-DD-YYYY", value_parser = parse_activity_date)]
+    #[arg(long, value_name = DATE_VALUE_NAME, value_parser = parse_date)]
     date: Option<NaiveDate>,
 }
 
@@ -27,7 +34,7 @@ impl GithubArgs {
     pub async fn run(self) -> Result<()> {
         let swelog_config = read_config_file()?;
 
-        let github_token = get_github_token()?;
+        let github_token = get_or_prompt_for_credential(Credential::Github)?;
 
         let github_username = get_github_username(&github_token).await?;
 
@@ -79,13 +86,10 @@ impl GithubArgs {
             &github_activity,
         )?;
 
+        println!("Recorded {} GitHub PRs in your work file.", github_activity_lines.len());
+
         Ok(())
     }
-}
-
-fn parse_activity_date(date: &str) -> Result<NaiveDate, String> {
-    NaiveDate::parse_from_str(date, "%m-%d-%Y")
-        .map_err(|_| format!("invalid date `{date}`; expected MM-DD-YYYY"))
 }
 
 fn format_pull_request_activity(

@@ -23,6 +23,10 @@ Obsidian. Workspace crates live under `crates/*`.
 - When importing items from other modules in this repository, fully qualify the import path and call the item unqualified. For example, write `use crate::utils::read_npm_package_json;` then call `read_npm_package_json()`, rather than `use crate::utils;` then `utils::read_npm_package_json()`.
 - When creating new features, if the content is self-contained, place it in a sub-module of the crate. This keeps files small and focused.
 
+## CLI
+
+- The CLI should read arguments and call the corresponding `run` function. If the `run` function has no flags, avoid an unused self warning by using `let _ = self;`.
+
 ## Testing
 
 - Place crate-local unit tests in a crate test module such as `crates/config/src/tests.rs`.
@@ -33,6 +37,7 @@ Obsidian. Workspace crates live under `crates/*`.
 
 - `crates/cli` contains the `swelog` binary, command parsing, and top-level CLI flow.
 - `crates/config` contains configuration logic
+- `crates/dates` contains the shared `MM-DD-YYYY` date format, parsing, and formatting
 
 ## Making Changes
 

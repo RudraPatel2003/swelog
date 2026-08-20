@@ -10,7 +10,6 @@ pub struct ConfigArgs {}
 
 impl ConfigArgs {
     pub fn run(self) -> Result<()> {
-        // Silence the unused self warning
         let _ = self;
 
         let swelog_config = read_config_file()?;

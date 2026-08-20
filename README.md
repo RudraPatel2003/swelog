@@ -163,8 +163,8 @@ notes are not accidentally excluded from a daily log.
 | Provider | `llm` | Example `llmModel` | Setup | Authentication | Notes |
 | --- | --- | --- | --- | --- | --- |
 | Ollama | `ollama` | `llama3.2` | Install Ollama, pull the model, and run the local service. | None | Swelog connects to Ollama at `localhost:11434`. |
-| OpenAI | `openAi` | `gpt-5.4-mini` | Select an OpenAI model supported by the Responses API. | `OPENAI_API_KEY` | The model value is sent directly to OpenAI. |
-| OpenRouter | `openRouter` | `openai/gpt-5.4-mini` | Select an OpenAI Responses-compatible model through OpenRouter. | `OPENROUTER_API_KEY` | The current implementation expects OpenAI Responses API output. |
+| OpenAI | `openAi` | `gpt-5.4-mini` | Select an OpenAI model supported by the Responses API. | API key, prompted on first use | The model value is sent directly to OpenAI. |
+| OpenRouter | `openRouter` | `openai/gpt-5.4-mini` | Select an OpenAI Responses-compatible model through OpenRouter. | API key, prompted on first use | The current implementation expects OpenAI Responses API output. |
 
 Model names are examples, not a fixed allowlist. Set `llmModel` to a model that
 is installed locally or available from the selected provider.
@@ -201,13 +201,9 @@ is installed locally or available from the selected provider.
    }
    ```
 
-2. Export the API key before running Swelog:
-
-   ```sh
-   export OPENAI_API_KEY="your_api_key_here"
-   ```
-
-3. Run `swelog summarize`.
+2. Run `swelog summarize`. The first run asks for your
+   [OpenAI API key](https://platform.openai.com/api-keys) and stores it in your
+   operating system keyring.
 
 ### OpenRouter Setup
 
@@ -220,15 +216,12 @@ is installed locally or available from the selected provider.
    }
    ```
 
-2. Export the API key:
+2. Run `swelog summarize`. The first run asks for your
+   [OpenRouter API key](https://openrouter.ai/keys) and stores it in your
+   operating system keyring.
 
-   ```sh
-   export OPENROUTER_API_KEY="your_api_key_here"
-   ```
-
-3. Run `swelog summarize`.
-
-Do not store OpenAI or OpenRouter API keys in `swelog.json`.
+Never store API keys in `swelog.json`. See [Authentication](#authentication) for
+how Swelog stores and clears them.
 
 ## Integrations
 
@@ -237,7 +230,7 @@ Integrations are optional. The default work file contains only `## Focus` and
 
 | Integration | Command | Configuration | Authentication | Work-file output |
 | --- | --- | --- | --- | --- |
-| GitHub | `swelog fetch github` | None | `GITHUB_TOKEN` | Pull requests opened or merged on the selected date. |
+| GitHub | `swelog fetch github` | None | Personal access token, prompted on first use | Pull requests opened or merged on the selected date. |
 | Linear | `swelog fetch linear` | `linearUsername` | Browser OAuth on first use | Active assigned issues grouped by their current status. |
 
 Swelog surrounds generated sections with invisible HTML markers. Treat the
@@ -248,26 +241,24 @@ replace it.
 
 GitHub fetching records pull requests you opened or merged.
 
-1. Export a GitHub token:
-
-   ```sh
-   export GITHUB_TOKEN="your_github_token_here"
-   ```
-
-2. Fetch today's activity:
+1. Fetch today's activity:
 
    ```sh
    swelog fetch github
    ```
 
-3. To fetch a previous date, provide `MM-DD-YYYY`:
+   The first run asks for a
+   [GitHub personal access token](https://github.com/settings/tokens) with the
+   `repo` scope and stores it in your operating system keyring.
+
+2. To fetch a previous date, provide `MM-DD-YYYY`:
 
    ```sh
    swelog fetch github --date 08-17-2026
    ```
 
 The command creates or updates a managed `## GitHub` section before `## Log`.
-Do not store the GitHub token in `swelog.json`.
+Never store the GitHub token in `swelog.json`.
 
 ### Linear
 
@@ -292,8 +283,7 @@ Completed and canceled issues are omitted.
    it in your browser. If the browser does not open, use the printed URL.
 
 4. Complete authorization. Swelog stores the resulting OAuth credentials in
-   `linear-oauth.json` beside `swelog.json` and reuses or refreshes them on later
-   runs.
+   your operating system keyring and reuses or refreshes them on later runs.
 
 The generated section groups issues by status:
 
@@ -309,16 +299,52 @@ The generated section groups issues by status:
 When no active assigned issues remain, Swelog removes its managed Linear
 section.
 
-To switch Linear accounts or organizations, update `linearUsername` when
-needed, remove Swelog's locally stored OAuth credentials, and fetch again:
+To switch Linear accounts or organizations, update `linearUsername` when needed,
+clear the stored authorization, and fetch again:
 
 ```sh
-swelog fetch linear logout
+swelog auth clear linear
 swelog fetch linear
 ```
 
-`logout` is idempotent and only removes `linear-oauth.json` from the Swelog
-config directory. The next fetch starts a new browser authorization flow.
+The next fetch starts a new browser authorization flow.
+
+## Authentication
+
+Swelog stores every credential in your operating system's credential store —
+Keychain on macOS, Credential Manager on Windows, and the Secret Service on
+Linux. Nothing is written to `swelog.json` or any other file in your vault.
+
+| Credential | Used by | How it is obtained |
+| --- | --- | --- |
+| GitHub token | `swelog fetch github` | Prompted on first use |
+| OpenAI API key | `swelog summarize` with `"llm": "openAi"` | Prompted on first use |
+| OpenRouter API key | `swelog summarize` with `"llm": "openRouter"` | Prompted on first use |
+| Linear authorization | `swelog fetch linear` | Browser OAuth on first use |
+
+Review what is stored — values are never printed:
+
+```sh
+swelog auth status
+```
+
+If a credential is revoked or rejected, clear it and run the command again to
+enter a new one. Every authorization error names this command:
+
+```sh
+swelog auth clear github
+swelog auth clear --all
+```
+
+### Environment variable overrides
+
+`GITHUB_TOKEN`, `OPENAI_API_KEY`, and `OPENROUTER_API_KEY` take precedence over
+the keyring when set, so CI and scripted runs work without a credential store.
+When one of these is set, `swelog auth status` reports it instead of the stored
+value.
+
+In a non-interactive session — a pipe, a cron job, a CI job — Swelog never
+prompts. It fails immediately with the name of the environment variable to set.
 
 ## Other Commands
 
@@ -328,6 +354,8 @@ config directory. The next fetch starts a new browser authorization flow.
 | `swelog reset` | Reset `WORK.md` to its default Focus-and-Log template. |
 | `swelog setup --force` | Recreate and overwrite configured Swelog files. |
 | `swelog config` | Display the current configuration and config-file path. |
+| `swelog auth status` | Show which credentials are stored, without printing them. |
+| `swelog auth clear <credential>` | Remove a stored credential so the next command asks for it again. |
 
 ## Contributing
 
