@@ -42,6 +42,7 @@ export default defineConfig({
         {
           label: "Integrations",
           items: [
+            { label: "Overview", slug: "integrations" },
             { label: "GitHub", slug: "integrations/github" },
             { label: "Linear", slug: "integrations/linear" },
           ],

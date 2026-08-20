@@ -3,10 +3,8 @@ title: GitHub
 description: Record the pull requests you opened and merged into your work file.
 ---
 
-Integrations are optional. The default work file contains only `## Focus` and
-`## Log`; integration sections are created lazily when activity is fetched.
-
-GitHub fetching records pull requests you opened or merged.
+GitHub fetching records the pull requests you opened or merged. See
+[Integrations](/integrations/) for how integration sections work in general.
 
 ## Setup
 
@@ -29,12 +27,8 @@ GitHub fetching records pull requests you opened or merged.
 ## Output
 
 The command creates or updates a managed `## GitHub` section before `## Log`.
-
-:::caution[Managed sections are generated data]
-Swelog surrounds generated sections with invisible HTML markers. Treat the
-content inside these managed blocks as generated, because future fetches replace
-it.
-:::
+Its contents are replaced by every later fetch — see
+[Managed sections](/integrations/#how-they-fit-into-the-work-file).
 
 Never store the GitHub token in `swelog.json` — see
 [Authentication](/reference/authentication/).
