@@ -1,0 +1,68 @@
+name: docs-check
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+    branches:
+      - main
+    paths:
+      - "docs/**"
+      - ".github/workflows/docs.yaml"
+
+defaults:
+  run:
+    working-directory: docs
+
+jobs:
+  lint-and-build:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      # Must come before setup-node so that `cache: "pnpm"` can find pnpm.
+      # The version is read from the `packageManager` field in docs/package.json.
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          package_json_file: docs/package.json
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "lts/*"
+          cache: "pnpm"
+          cache-dependency-path: docs/pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check that the project passes linting
+        run: pnpm lint
+
+      - name: Check that the Markdown content is formatted
+        run: pnpm format:check
+
+      - name: Build the docs site
+        run: pnpm build
+
+      - name: Check for dead code with knip
+        id: knip
+        continue-on-error: true
+        run: pnpm knip
+
+      - name: Warn if knip failed
+        if: steps.knip.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh pr comment ${{ github.event.pull_request.number }} \
+            --body ":warning: \`pnpm knip\` failed in CI. Please check for potential dead code or issues with the knip config."

@@ -5,6 +5,10 @@
 This is a Rust workspace for `swelog`, a CLI for tracking daily accomplishments in
 Obsidian. Workspace crates live under `crates/*`.
 
+`docs/` is the one non-crate source tree: an Astro + Starlight documentation site
+with its own pnpm-based tooling. It is invisible to Cargo and is deployed
+separately to Vercel.
+
 ## Commands
 
 - `just format` formats all Rust code with nightly rustfmt.
@@ -12,6 +16,9 @@ Obsidian. Workspace crates live under `crates/*`.
 - `just test` runs all workspace tests with all features.
 - `just clippy` runs clippy with warnings denied.
 - `just pr` runs format checks, clippy, and tests.
+- `just docs-dev` starts the docs site dev server.
+- `just docs-lint-fix` fixes lint and formatting issues in the docs site.
+- `just docs-pr` runs linting, format checks, and the build for the docs site.
 
 ## Coding Style
 
@@ -38,6 +45,15 @@ Obsidian. Workspace crates live under `crates/*`.
 - `crates/cli` contains the `swelog` binary, command parsing, and top-level CLI flow.
 - `crates/config` contains configuration logic
 - `crates/dates` contains the shared `MM-DD-YYYY` date format, parsing, and formatting
+
+## Documentation
+
+- `docs/` contains the Astro + Starlight documentation site. Content lives as
+  Markdown and MDX in `docs/src/content/docs/`.
+- User-facing documentation belongs in `docs/`, not in `README.md`. The README
+  covers installation, contributing, and links to the docs site.
+- `README.md` and `npm/README.md` are kept in sync by hand. Update both.
+- Run `just docs-pr` before finishing a task that touches `docs/`.
 
 ## Making Changes
 
