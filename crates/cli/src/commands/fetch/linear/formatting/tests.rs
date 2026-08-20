@@ -1,3 +1,5 @@
+use linear::LinearIssueTimestamps;
+
 use super::*;
 
 fn issue(
@@ -12,6 +14,7 @@ fn issue(
         url: format!("https://linear.app/issue/{identifier}"),
         status_name: status_name.to_string(),
         status_type,
+        timestamps: LinearIssueTimestamps::default(),
     }
 }
 

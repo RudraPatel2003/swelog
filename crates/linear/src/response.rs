@@ -16,7 +16,9 @@ pub struct LinearIssuePage {
     #[serde(default)]
     pub issues: Vec<LinearIssue>,
 
-    #[serde(default)]
+    /// The Linear MCP server returns this as `cursor`; the alias keeps older
+    /// `nextCursor` responses working.
+    #[serde(default, rename = "cursor", alias = "nextCursor")]
     pub next_cursor: Option<String>,
 
     #[serde(default)]

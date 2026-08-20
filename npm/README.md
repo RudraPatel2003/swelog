@@ -112,6 +112,63 @@ creates today's daily log and resets `WORK.md` unless `--keep` is provided.
    swelog summarize week
    ```
 
+## Backfilling a Missed Day
+
+Every command that is tied to a day accepts `--date MM-DD-YYYY`, so a day you
+missed can be reconstructed later. `WORK.md` is always the scratch pad the
+summary is built from; the date flags only decide which day is fetched and which
+file the summary is written to.
+
+To backfill Monday, 08-17-2026:
+
+1. Reset the work file so the day starts clean:
+
+   ```sh
+   swelog reset
+   ```
+
+2. Write Monday's notes in `WORK.md`, or add them from the terminal:
+
+   ```sh
+   swelog log "Debugged the retry storm in the payments worker"
+   ```
+
+3. Fetch Monday's integration activity:
+
+   ```sh
+   swelog fetch github --date 08-17-2026
+   swelog fetch linear --date 08-17-2026
+   ```
+
+4. Summarize into Monday's daily log:
+
+   ```sh
+   swelog summarize day --date 08-17-2026
+   ```
+
+   This writes `Daily/08-17-2026.md` and resets `WORK.md`, so the next missed day
+   can be backfilled straight away. Add `--force` to replace a daily log that
+   already exists, or `--keep` to leave `WORK.md` alone.
+
+5. Once the week's daily logs exist, summarize the week:
+
+   ```sh
+   swelog summarize week --week-of 08-17-2026
+   ```
+
+| Command | Backfill flag |
+| --- | --- |
+| `swelog fetch github` | `--date MM-DD-YYYY` |
+| `swelog fetch linear` | `--date MM-DD-YYYY` |
+| `swelog summarize day` | `--date MM-DD-YYYY` |
+| `swelog summarize week` | `--week-of MM-DD-YYYY` |
+
+`swelog log` and `swelog reset` need no date; they act on `WORK.md`, which holds
+whichever day you are currently assembling.
+
+Linear backfill is best-effort. See [Linear](#linear) for what it can and cannot
+recover.
+
 ## Configuration
 
 All generated files and directories live inside
@@ -147,6 +204,7 @@ Swelog uses the same configured model for daily and weekly summaries.
 | `swelog summarize day` | Generate today's daily log and reset `WORK.md`. |
 | `swelog summarize day --keep` | Generate the daily log without resetting `WORK.md`. |
 | `swelog summarize day --force` | Replace an existing daily log for today. |
+| `swelog summarize day --date MM-DD-YYYY` | Write the daily log for the supplied date instead of today. |
 | `swelog summarize week` | Summarize available Monday-Friday daily logs for the default week. |
 | `swelog summarize week --week-of MM-DD-YYYY` | Summarize the week beginning on the supplied Monday. |
 | `swelog summarize week --force` | Replace an existing weekly log. |
@@ -157,6 +215,10 @@ logs but fails when no daily logs exist for the selected week.
 
 Weekly summarization requires `WORK.md` to be empty/default so unfinished daily
 notes are not accidentally excluded from a daily log.
+
+Daily summarization always reads the current `WORK.md`. `--date` only chooses the
+file the summary is written to, so it is what you use to backfill a missed day.
+See [Backfilling a Missed Day](#backfilling-a-missed-day).
 
 ### Providers and Models
 
@@ -231,7 +293,7 @@ Integrations are optional. The default work file contains only `## Focus` and
 | Integration | Command | Configuration | Authentication | Work-file output |
 | --- | --- | --- | --- | --- |
 | GitHub | `swelog fetch github` | None | Personal access token, prompted on first use | Pull requests opened or merged on the selected date. |
-| Linear | `swelog fetch linear` | `linearUsername` | Browser OAuth on first use | Active assigned issues grouped by their current status. |
+| Linear | `swelog fetch linear` | `linearUsername` | Browser OAuth on first use | Assigned issues grouped by their current status. |
 
 Swelog surrounds generated sections with invisible HTML markers. Treat the
 content inside these managed blocks as generated data because future fetches
@@ -262,8 +324,9 @@ Never store the GitHub token in `swelog.json`.
 
 ### Linear
 
-Linear fetching records active issues assigned to a configured workspace user.
-Completed and canceled issues are omitted.
+Linear fetching records issues assigned to a configured workspace user.
+Without `--date` it records your currently active issues and omits completed and
+canceled ones.
 
 1. Set the exact Linear assignee name in `swelog.json`:
 
@@ -285,6 +348,16 @@ Completed and canceled issues are omitted.
 4. Complete authorization. Swelog stores the resulting OAuth credentials in
    your operating system keyring and reuses or refreshes them on later runs.
 
+5. To backfill a previous date, provide `MM-DD-YYYY`:
+
+   ```sh
+   swelog fetch linear --date 08-17-2026
+   ```
+
+   This records the issues Linear shows activity on for that date, including the
+   ones you completed or canceled, because finishing an issue is exactly what a
+   past day's log should capture.
+
 The generated section groups issues by status:
 
 ```markdown
@@ -296,8 +369,21 @@ The generated section groups issues by status:
 - [ENG-456](https://linear.app/...) Document the Linear integration
 ```
 
-When no active assigned issues remain, Swelog removes its managed Linear
-section.
+When no issues match, Swelog removes its managed Linear section.
+
+#### What `--date` can and cannot recover
+
+The Linear MCP server does not expose issue history, so Swelog can only match on
+the timestamps Linear stores on the issue itself: `updatedAt`, `completedAt`,
+`canceledAt`, `startedAt`, and `createdAt`. An issue is recorded for a date when
+any of those lands on it, read in your local time zone.
+
+`completedAt`, `canceledAt`, `startedAt`, and `createdAt` never move, so issues
+you started, finished, canceled, or filed on a date are recovered no matter how
+much later you backfill. `updatedAt` only holds the most recent change, so an
+issue you touched on Monday and touched again on Tuesday is attributed to
+Tuesday alone. Backfill soon after the fact for the most complete result, and
+treat `--date` output as a prompt for your own notes rather than a full record.
 
 To switch Linear accounts or organizations, update `linearUsername` when needed,
 clear the stored authorization, and fetch again:

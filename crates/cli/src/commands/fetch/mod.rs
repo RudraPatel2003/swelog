@@ -20,7 +20,7 @@ enum FetchCommands {
     /// Fetch the PRs you opened and merged on a date in GitHub
     Github(GithubArgs),
 
-    /// Fetch active Linear issues assigned to your configured Linear username
+    /// Fetch the Linear issues assigned to your configured Linear username
     Linear(LinearArgs),
 }
 

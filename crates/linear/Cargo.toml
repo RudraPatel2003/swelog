@@ -17,7 +17,9 @@ workspace = true
 
 [dependencies]
 async-trait = { workspace = true }
+chrono = { workspace = true }
 credentials = { path = "../credentials" }
+dates = { path = "../dates" }
 miette = { workspace = true }
 reqwest = { workspace = true }
 rmcp = { workspace = true }

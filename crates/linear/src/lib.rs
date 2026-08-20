@@ -1,12 +1,20 @@
+mod activity;
 mod client;
 mod errors;
 mod oauth;
 mod response;
 
+use chrono::{
+    DateTime,
+    Utc,
+};
 use serde::Deserialize;
 
 pub use crate::{
-    client::get_active_assigned_issues,
+    client::{
+        get_active_assigned_issues,
+        get_assigned_issues_worked_on,
+    },
     oauth::clear_linear_authorization,
 };
 
@@ -24,6 +32,30 @@ pub struct LinearIssue {
     pub status_name: String,
 
     pub status_type: LinearStatusType,
+
+    #[serde(flatten)]
+    pub timestamps: LinearIssueTimestamps,
+}
+
+/// The moments Linear records on an issue, used to decide which day an issue
+/// belongs to.
+#[derive(Clone, Copy, Debug, Default, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct LinearIssueTimestamps {
+    #[serde(default)]
+    pub created_at: Option<DateTime<Utc>>,
+
+    #[serde(default)]
+    pub started_at: Option<DateTime<Utc>>,
+
+    #[serde(default)]
+    pub completed_at: Option<DateTime<Utc>>,
+
+    #[serde(default)]
+    pub canceled_at: Option<DateTime<Utc>>,
+
+    #[serde(default)]
+    pub updated_at: Option<DateTime<Utc>>,
 }
 
 #[derive(Clone, Copy, Debug, Deserialize, PartialEq, Eq)]

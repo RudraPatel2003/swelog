@@ -18,7 +18,10 @@ fn parse_issue_page_reads_linear_mcp_issue_shape() {
             "title": "Remove organization:incidents flag",
             "url": "https://linear.app/getsentry/issue/ISWF-3270/remove-organizationincidents-flag",
             "status": "In Review",
-            "statusType": "started"
+            "statusType": "started",
+            "startedAt": "2026-08-11T20:25:10.197Z",
+            "completedAt": null,
+            "updatedAt": "2026-08-13T18:22:28.096Z"
         }]
     }));
 
@@ -29,6 +32,15 @@ fn parse_issue_page_reads_linear_mcp_issue_shape() {
     assert_eq!(issue.title, "Remove organization:incidents flag");
     assert_eq!(issue.status_name, "In Review");
     assert_eq!(issue.status_type, LinearStatusType::Started);
+    assert_eq!(
+        issue.timestamps.started_at,
+        Some("2026-08-11T20:25:10.197Z".parse().expect("timestamp should parse"))
+    );
+    assert_eq!(
+        issue.timestamps.updated_at,
+        Some("2026-08-13T18:22:28.096Z".parse().expect("timestamp should parse"))
+    );
+    assert_eq!(issue.timestamps.completed_at, None);
 }
 
 #[test]
@@ -55,6 +67,19 @@ fn take_next_cursor_returns_cursor_when_more_pages_remain() {
         "issues": [],
         "hasNextPage": true,
         "nextCursor": "next-page"
+    }));
+
+    let mut page = parse_issue_page(result).expect("issue page should parse");
+
+    assert_eq!(page.take_next_cursor().as_deref(), Some("next-page"));
+}
+
+#[test]
+fn take_next_cursor_reads_the_cursor_the_linear_mcp_server_returns() {
+    let result = structured_result(serde_json::json!({
+        "issues": [],
+        "hasNextPage": true,
+        "cursor": "next-page"
     }));
 
     let mut page = parse_issue_page(result).expect("issue page should parse");

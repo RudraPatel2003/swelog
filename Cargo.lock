@@ -1470,7 +1470,9 @@ name = "linear"
 version = "0.9.0"
 dependencies = [
  "async-trait",
+ "chrono",
  "credentials",
+ "dates",
  "miette",
  "reqwest 0.13.4",
  "rmcp",

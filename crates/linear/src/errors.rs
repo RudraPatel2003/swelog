@@ -37,3 +37,13 @@ pub struct LinearMcpRequestFailed {
 pub struct UnsupportedLinearResponse {
     pub message: String,
 }
+
+#[derive(Debug, Diagnostic, Error)]
+#[error("`{date}` is outside the range of dates Linear can be searched for")]
+#[diagnostic(
+    code(swelog::linear::date_out_of_range),
+    help("choose a date close to today, such as 08-17-2026")
+)]
+pub struct LinearDateOutOfRange {
+    pub date: String,
+}

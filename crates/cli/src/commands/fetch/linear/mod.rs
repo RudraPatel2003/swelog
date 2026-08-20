@@ -1,9 +1,18 @@
 mod errors;
 mod formatting;
 
+use chrono::NaiveDate;
 use clap::Args;
 use config::utils::read_config_file;
-use linear::get_active_assigned_issues;
+use dates::{
+    DATE_VALUE_NAME,
+    formatting::format_date,
+    parsing::parse_date,
+};
+use linear::{
+    get_active_assigned_issues,
+    get_assigned_issues_worked_on,
+};
 use logging::work_file::{
     remove_managed_work_file_section_from_config,
     upsert_managed_work_file_section_from_config,
@@ -19,7 +28,12 @@ const LINEAR_SECTION_ID: &str = "linear";
 const LINEAR_SECTION_TITLE: &str = "Linear";
 
 #[derive(Debug, Args)]
-pub struct LinearArgs {}
+pub struct LinearArgs {
+    /// Date to fetch Linear activity for in the format MM-DD-YYYY. Without this, your currently
+    /// active issues are fetched instead.
+    #[arg(long, value_name = DATE_VALUE_NAME, value_parser = parse_date)]
+    date: Option<NaiveDate>,
+}
 
 impl LinearArgs {
     pub async fn run(self) -> Result<()> {
@@ -32,12 +46,18 @@ impl LinearArgs {
             .filter(|linear_username| !linear_username.is_empty())
             .ok_or(MissingLinearUsername)?;
 
-        let issues = get_active_assigned_issues(linear_username).await?;
+        let issues = match self.date {
+            Some(activity_date) => {
+                get_assigned_issues_worked_on(linear_username, &activity_date).await?
+            }
+
+            None => get_active_assigned_issues(linear_username).await?,
+        };
 
         if issues.is_empty() {
             remove_managed_work_file_section_from_config(&swelog_config, LINEAR_SECTION_ID)?;
 
-            println!("No active Linear issues found.");
+            println!("{}", format_empty_message(self.date.as_ref()));
 
             return Ok(());
         }
@@ -49,8 +69,27 @@ impl LinearArgs {
             &format_linear_issues(&issues),
         )?;
 
-        println!("Added {} active Linear issues to your work file.", issues.len());
+        println!("{}", format_recorded_message(issues.len(), self.date.as_ref()));
 
         Ok(())
     }
+}
+
+fn format_empty_message(activity_date: Option<&NaiveDate>) -> String {
+    activity_date.map_or_else(
+        || "No active Linear issues found.".to_string(),
+        |activity_date| format!("No Linear activity found for {}.", format_date(activity_date)),
+    )
+}
+
+fn format_recorded_message(issue_count: usize, activity_date: Option<&NaiveDate>) -> String {
+    activity_date.map_or_else(
+        || format!("Added {issue_count} active Linear issues to your work file."),
+        |activity_date| {
+            format!(
+                "Added {issue_count} Linear issues from {} to your work file.",
+                format_date(activity_date)
+            )
+        },
+    )
 }
