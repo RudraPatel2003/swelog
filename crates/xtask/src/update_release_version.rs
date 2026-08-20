@@ -13,9 +13,11 @@ use miette::{
 use serde_json::Value;
 
 use crate::utils::{
+    DOCS_PACKAGE_JSON_PATH,
     NPM_PACKAGE_JSON_PATH,
     get_release_tag_from_args,
     get_release_version_from_tag,
+    read_docs_package_json,
     read_npm_package_json,
 };
 
@@ -28,9 +30,33 @@ pub fn run_update_release_version(mut args: Args) -> Result<()> {
 
     update_npm_version(release_version)?;
 
+    update_docs_version(release_version)?;
+
     update_crate_versions(release_version)?;
 
     println!("Updated all versions to {release_version}");
+
+    Ok(())
+}
+
+fn update_docs_version(release_version: &str) -> Result<()> {
+    let mut package_json = read_docs_package_json()?;
+
+    let package_json_object = package_json
+        .as_object_mut()
+        .ok_or_else(|| miette!("docs/package.json is not a JSON object"))?;
+
+    package_json_object.insert(String::from("version"), Value::String(release_version.to_string()));
+
+    let mut serialized = serde_json::to_string_pretty(&package_json)
+        .into_diagnostic()
+        .wrap_err("failed to serialize docs/package.json")?;
+
+    serialized.push('\n');
+
+    fs::write(DOCS_PACKAGE_JSON_PATH, serialized)
+        .into_diagnostic()
+        .wrap_err("failed to write docs/package.json")?;
 
     Ok(())
 }
