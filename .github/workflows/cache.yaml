@@ -33,11 +33,7 @@ jobs:
         with:
           shared-key: "rust-dependencies-cache"
 
-      #
-      # Nothing is cached unless the dependencies are actually built here.
-      # Clippy is a check build that only produces metadata, while tests need
-      # real codegen, so both have to run for a PR to get a full cache hit.
-      #
+      # Build dependencies to ensure the cache is valid
       - name: Build dependencies
         run: |
           cargo clippy --workspace --all-targets --all-features
