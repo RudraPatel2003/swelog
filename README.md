@@ -332,7 +332,7 @@ canceled ones.
 
    ```json
    {
-     "linearUsername": "Rudra Patel"
+     "linearUsername": "rudrapatel"
    }
    ```
 
