@@ -16,16 +16,17 @@ use swelog_paths::SwelogPaths;
 
 use crate::{
     errors::SwelogFilesAlreadyExist,
+    overwrite::Overwrite,
     swelog_config::SwelogConfig,
 };
 
 pub fn setup_swelog_files_from_config(
     swelog_config: &SwelogConfig,
-    overwrite_existing_files: bool,
+    overwrite: Overwrite,
 ) -> Result<()> {
     let swelog_paths = SwelogPaths::new(swelog_config);
 
-    if !overwrite_existing_files {
+    if overwrite == Overwrite::No {
         fail_if_swelog_paths_exist(&swelog_paths)?;
     }
 

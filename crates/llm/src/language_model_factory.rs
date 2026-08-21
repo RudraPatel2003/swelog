@@ -3,8 +3,8 @@ use config::swelog_config::{
     SwelogConfig,
 };
 use credentials::{
-    Credential,
-    get_or_prompt_for_credential,
+    credential::Credential,
+    resolution::get_or_prompt_for_credential,
 };
 use miette::Result;
 

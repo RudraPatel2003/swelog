@@ -1,9 +1,11 @@
 use async_trait::async_trait;
 use credentials::{
-    Credential,
-    clear_credential,
-    read_credential,
-    write_credential,
+    credential::Credential,
+    store::{
+        clear_credential,
+        read_credential,
+        write_credential,
+    },
 };
 use rmcp::transport::{
     AuthError,

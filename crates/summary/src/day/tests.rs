@@ -106,8 +106,8 @@ async fn summarize_daily_work_writes_generated_daily_log() {
         &test_context.config,
         &FakeLanguageModel,
         &test_log_date(),
-        false,
-        false,
+        Overwrite::No,
+        KeepWorkFile::No,
     )
     .await
     .expect("daily log should be written");
@@ -137,8 +137,8 @@ async fn summarize_daily_work_fails_when_context_file_is_missing() {
         &test_context.config,
         &FakeLanguageModel,
         &test_log_date(),
-        false,
-        false,
+        Overwrite::No,
+        KeepWorkFile::No,
     )
     .await
     .expect_err("missing context file should fail");
@@ -163,8 +163,8 @@ async fn summarize_daily_work_fails_when_work_file_is_missing() {
         &test_context.config,
         &FakeLanguageModel,
         &test_log_date(),
-        false,
-        false,
+        Overwrite::No,
+        KeepWorkFile::No,
     )
     .await
     .expect_err("missing work file should fail");
@@ -190,8 +190,8 @@ async fn summarize_daily_work_fails_when_daily_log_directory_is_missing() {
         &test_context.config,
         &FakeLanguageModel,
         &test_log_date(),
-        false,
-        false,
+        Overwrite::No,
+        KeepWorkFile::No,
     )
     .await
     .expect_err("missing daily log directory should fail");
@@ -217,8 +217,8 @@ async fn summarize_daily_work_fails_when_daily_log_exists_without_force() {
         &test_context.config,
         &FakeLanguageModel,
         &test_log_date(),
-        false,
-        false,
+        Overwrite::No,
+        KeepWorkFile::No,
     )
     .await
     .expect_err("existing daily log should fail without force");
@@ -250,8 +250,8 @@ async fn summarize_daily_work_overwrites_existing_daily_log_with_force() {
         &test_context.config,
         &FakeLanguageModel,
         &test_log_date(),
-        true,
-        false,
+        Overwrite::Yes,
+        KeepWorkFile::No,
     )
     .await
     .expect("existing daily log should be overwritten with force");
@@ -275,8 +275,8 @@ async fn summarize_daily_work_resets_work_file_by_default() {
         &test_context.config,
         &FakeLanguageModel,
         &test_log_date(),
-        false,
-        false,
+        Overwrite::No,
+        KeepWorkFile::No,
     )
     .await
     .expect("daily log should be written");
@@ -305,8 +305,8 @@ async fn summarize_daily_work_keeps_work_file_when_keep_is_set() {
         &test_context.config,
         &FakeLanguageModel,
         &test_log_date(),
-        false,
-        true,
+        Overwrite::No,
+        KeepWorkFile::Yes,
     )
     .await
     .expect("daily log should be written");

@@ -1,4 +1,4 @@
-use linear::{
+use linear::issue::{
     LinearIssue,
     LinearStatusType,
 };

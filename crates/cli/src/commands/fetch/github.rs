@@ -5,11 +5,11 @@ use chrono::{
 use clap::Args;
 use config::utils::read_config_file;
 use credentials::{
-    Credential,
-    get_or_prompt_for_credential,
+    credential::Credential,
+    resolution::get_or_prompt_for_credential,
 };
 use dates::{
-    DATE_VALUE_NAME,
+    date_format::DATE_VALUE_NAME,
     parsing::parse_date,
 };
 use github::{
@@ -23,11 +23,20 @@ use github::{
 use logging::work_file::upsert_managed_work_file_section_from_config;
 use miette::Result;
 
+use crate::commands::date_selection::{
+    DateSelection,
+    resolve_selected_date,
+};
+
 #[derive(Debug, Args)]
 pub struct GithubArgs {
     /// Date to fetch GitHub activity for in the format MM-DD-YYYY.
     #[arg(long, value_name = DATE_VALUE_NAME, value_parser = parse_date)]
     date: Option<NaiveDate>,
+
+    /// Fetch GitHub activity for yesterday instead of today.
+    #[arg(long = "yesterday", conflicts_with = "date")]
+    use_yesterday: bool,
 }
 
 impl GithubArgs {
@@ -38,7 +47,11 @@ impl GithubArgs {
 
         let github_username = get_github_username(&github_token).await?;
 
-        let activity_date = self.date.unwrap_or_else(|| Local::now().date_naive());
+        let today = Local::now().date_naive();
+
+        let date_selection = DateSelection::from_date_flags(self.date, self.use_yesterday);
+
+        let activity_date = resolve_selected_date(date_selection, today)?.unwrap_or(today);
 
         let (opened_prs, merged_prs) = tokio::try_join!(
             get_opened_prs(&github_token, &github_username, &activity_date),

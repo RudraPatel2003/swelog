@@ -4,8 +4,8 @@ mod credential_store;
 use std::time::Duration;
 
 use credentials::{
-    Credential,
-    clear_credential,
+    credential::Credential,
+    store::clear_credential,
 };
 use miette::Result;
 use rmcp::transport::{

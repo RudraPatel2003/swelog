@@ -8,7 +8,7 @@ use chrono::{
 };
 
 use crate::{
-    DATE_FORMAT,
+    date_format::DATE_FORMAT,
     errors::DateParseError,
 };
 

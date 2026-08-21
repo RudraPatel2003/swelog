@@ -1,6 +1,7 @@
 use clap::Args;
 use config::{
     init::write_default_config,
+    overwrite::Overwrite,
     swelog_config::SwelogConfig,
     utils::get_config_file_path,
 };
@@ -20,7 +21,11 @@ impl InitArgs {
 
         let config_file_path = get_config_file_path()?;
 
-        write_default_config(&config_file_path, &default_config, self.overwrite_existing_config)?;
+        write_default_config(
+            &config_file_path,
+            &default_config,
+            Overwrite::from_force_flag(self.overwrite_existing_config),
+        )?;
 
         println!("Created swelog config at {}", config_file_path.display().cyan());
 

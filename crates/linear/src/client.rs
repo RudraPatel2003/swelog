@@ -1,4 +1,7 @@
-use chrono::NaiveDate;
+use chrono::{
+    Local,
+    NaiveDate,
+};
 use miette::Result;
 use reqwest::Client;
 use rmcp::{
@@ -18,18 +21,21 @@ use rmcp::{
 use serde_json::Value;
 
 use crate::{
-    LinearIssue,
     activity::{
         get_updated_after_filter,
         was_issue_worked_on,
     },
     errors::LinearMcpRequestFailed,
+    issue::LinearIssue,
     oauth::{
         LINEAR_MCP_URL,
         clear_linear_authorization,
         get_authorization_manager,
     },
-    response::parse_issue_page,
+    response::{
+        LinearIssuePage,
+        parse_issue_page,
+    },
 };
 
 const PAGE_SIZE: u64 = 50;
@@ -56,16 +62,16 @@ pub async fn get_active_assigned_issues(username: &str) -> Result<Vec<LinearIssu
 
     issues.retain(|issue| issue.status_type.is_active());
 
-    client.cancel().await.map_err(|error| LinearMcpRequestFailed { message: error.to_string() })?;
+    disconnect_from_linear_mcp(client).await?;
 
     Ok(issues)
 }
 
 /// Fetches the issues assigned to `username` that Linear recorded activity on
-/// during `date`, so a missed day can be backfilled.
+/// during `date`.
 ///
-/// Completed and canceled issues are kept because finishing an issue is exactly
-/// the kind of work a past day's log should record.
+/// Completed and canceled issues are kept, because finishing an issue is the
+/// kind of work a past day's log should record.
 pub async fn get_assigned_issues_worked_on(
     username: &str,
     date: &NaiveDate,
@@ -76,15 +82,15 @@ pub async fn get_assigned_issues_worked_on(
 
     let mut issues = fetch_all_issues(&client, username, Some(&updated_after)).await?;
 
-    issues.retain(|issue| was_issue_worked_on(issue, *date));
+    issues.retain(|issue| was_issue_worked_on(issue, *date, &Local));
 
-    client.cancel().await.map_err(|error| LinearMcpRequestFailed { message: error.to_string() })?;
+    disconnect_from_linear_mcp(client).await?;
 
     Ok(issues)
 }
 
-/// Connects to the Linear MCP server, discarding stored credentials and
-/// reauthorizing once if the server rejects them.
+/// Connects to the Linear MCP server, reauthorizing once if the server rejects
+/// the stored credentials.
 async fn connect_to_linear_mcp() -> Result<RunningService<RoleClient, ()>> {
     let mut reauthorization_attempted = false;
 
@@ -105,11 +111,15 @@ async fn connect_to_linear_mcp() -> Result<RunningService<RoleClient, ()>> {
                 reauthorization_attempted = true;
             }
 
-            Err(error) => {
-                return Err(LinearMcpRequestFailed { message: error.to_string() }.into());
-            }
+            Err(error) => return Err(linear_mcp_request_failed(&error)),
         }
     }
+}
+
+async fn disconnect_from_linear_mcp(client: RunningService<RoleClient, ()>) -> Result<()> {
+    client.cancel().await.map_err(|error| linear_mcp_request_failed(&error))?;
+
+    Ok(())
 }
 
 async fn fetch_all_issues(
@@ -121,15 +131,7 @@ async fn fetch_all_issues(
     let mut cursor: Option<String> = None;
 
     loop {
-        let result =
-            client
-                .call_tool(CallToolRequestParams::new("list_issues").with_arguments(
-                    list_issues_arguments(username, cursor.as_deref(), updated_after),
-                ))
-                .await
-                .map_err(|error| LinearMcpRequestFailed { message: error.to_string() })?;
-
-        let mut page = parse_issue_page(result)?;
+        let mut page = fetch_issue_page(client, username, cursor.as_deref(), updated_after).await?;
 
         issues.append(&mut page.issues);
 
@@ -138,14 +140,29 @@ async fn fetch_all_issues(
         };
 
         if cursor.as_deref() == Some(next_cursor.as_str()) {
-            return Err(LinearMcpRequestFailed {
-                message: "Linear MCP returned a repeated pagination cursor".to_string(),
-            }
-            .into());
+            return Err(linear_mcp_request_failed(
+                &"Linear MCP returned a repeated pagination cursor",
+            ));
         }
 
         cursor = Some(next_cursor);
     }
+}
+
+async fn fetch_issue_page(
+    client: &RunningService<RoleClient, ()>,
+    username: &str,
+    cursor: Option<&str>,
+    updated_after: Option<&str>,
+) -> Result<LinearIssuePage> {
+    let arguments = list_issues_arguments(username, cursor, updated_after);
+
+    let result = client
+        .call_tool(CallToolRequestParams::new("list_issues").with_arguments(arguments))
+        .await
+        .map_err(|error| linear_mcp_request_failed(&error))?;
+
+    parse_issue_page(result)
 }
 
 fn list_issues_arguments(
@@ -175,4 +192,8 @@ fn issue_fields_argument() -> Value {
     Value::Array(
         ISSUE_FIELDS.iter().map(|field| Value::String((*field).to_string())).collect::<Vec<_>>(),
     )
+}
+
+fn linear_mcp_request_failed(error: &impl ToString) -> miette::Report {
+    LinearMcpRequestFailed { message: error.to_string() }.into()
 }

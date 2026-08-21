@@ -11,15 +11,16 @@ use miette::{
 
 use crate::{
     errors::ConfigAlreadyExists,
+    overwrite::Overwrite,
     swelog_config::SwelogConfig,
 };
 
 pub fn write_default_config(
     config_file_path: &PathBuf,
     config: &SwelogConfig,
-    overwrite_existing_config: bool,
+    overwrite: Overwrite,
 ) -> Result<()> {
-    if config_file_path.exists() && !overwrite_existing_config {
+    if config_file_path.exists() && overwrite == Overwrite::No {
         let config_already_exists_error =
             ConfigAlreadyExists { config_file_path: config_file_path.clone() };
 

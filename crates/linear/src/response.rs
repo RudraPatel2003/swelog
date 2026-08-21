@@ -4,8 +4,8 @@ use serde::Deserialize;
 use serde_json::Value;
 
 use crate::{
-    LinearIssue,
     errors::UnsupportedLinearResponse,
+    issue::LinearIssue,
 };
 
 const NO_ISSUES_FOUND_MESSAGE: &str = "No issues found";

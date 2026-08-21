@@ -31,6 +31,7 @@ impl AuthArgs {
     pub fn run(self) -> Result<()> {
         match self.command {
             AuthCommands::Status(status_args) => status_args.run(),
+
             AuthCommands::Clear(clear_args) => clear_args.run(),
         }
     }

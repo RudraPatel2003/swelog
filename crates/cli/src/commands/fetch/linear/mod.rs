@@ -1,15 +1,18 @@
 mod errors;
 mod formatting;
 
-use chrono::NaiveDate;
+use chrono::{
+    Local,
+    NaiveDate,
+};
 use clap::Args;
 use config::utils::read_config_file;
 use dates::{
-    DATE_VALUE_NAME,
+    date_format::DATE_VALUE_NAME,
     formatting::format_date,
     parsing::parse_date,
 };
-use linear::{
+use linear::client::{
     get_active_assigned_issues,
     get_assigned_issues_worked_on,
 };
@@ -19,9 +22,15 @@ use logging::work_file::{
 };
 use miette::Result;
 
-use crate::commands::fetch::linear::{
-    errors::MissingLinearUsername,
-    formatting::format_linear_issues,
+use crate::commands::{
+    date_selection::{
+        DateSelection,
+        resolve_selected_date,
+    },
+    fetch::linear::{
+        errors::MissingLinearUsername,
+        formatting::format_linear_issues,
+    },
 };
 
 const LINEAR_SECTION_ID: &str = "linear";
@@ -33,6 +42,10 @@ pub struct LinearArgs {
     /// active issues are fetched instead.
     #[arg(long, value_name = DATE_VALUE_NAME, value_parser = parse_date)]
     date: Option<NaiveDate>,
+
+    /// Fetch the Linear issues you worked on yesterday.
+    #[arg(long = "yesterday", conflicts_with = "date")]
+    use_yesterday: bool,
 }
 
 impl LinearArgs {
@@ -46,7 +59,11 @@ impl LinearArgs {
             .filter(|linear_username| !linear_username.is_empty())
             .ok_or(MissingLinearUsername)?;
 
-        let issues = match self.date {
+        let date_selection = DateSelection::from_date_flags(self.date, self.use_yesterday);
+
+        let activity_date = resolve_selected_date(date_selection, Local::now().date_naive())?;
+
+        let issues = match activity_date {
             Some(activity_date) => {
                 get_assigned_issues_worked_on(linear_username, &activity_date).await?
             }
@@ -57,7 +74,7 @@ impl LinearArgs {
         if issues.is_empty() {
             remove_managed_work_file_section_from_config(&swelog_config, LINEAR_SECTION_ID)?;
 
-            println!("{}", format_empty_message(self.date.as_ref()));
+            println!("{}", format_empty_message(activity_date.as_ref()));
 
             return Ok(());
         }
@@ -69,7 +86,7 @@ impl LinearArgs {
             &format_linear_issues(&issues),
         )?;
 
-        println!("{}", format_recorded_message(issues.len(), self.date.as_ref()));
+        println!("{}", format_recorded_message(issues.len(), activity_date.as_ref()));
 
         Ok(())
     }

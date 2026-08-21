@@ -50,6 +50,7 @@ Full documentation lives at
 
 - Rust
 - Just
+- cargo-nextest for running the test suite
 - Obsidian
 - Ollama when testing the default summarization provider
 - Provider credentials when testing hosted models or integrations

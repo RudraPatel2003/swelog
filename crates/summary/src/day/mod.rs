@@ -4,6 +4,7 @@ use std::fs;
 
 use chrono::NaiveDate;
 use config::{
+    overwrite::Overwrite,
     setup::{
         default_files::DEFAULT_WORK_FILE_CONTENT,
         swelog_paths::SwelogPaths,
@@ -29,12 +30,27 @@ use miette::{
     WrapErr,
 };
 
+/// Whether the work file keeps its contents after the summary is written.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum KeepWorkFile {
+    Yes,
+    No,
+}
+
+impl KeepWorkFile {
+    /// Converts the `--keep` flag clap parsed into the choice it stands for.
+    #[must_use]
+    pub const fn from_keep_flag(keep: bool) -> Self {
+        if keep { Self::Yes } else { Self::No }
+    }
+}
+
 pub async fn summarize_daily_work_from_config(
     swelog_config: &SwelogConfig,
     language_model: &dyn LanguageModel,
     log_date: &NaiveDate,
-    overwrite_existing_daily_log: bool,
-    keep_work_file: bool,
+    overwrite: Overwrite,
+    keep_work_file: KeepWorkFile,
 ) -> Result<()> {
     let swelog_paths = SwelogPaths::new(swelog_config);
 
@@ -46,7 +62,7 @@ pub async fn summarize_daily_work_from_config(
 
     let daily_log_file = swelog_paths.daily_log_directory.join(daily_log_file_name);
 
-    if daily_log_file.exists() && !overwrite_existing_daily_log {
+    if daily_log_file.exists() && overwrite == Overwrite::No {
         let daily_log_already_exists_error = DailyLogAlreadyExists { daily_log_file };
 
         return Err(daily_log_already_exists_error.into());
@@ -79,7 +95,7 @@ pub async fn summarize_daily_work_from_config(
         format!("failed to write daily log file at {}", daily_log_file.display())
     })?;
 
-    if !keep_work_file {
+    if keep_work_file == KeepWorkFile::No {
         fs::write(&swelog_paths.work_file, DEFAULT_WORK_FILE_CONTENT)
             .into_diagnostic()
             .wrap_err_with(|| {

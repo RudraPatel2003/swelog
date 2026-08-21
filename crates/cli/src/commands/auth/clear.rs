@@ -1,7 +1,7 @@
 use clap::Args;
 use credentials::{
-    Credential,
-    clear_credential,
+    credential::Credential,
+    store::clear_credential,
 };
 use miette::Result;
 

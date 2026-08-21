@@ -1,25 +1,24 @@
 use chrono::{
     DateTime,
     Days,
-    Local,
     NaiveDate,
+    TimeZone,
     Utc,
 };
 use dates::formatting::format_date;
 
 use crate::{
-    LinearIssue,
     errors::LinearDateOutOfRange,
+    issue::LinearIssue,
 };
 
-/// The [`chrono`] format string Linear expects for its timestamp filters.
 const LINEAR_FILTER_DATE_FORMAT: &str = "%Y-%m-%d";
 
 /// Builds the `updatedAt` argument that bounds how far back Linear searches.
 ///
-/// Linear only accepts a lower bound in UTC, so ask for a full day earlier than
-/// the requested date. That covers every local time zone offset, and the issues
-/// it over-fetches are discarded by [`was_issue_worked_on`].
+/// Linear accepts only a UTC lower bound, so this asks for a full day earlier to
+/// cover every time zone offset. The issues that over-fetches are discarded by
+/// [`was_issue_worked_on`].
 pub fn get_updated_after_filter(date: NaiveDate) -> Result<String, LinearDateOutOfRange> {
     let earliest_date = date
         .checked_sub_days(Days::new(1))
@@ -28,12 +27,11 @@ pub fn get_updated_after_filter(date: NaiveDate) -> Result<String, LinearDateOut
     Ok(format!("{}T00:00:00Z", earliest_date.format(LINEAR_FILTER_DATE_FORMAT)))
 }
 
-/// Decides whether an issue belongs in the work file for a date.
+/// Whether an issue belongs in the work file for a date, read in `timezone`.
 ///
-/// Linear does not expose issue history, so the only evidence available is the
-/// timestamps on the issue itself. An issue counts when any of them lands on the
-/// date.
-pub fn was_issue_worked_on(issue: &LinearIssue, date: NaiveDate) -> bool {
+/// Linear does not expose issue history, so the timestamps on the issue itself
+/// are the only evidence available.
+pub fn was_issue_worked_on(issue: &LinearIssue, date: NaiveDate, timezone: &impl TimeZone) -> bool {
     let timestamps = issue.timestamps;
 
     [
@@ -45,13 +43,11 @@ pub fn was_issue_worked_on(issue: &LinearIssue, date: NaiveDate) -> bool {
     ]
     .into_iter()
     .flatten()
-    .any(|instant| falls_on_local_date(instant, date))
+    .any(|instant| falls_on_date(instant, date, timezone))
 }
 
-/// Linear records timestamps in UTC, while the requested date is the one the
-/// user reads on their own calendar.
-fn falls_on_local_date(instant: DateTime<Utc>, date: NaiveDate) -> bool {
-    instant.with_timezone(&Local).date_naive() == date
+fn falls_on_date(instant: DateTime<Utc>, date: NaiveDate, timezone: &impl TimeZone) -> bool {
+    instant.with_timezone(timezone).date_naive() == date
 }
 
 #[cfg(test)]

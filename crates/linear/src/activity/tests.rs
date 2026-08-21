@@ -1,11 +1,11 @@
 use chrono::{
-    Local,
+    FixedOffset,
     NaiveDate,
     TimeZone,
 };
 
 use super::*;
-use crate::{
+use crate::issue::{
     LinearIssueTimestamps,
     LinearStatusType,
 };
@@ -14,10 +14,13 @@ fn date(year: i32, month: u32, day: u32) -> NaiveDate {
     NaiveDate::from_ymd_opt(year, month, day).expect("test date should be valid")
 }
 
-/// Builds a UTC instant from a local wall clock time so the assertions do not
-/// depend on the time zone the tests run in.
-fn local_instant(year: i32, month: u32, day: u32, hour: u32, minute: u32) -> DateTime<Utc> {
-    Local
+/// UTC-05:00, so a late evening timestamp here lands on the next day in UTC.
+fn timezone() -> FixedOffset {
+    FixedOffset::west_opt(18_000).expect("test offset should be valid")
+}
+
+fn instant(year: i32, month: u32, day: u32, hour: u32, minute: u32) -> DateTime<Utc> {
+    timezone()
         .with_ymd_and_hms(year, month, day, hour, minute, 0)
         .single()
         .expect("test instant should be unambiguous")
@@ -53,50 +56,50 @@ fn get_updated_after_filter_crosses_a_year_boundary() {
 #[test]
 fn was_issue_worked_on_matches_an_issue_updated_on_the_date() {
     let issue = issue(LinearIssueTimestamps {
-        updated_at: Some(local_instant(2026, 8, 17, 14, 30)),
+        updated_at: Some(instant(2026, 8, 17, 14, 30)),
         ..LinearIssueTimestamps::default()
     });
 
-    assert!(was_issue_worked_on(&issue, date(2026, 8, 17)));
+    assert!(was_issue_worked_on(&issue, date(2026, 8, 17), &timezone()));
 }
 
 #[test]
 fn was_issue_worked_on_matches_an_issue_completed_on_the_date_but_updated_later() {
     let issue = issue(LinearIssueTimestamps {
-        completed_at: Some(local_instant(2026, 8, 17, 16, 0)),
-        updated_at: Some(local_instant(2026, 8, 19, 9, 0)),
+        completed_at: Some(instant(2026, 8, 17, 16, 0)),
+        updated_at: Some(instant(2026, 8, 19, 9, 0)),
         ..LinearIssueTimestamps::default()
     });
 
-    assert!(was_issue_worked_on(&issue, date(2026, 8, 17)));
+    assert!(was_issue_worked_on(&issue, date(2026, 8, 17), &timezone()));
 }
 
 #[test]
 fn was_issue_worked_on_ignores_an_issue_from_a_different_date() {
     let issue = issue(LinearIssueTimestamps {
-        created_at: Some(local_instant(2026, 8, 10, 9, 0)),
-        started_at: Some(local_instant(2026, 8, 11, 9, 0)),
-        updated_at: Some(local_instant(2026, 8, 18, 9, 0)),
+        created_at: Some(instant(2026, 8, 10, 9, 0)),
+        started_at: Some(instant(2026, 8, 11, 9, 0)),
+        updated_at: Some(instant(2026, 8, 18, 9, 0)),
         ..LinearIssueTimestamps::default()
     });
 
-    assert!(!was_issue_worked_on(&issue, date(2026, 8, 17)));
+    assert!(!was_issue_worked_on(&issue, date(2026, 8, 17), &timezone()));
 }
 
 #[test]
 fn was_issue_worked_on_ignores_an_issue_without_timestamps() {
     let issue = issue(LinearIssueTimestamps::default());
 
-    assert!(!was_issue_worked_on(&issue, date(2026, 8, 17)));
+    assert!(!was_issue_worked_on(&issue, date(2026, 8, 17), &timezone()));
 }
 
 #[test]
-fn was_issue_worked_on_reads_timestamps_in_the_local_time_zone() {
+fn was_issue_worked_on_reads_timestamps_in_the_supplied_time_zone() {
     let issue = issue(LinearIssueTimestamps {
-        updated_at: Some(local_instant(2026, 8, 17, 23, 30)),
+        updated_at: Some(instant(2026, 8, 17, 23, 30)),
         ..LinearIssueTimestamps::default()
     });
 
-    assert!(was_issue_worked_on(&issue, date(2026, 8, 17)));
-    assert!(!was_issue_worked_on(&issue, date(2026, 8, 18)));
+    assert!(was_issue_worked_on(&issue, date(2026, 8, 17), &timezone()));
+    assert!(!was_issue_worked_on(&issue, date(2026, 8, 18), &timezone()));
 }

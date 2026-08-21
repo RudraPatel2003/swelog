@@ -3,7 +3,7 @@ mod tests;
 
 use chrono::NaiveDate;
 
-use crate::DATE_FORMAT;
+use crate::date_format::DATE_FORMAT;
 
 /// Renders a date the way swelog writes it in log files and prompts.
 #[must_use]

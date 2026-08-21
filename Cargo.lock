@@ -506,6 +506,7 @@ dependencies = [
  "summary",
  "thiserror 2.0.18",
  "tokio",
+ "updates",
 ]
 
 [[package]]
@@ -3204,6 +3205,23 @@ name = "untrusted"
 version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8ecb6da28b8a351d773b68d5825ac39017e680750f980f3a1a85cd8dd28a47c1"
+
+[[package]]
+name = "updates"
+version = "0.10.0"
+dependencies = [
+ "chrono",
+ "dirs",
+ "miette",
+ "owo-colors",
+ "reqwest 0.13.4",
+ "semver",
+ "serde",
+ "serde_json",
+ "tempfile",
+ "thiserror 2.0.18",
+ "tokio",
+]
 
 [[package]]
 name = "url"

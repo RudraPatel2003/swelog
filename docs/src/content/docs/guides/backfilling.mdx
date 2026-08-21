@@ -1,12 +1,29 @@
 ---
 title: Backfilling a Missed Day
-description: Reconstruct a day you missed using the --date and --week-of flags.
+description:
+  Reconstruct a day you missed using the --date, --yesterday, --week-of, and
+  --last-week flags.
 ---
 
 Every command that is tied to a day accepts `--date MM-DD-YYYY`, so a day you
 missed can be reconstructed later. `WORK.md` is always the scratch pad the
 summary is built from; the date flags only decide which day is fetched and which
 file the summary is written to.
+
+## Backfilling yesterday
+
+Yesterday is the day people miss most, so it has its own flag. `--yesterday`
+picks the same date `--date` would, without you having to work it out:
+
+```sh
+swelog reset
+swelog log "Debugged the retry storm in the payments worker"
+swelog fetch github --yesterday
+swelog fetch linear --yesterday
+swelog summarize day --yesterday
+```
+
+For any other day, use `--date` as below.
 
 ## Backfilling Monday, 08-17-2026
 
@@ -47,12 +64,19 @@ file the summary is written to.
 
 ## Backfill flags
 
-| Command                 | Backfill flag          |
-| ----------------------- | ---------------------- |
-| `swelog fetch github`   | `--date MM-DD-YYYY`    |
-| `swelog fetch linear`   | `--date MM-DD-YYYY`    |
-| `swelog summarize day`  | `--date MM-DD-YYYY`    |
-| `swelog summarize week` | `--week-of MM-DD-YYYY` |
+| Command                 | Backfill flag          | Shortcut      |
+| ----------------------- | ---------------------- | ------------- |
+| `swelog fetch github`   | `--date MM-DD-YYYY`    | `--yesterday` |
+| `swelog fetch linear`   | `--date MM-DD-YYYY`    | `--yesterday` |
+| `swelog summarize day`  | `--date MM-DD-YYYY`    | `--yesterday` |
+| `swelog summarize week` | `--week-of MM-DD-YYYY` | `--last-week` |
+
+You cannot pass a shortcut and the flag it replaces at the same time.
+
+`--last-week` goes back one week from the Monday `swelog summarize week` would
+pick on its own, which is always the Monday of the week containing today. Run it
+on a Monday and you get the week that just ended, which is what you want when you
+left on Friday without summarizing.
 
 `swelog log` and `swelog reset` need no date; they act on `WORK.md`, which holds
 whichever day you are currently assembling.

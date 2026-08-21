@@ -5,44 +5,43 @@ use clap::Parser;
 use cli::Cli;
 use commands::Commands;
 use miette::Result;
+use updates::check::{
+    print_update_notice,
+    refresh_latest_version_cache,
+};
 
 #[tokio::main]
 async fn main() -> Result<()> {
     let cli = Cli::parse();
 
-    match cli.command {
-        Commands::Init(init_args) => {
-            init_args.run()?;
-        }
+    let version_cache_refresh = refresh_latest_version_cache();
 
-        Commands::Setup(setup_args) => {
-            setup_args.run()?;
-        }
+    // Store result so update is printed even if command fails
+    let command_result = run_command(cli.command).await;
 
-        Commands::Summarize(summarize_args) => {
-            summarize_args.run().await?;
-        }
+    let cargo_package_version = env!("CARGO_PKG_VERSION");
 
-        Commands::Log(log_args) => {
-            log_args.run()?;
-        }
+    print_update_notice(cargo_package_version, version_cache_refresh).await;
 
-        Commands::Reset(reset_args) => {
-            reset_args.run()?;
-        }
+    command_result
+}
 
-        Commands::Fetch(fetch_args) => {
-            fetch_args.run().await?;
-        }
+async fn run_command(command: Commands) -> Result<()> {
+    match command {
+        Commands::Init(init_args) => init_args.run(),
 
-        Commands::Config(config_args) => {
-            config_args.run()?;
-        }
+        Commands::Setup(setup_args) => setup_args.run(),
 
-        Commands::Auth(auth_args) => {
-            auth_args.run()?;
-        }
+        Commands::Summarize(summarize_args) => summarize_args.run().await,
+
+        Commands::Log(log_args) => log_args.run(),
+
+        Commands::Reset(reset_args) => reset_args.run(),
+
+        Commands::Fetch(fetch_args) => fetch_args.run().await,
+
+        Commands::Config(config_args) => config_args.run(),
+
+        Commands::Auth(auth_args) => auth_args.run(),
     }
-
-    Ok(())
 }

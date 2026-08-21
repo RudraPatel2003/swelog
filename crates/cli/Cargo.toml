@@ -33,3 +33,4 @@ owo-colors = { workspace = true }
 summary = { path = "../summary" }
 thiserror = { workspace = true }
 tokio = { workspace = true }
+updates = { path = "../updates" }

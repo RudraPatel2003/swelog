@@ -29,7 +29,8 @@ pub struct WorkFileNotDefault;
 #[diagnostic(
     code(swelog::summary::no_daily_logs_found),
     help(
-        "run `swelog summarize day` for at least one weekday before running `swelog summarize week`"
+        "run `swelog summarize day` for at least one weekday of that week, or use `swelog \
+         summarize week --last-week` to summarize the previous week"
     )
 )]
 pub struct NoDailyLogsFound {
