@@ -5,10 +5,7 @@ use miette::Result;
 use crate::{
     credential::Credential,
     errors::missing_credential_error,
-    prompt::{
-        is_interactive_terminal,
-        prompt_for_secret,
-    },
+    prompt::prompt_for_secret,
     store::{
         read_credential,
         write_credential,
@@ -16,7 +13,7 @@ use crate::{
 };
 
 /// Resolves a credential from the environment, then the keyring, prompting for
-/// it and storing the answer when swelog is running interactively.
+/// it and storing the answer.
 pub fn get_or_prompt_for_credential(credential: Credential) -> Result<String> {
     if let Some(secret) = read_credential_from_environment(credential) {
         return Ok(secret);
@@ -26,8 +23,7 @@ pub fn get_or_prompt_for_credential(credential: Credential) -> Result<String> {
         return Ok(secret);
     }
 
-    let (Some(instructions), true) = (credential.prompt_instructions(), is_interactive_terminal())
-    else {
+    let Some(instructions) = credential.prompt_instructions() else {
         return Err(missing_credential_error(credential));
     };
 
