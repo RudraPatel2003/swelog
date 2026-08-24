@@ -7,21 +7,21 @@ use commands::Commands;
 use miette::Result;
 use updates::check::{
     print_update_notice,
-    refresh_latest_version_cache,
+    start_version_check,
 };
 
 #[tokio::main]
 async fn main() -> Result<()> {
     let cli = Cli::parse();
 
-    let version_cache_refresh = refresh_latest_version_cache();
+    let cargo_package_version = env!("CARGO_PKG_VERSION");
+
+    let pending_update_notice = start_version_check(cargo_package_version);
 
     // Store result so update is printed even if command fails
     let command_result = run_command(cli.command).await;
 
-    let cargo_package_version = env!("CARGO_PKG_VERSION");
-
-    print_update_notice(cargo_package_version, version_cache_refresh).await;
+    print_update_notice(pending_update_notice).await;
 
     command_result
 }

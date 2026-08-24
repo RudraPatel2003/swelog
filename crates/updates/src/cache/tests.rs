@@ -30,7 +30,7 @@ fn get_version_cache(latest_version: &str, checked_seconds_ago: i64) -> VersionC
         .checked_sub_signed(TimeDelta::seconds(checked_seconds_ago))
         .expect("timestamp should be representable");
 
-    VersionCache { latest_version: Some(String::from(latest_version)), checked_at }
+    VersionCache { latest_version: String::from(latest_version), checked_at }
 }
 
 #[test]

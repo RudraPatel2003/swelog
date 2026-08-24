@@ -1,13 +1,9 @@
 use std::{
-    path::{
-        Path,
-        PathBuf,
-    },
+    path::PathBuf,
     time::Duration,
 };
 
 use chrono::Utc;
-use miette::Result;
 use tokio::{
     task::JoinHandle,
     time::timeout,
@@ -27,47 +23,39 @@ use crate::{
 
 const REFRESH_GRACE_PERIOD: Duration = Duration::from_millis(400);
 
-pub struct VersionCacheRefresh(Option<JoinHandle<()>>);
-
-impl VersionCacheRefresh {
-    async fn wait_for_completion(self) {
-        let Some(refresh) = self.0 else {
-            return;
-        };
-
-        let _ = timeout(REFRESH_GRACE_PERIOD, refresh).await;
-    }
+pub struct PendingUpdateNotice {
+    update_notice: Option<String>,
+    refresh: Option<JoinHandle<()>>,
 }
 
 #[must_use]
-pub fn refresh_latest_version_cache() -> VersionCacheRefresh {
+pub fn start_version_check(current_version: &str) -> PendingUpdateNotice {
     let Ok(cache_file_path) = get_version_cache_file_path() else {
-        return VersionCacheRefresh(None);
+        return PendingUpdateNotice { update_notice: None, refresh: None };
     };
 
-    let previous_version_cache = read_version_cache(&cache_file_path).ok();
+    let version_cache = read_version_cache(&cache_file_path).ok();
 
-    if !is_refresh_due(previous_version_cache.as_ref(), Utc::now()) {
-        return VersionCacheRefresh(None);
-    }
+    let refresh = is_refresh_due(version_cache.as_ref(), Utc::now())
+        .then(|| tokio::spawn(store_latest_version(cache_file_path)));
 
-    let previous_latest_version =
-        previous_version_cache.and_then(|version_cache| version_cache.latest_version);
+    let latest_version = version_cache.map(|version_cache| version_cache.latest_version);
 
-    if claim_check_window(&cache_file_path, previous_latest_version).is_err() {
-        return VersionCacheRefresh(None);
-    }
+    let update_notice = get_update_notice(current_version, latest_version.as_deref());
 
-    VersionCacheRefresh(Some(tokio::spawn(store_latest_version(cache_file_path))))
+    PendingUpdateNotice { update_notice, refresh }
 }
 
-pub async fn print_update_notice(
-    current_version: &str,
-    version_cache_refresh: VersionCacheRefresh,
-) {
-    version_cache_refresh.wait_for_completion().await;
+pub async fn print_update_notice(pending_update_notice: PendingUpdateNotice) {
+    let PendingUpdateNotice { update_notice, refresh } = pending_update_notice;
 
-    let Some(update_notice) = read_update_notice(current_version) else {
+    print_notice(update_notice);
+
+    wait_for_refresh(refresh).await;
+}
+
+fn print_notice(update_notice: Option<String>) {
+    let Some(update_notice) = update_notice else {
         return;
     };
 
@@ -75,14 +63,12 @@ pub async fn print_update_notice(
     eprint!("{update_notice}");
 }
 
-fn claim_check_window(
-    cache_file_path: &Path,
-    previous_latest_version: Option<String>,
-) -> Result<()> {
-    let claimed_version_cache =
-        VersionCache { latest_version: previous_latest_version, checked_at: Utc::now() };
+async fn wait_for_refresh(refresh: Option<JoinHandle<()>>) {
+    let Some(refresh) = refresh else {
+        return;
+    };
 
-    write_version_cache(cache_file_path, &claimed_version_cache)
+    let _ = timeout(REFRESH_GRACE_PERIOD, refresh).await;
 }
 
 async fn store_latest_version(cache_file_path: PathBuf) {
@@ -90,16 +76,7 @@ async fn store_latest_version(cache_file_path: PathBuf) {
         return;
     };
 
-    let version_cache =
-        VersionCache { latest_version: Some(latest_version), checked_at: Utc::now() };
+    let version_cache = VersionCache { latest_version, checked_at: Utc::now() };
 
     let _ = write_version_cache(&cache_file_path, &version_cache);
-}
-
-fn read_update_notice(current_version: &str) -> Option<String> {
-    let cache_file_path = get_version_cache_file_path().ok()?;
-
-    let version_cache = read_version_cache(&cache_file_path).ok()?;
-
-    get_update_notice(current_version, version_cache.latest_version.as_deref())
 }
