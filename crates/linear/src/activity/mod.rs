@@ -6,6 +6,7 @@ use chrono::{
     Utc,
 };
 use dates::formatting::format_date;
+use miette::Result;
 
 use crate::{
     errors::LinearDateOutOfRange,
@@ -19,7 +20,7 @@ const LINEAR_FILTER_DATE_FORMAT: &str = "%Y-%m-%d";
 /// Linear accepts only a UTC lower bound, so this asks for a full day earlier to
 /// cover every time zone offset. The issues that over-fetches are discarded by
 /// [`was_issue_worked_on`].
-pub fn get_updated_after_filter(date: NaiveDate) -> Result<String, LinearDateOutOfRange> {
+pub fn get_updated_after_filter(date: NaiveDate) -> Result<String> {
     let earliest_date = date
         .checked_sub_days(Days::new(1))
         .ok_or_else(|| LinearDateOutOfRange { date: format_date(&date) })?;

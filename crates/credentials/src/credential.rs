@@ -13,7 +13,6 @@ impl Credential {
     pub const ALL_CREDENTIALS: [Self; 4] =
         [Self::Github, Self::OpenAi, Self::OpenRouter, Self::Linear];
 
-    /// The name shown to the user in prompts, errors, and `swelog auth status`.
     #[must_use]
     pub const fn label(self) -> &'static str {
         match self {
@@ -24,7 +23,6 @@ impl Credential {
         }
     }
 
-    /// The value accepted by `swelog auth clear`.
     #[must_use]
     pub const fn command_name(self) -> &'static str {
         match self {
@@ -35,20 +33,16 @@ impl Credential {
         }
     }
 
-    /// The environment variable that overrides the stored credential, when one
-    /// exists. Linear is authorized through the browser, so it has none.
     #[must_use]
     pub const fn environment_variable(self) -> Option<&'static str> {
         match self {
             Self::Github => Some("GITHUB_TOKEN"),
             Self::OpenAi => Some("OPENAI_API_KEY"),
             Self::OpenRouter => Some("OPENROUTER_API_KEY"),
-            Self::Linear => None,
+            Self::Linear => None, // OAuth only
         }
     }
 
-    /// Where the user can obtain this credential. Linear is authorized through
-    /// the browser rather than typed in, so it has no instructions.
     #[must_use]
     pub(crate) const fn prompt_instructions(self) -> Option<&'static str> {
         match self {
@@ -57,7 +51,7 @@ impl Credential {
             }
             Self::OpenAi => Some("Create one at https://platform.openai.com/api-keys."),
             Self::OpenRouter => Some("Create one at https://openrouter.ai/keys."),
-            Self::Linear => None,
+            Self::Linear => None, // OAuth only
         }
     }
 

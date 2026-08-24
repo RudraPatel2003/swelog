@@ -17,8 +17,8 @@ use github::{
         get_merged_prs,
         get_opened_prs,
     },
+    repository_name::get_repository_name_from_repository_url,
     users::get_github_username,
-    utils::get_repository_name_from_repository_url,
 };
 use logging::work_file::upsert_managed_work_file_section_from_config;
 use miette::Result;

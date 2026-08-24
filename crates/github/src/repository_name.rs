@@ -5,7 +5,7 @@ pub const SWELOG_USER_AGENT: &str = "RudraPatel2003/swelog-cli";
 const GITHUB_REPOS_API_URL: &str = "https://api.github.com/repos/";
 
 /// ```
-/// use github::utils::get_repository_name_from_repository_url;
+/// use github::repository_name::get_repository_name_from_repository_url;
 ///
 /// let repository_url = "https://api.github.com/repos/RudraPatel2003/swelog-cli";
 ///

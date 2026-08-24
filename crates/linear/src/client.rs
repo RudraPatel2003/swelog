@@ -111,13 +111,18 @@ async fn connect_to_linear_mcp() -> Result<RunningService<RoleClient, ()>> {
                 reauthorization_attempted = true;
             }
 
-            Err(error) => return Err(linear_mcp_request_failed(&error)),
+            Err(error) => {
+                let linear_mcp_request_failed_error =
+                    LinearMcpRequestFailed { message: error.to_string() };
+
+                return Err(linear_mcp_request_failed_error.into());
+            }
         }
     }
 }
 
 async fn disconnect_from_linear_mcp(client: RunningService<RoleClient, ()>) -> Result<()> {
-    client.cancel().await.map_err(|error| linear_mcp_request_failed(&error))?;
+    client.cancel().await.map_err(|error| LinearMcpRequestFailed { message: error.to_string() })?;
 
     Ok(())
 }
@@ -140,9 +145,11 @@ async fn fetch_all_issues(
         };
 
         if cursor.as_deref() == Some(next_cursor.as_str()) {
-            return Err(linear_mcp_request_failed(
-                &"Linear MCP returned a repeated pagination cursor",
-            ));
+            let linear_mcp_request_failed_error = LinearMcpRequestFailed {
+                message: "Linear MCP returned a repeated pagination cursor".to_string(),
+            };
+
+            return Err(linear_mcp_request_failed_error.into());
         }
 
         cursor = Some(next_cursor);
@@ -160,7 +167,7 @@ async fn fetch_issue_page(
     let result = client
         .call_tool(CallToolRequestParams::new("list_issues").with_arguments(arguments))
         .await
-        .map_err(|error| linear_mcp_request_failed(&error))?;
+        .map_err(|error| LinearMcpRequestFailed { message: error.to_string() })?;
 
     parse_issue_page(result)
 }
@@ -192,8 +199,4 @@ fn issue_fields_argument() -> Value {
     Value::Array(
         ISSUE_FIELDS.iter().map(|field| Value::String((*field).to_string())).collect::<Vec<_>>(),
     )
-}
-
-fn linear_mcp_request_failed(error: &impl ToString) -> miette::Report {
-    LinearMcpRequestFailed { message: error.to_string() }.into()
 }

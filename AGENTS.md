@@ -24,6 +24,7 @@ separately to Vercel.
 
 - Use Rust 2024 conventions and the repository `rustfmt.toml`.
 - Typed errors with `thiserror`, user-facing diagnostics with `miette`.
+- Return `miette::Result<T>`, never a spelled-out error type.
 - Spell names out: `directory`, not `dir`.
 - Put a blank line between unrelated lines of code.
 - Keep files small and focused: give a self-contained feature its own sub-module, and extract logic so the core flow stays readable.

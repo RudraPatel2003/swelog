@@ -1,19 +1,29 @@
-use std::env;
+use std::{
+    env,
+    io::{
+        Write,
+        stderr,
+    },
+};
 
-use miette::Result;
+use miette::{
+    IntoDiagnostic,
+    Result,
+    WrapErr,
+};
 
 use crate::{
     credential::Credential,
-    errors::missing_credential_error,
-    prompt::prompt_for_secret,
+    errors::{
+        MissingAuthorization,
+        MissingCredential,
+    },
     store::{
         read_credential,
         write_credential,
     },
 };
 
-/// Resolves a credential from the environment, then the keyring, prompting for
-/// it and storing the answer.
 pub fn get_or_prompt_for_credential(credential: Credential) -> Result<String> {
     if let Some(secret) = read_credential_from_environment(credential) {
         return Ok(secret);
@@ -23,14 +33,27 @@ pub fn get_or_prompt_for_credential(credential: Credential) -> Result<String> {
         return Ok(secret);
     }
 
-    let Some(instructions) = credential.prompt_instructions() else {
-        return Err(missing_credential_error(credential));
+    let (Some(environment_variable), Some(instructions)) =
+        (credential.environment_variable(), credential.prompt_instructions())
+    else {
+        let missing_authorization_error = MissingAuthorization {
+            label: credential.label(),
+            command_name: credential.command_name(),
+        };
+
+        return Err(missing_authorization_error.into());
     };
 
     let secret = prompt_for_secret(credential.label(), instructions)?;
 
     if secret.is_empty() {
-        return Err(missing_credential_error(credential));
+        let missing_credential_error = MissingCredential {
+            label: credential.label(),
+            environment_variable,
+            command_name: credential.command_name(),
+        };
+
+        return Err(missing_credential_error.into());
     }
 
     write_credential(credential, &secret)?;
@@ -38,8 +61,6 @@ pub fn get_or_prompt_for_credential(credential: Credential) -> Result<String> {
     Ok(secret)
 }
 
-/// Returns the environment variable overriding this credential, when it is set
-/// to a non-empty value.
 #[must_use]
 pub fn read_credential_from_environment(credential: Credential) -> Option<String> {
     let environment_variable = credential.environment_variable()?;
@@ -48,4 +69,20 @@ pub fn read_credential_from_environment(credential: Credential) -> Option<String
         .ok()
         .map(|secret| secret.trim().to_string())
         .filter(|secret| !secret.is_empty())
+}
+
+fn prompt_for_secret(label: &str, instructions: &str) -> Result<String> {
+    let mut error_output = stderr();
+
+    writeln!(error_output, "{label} is not stored yet. {instructions}")
+        .into_diagnostic()
+        .wrap_err("failed to write the credential prompt")?;
+
+    let secret = rpassword::prompt_password(format!("Enter your {label}: "))
+        .into_diagnostic()
+        .wrap_err_with(|| format!("failed to read the {label} from the terminal"))?;
+
+    let trimmed_secret = secret.trim().to_string();
+
+    Ok(trimmed_secret)
 }

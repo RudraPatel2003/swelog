@@ -18,7 +18,7 @@ const MAX_CALLBACK_REQUEST_SIZE: usize = 16 * 1024;
 const RESPONSE_BODY: &str =
     "Linear authorization complete. You can close this window and return to swelog.";
 
-/// A single-use loopback HTTP server that receives the Linear OAuth redirect.
+/// A single-use loopback HTTP server that receives the Linear OAuth redirect
 pub struct CallbackServer {
     listener: TcpListener,
     redirect_uri: String,
