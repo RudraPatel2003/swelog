@@ -1,6 +1,8 @@
 ---
 title: Installation
-description: Install the swelog CLI and confirm it is available on your PATH.
+description:
+  Install the swelog CLI, confirm it is available on your PATH, and keep it up to
+  date.
 ---
 
 Install the CLI with npm:
@@ -21,5 +23,27 @@ swelog --help
 - **Node.js 22 or newer** — required by the npm package installer.
 - **A summarization provider** — [Ollama](/summarization/providers/) running
   locally, or an API key for OpenAI or OpenRouter.
+
+## Staying up to date
+
+Once a day, swelog checks whether a newer version has been published. If there
+is one, it tells you after your command finishes:
+
+```
+A new version of swelog is available: 0.10.0 → 0.11.0
+Run `npm update -g swelog-cli` to upgrade.
+```
+
+The check does not slow your command down. swelog saves the version it finds, so
+most runs only read a small file on your computer and never touch the network.
+
+To upgrade:
+
+```sh
+npm update -g swelog-cli
+```
+
+The notice is kept out of your command's output, so `swelog config | grep vault`
+still works. You only see it when you run swelog in a terminal.
 
 Once installed, continue to the [Quick Start](/getting-started/quick-start/).

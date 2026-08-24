@@ -41,6 +41,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
 
+      - name: Setup Just
+        uses: extractions/setup-just@v4
+
       # Keep the pinned toolchain in sync with rust-toolchain.toml.
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@master
@@ -54,8 +57,7 @@ jobs:
           shared-key: "rust-dependencies-cache"
 
       - name: Build release binary
-        shell: bash
-        run: cargo build --package cli --bin swelog --locked --release --target "${{ matrix.target }}"
+        run: just build-release "${{ matrix.target }}"
 
       - name: Stage release asset
         shell: bash
@@ -83,6 +85,11 @@ jobs:
 
       - name: Setup Just
         uses: extractions/setup-just@v4
+
+      - name: Setup cargo-nextest
+        uses: taiki-e/install-action@v2
+        with:
+          tool: nextest
 
       # Keep the pinned toolchain in sync with rust-toolchain.toml.
       - name: Install Rust toolchain

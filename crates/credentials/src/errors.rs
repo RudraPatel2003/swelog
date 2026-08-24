@@ -3,12 +3,29 @@ use thiserror::Error;
 
 #[derive(Debug, Diagnostic, Error)]
 #[error("{label} is not available")]
-#[diagnostic(code(swelog::credentials::missing_credential))]
+#[diagnostic(
+    code(swelog::credentials::missing_credential),
+    help(
+        "run swelog from a terminal to enter it, or set the {environment_variable} environment variable. If a stored credential is stale, run `swelog auth clear {command_name}`."
+    )
+)]
 pub struct MissingCredential {
     pub label: &'static str,
+    pub environment_variable: &'static str,
+    pub command_name: &'static str,
+}
 
-    #[help]
-    pub help: String,
+#[derive(Debug, Diagnostic, Error)]
+#[error("{label} is not available")]
+#[diagnostic(
+    code(swelog::credentials::missing_authorization),
+    help(
+        "run `swelog auth clear {command_name}` and then `swelog fetch linear` to authorize again."
+    )
+)]
+pub struct MissingAuthorization {
+    pub label: &'static str,
+    pub command_name: &'static str,
 }
 
 #[derive(Debug, Diagnostic, Error)]

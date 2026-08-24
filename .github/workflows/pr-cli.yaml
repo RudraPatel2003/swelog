@@ -22,6 +22,11 @@ jobs:
       - name: Setup Just
         uses: extractions/setup-just@v4
 
+      - name: Setup cargo-nextest
+        uses: taiki-e/install-action@v2
+        with:
+          tool: nextest
+
       # Keep the pinned toolchain in sync with rust-toolchain.toml.
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@master

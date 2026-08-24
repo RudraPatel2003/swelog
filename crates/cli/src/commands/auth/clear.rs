@@ -1,7 +1,7 @@
 use clap::Args;
 use credentials::{
-    Credential,
-    clear_credential,
+    credential::Credential,
+    store::clear_credential,
 };
 use miette::Result;
 
@@ -23,9 +23,9 @@ impl ClearArgs {
             .map_or_else(|| Credential::ALL_CREDENTIALS.to_vec(), |credential| vec![credential]);
 
         for credential in credentials {
-            let was_stored = clear_credential(credential)?;
+            let was_credential_cleared = clear_credential(credential)?;
 
-            if was_stored {
+            if was_credential_cleared {
                 println!("Removed the stored {}.", credential.label());
             } else {
                 println!("No {} was stored.", credential.label());

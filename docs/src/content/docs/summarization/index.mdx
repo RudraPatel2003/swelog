@@ -15,15 +15,23 @@ Swelog uses the same configured model for daily and weekly summaries. See
 | `swelog summarize day --keep`                | Generate the daily log without resetting `WORK.md`.                |
 | `swelog summarize day --force`               | Replace an existing daily log for today.                           |
 | `swelog summarize day --date MM-DD-YYYY`     | Write the daily log for the supplied date instead of today.        |
-| `swelog summarize week`                      | Summarize available Monday-Friday daily logs for the default week. |
+| `swelog summarize day --yesterday`           | Write the daily log for yesterday instead of today.                |
+| `swelog summarize week`                      | Summarize available Monday-Friday daily logs for the current week. |
 | `swelog summarize week --week-of MM-DD-YYYY` | Summarize the week beginning on the supplied Monday.               |
+| `swelog summarize week --last-week`          | Summarize the previous week instead of the current one.            |
 | `swelog summarize week --force`              | Replace an existing weekly log.                                    |
 
 ## Weekly summaries
 
-Without `--week-of`, weekly summarization uses the current week's Monday. When
-run on a Monday, it uses the previous Monday. The command skips missing weekday
-logs but fails when no daily logs exist for the selected week.
+Without `--week-of`, weekly summarization uses the Monday of the week containing
+today, including when today is that Monday. Some weeks you only work one day, and
+that day is still worth a weekly log. `--last-week` goes back one week from that
+Monday, so running it on a Monday summarizes the week that just finished. That is
+the flag to reach for when you left on Friday without summarizing the week.
+
+The command skips missing weekday logs but fails when no daily logs exist for the
+selected week. On a Monday morning, before you have written that day's daily log,
+plain `swelog summarize week` is that case, and `--last-week` is what you want.
 
 :::note
 Weekly summarization requires `WORK.md` to be empty or at its default content,
@@ -34,4 +42,5 @@ so unfinished daily notes are not accidentally excluded from a daily log.
 
 Daily summarization always reads the current `WORK.md`. `--date` only chooses the
 file the summary is written to, so it is what you use to backfill a missed day.
+For the day before, `--yesterday` saves you working out the date.
 See [Backfilling a Missed Day](/guides/backfilling/).

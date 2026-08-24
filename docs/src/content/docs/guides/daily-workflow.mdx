@@ -31,8 +31,13 @@ description: The day-to-day loop of capturing notes, fetching activity, and summ
    swelog summarize week
    ```
 
+   This covers the week containing today. If you are picking things up on a
+   Monday and never summarized the week you just finished, use
+   `swelog summarize week --last-week`.
+
 ## Missed a day?
 
 `WORK.md` is always the scratch pad the summary is built from, and every
-day-scoped command accepts `--date MM-DD-YYYY`. See
+day-scoped command accepts `--date MM-DD-YYYY`. If it was only yesterday you
+missed, `--yesterday` does the same job without the date arithmetic. See
 [Backfilling a Missed Day](/guides/backfilling/).

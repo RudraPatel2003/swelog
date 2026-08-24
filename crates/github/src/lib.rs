@@ -1,5 +1,5 @@
 pub mod errors;
 pub mod issues;
+pub mod repository_name;
 mod response;
 pub mod users;
-pub mod utils;

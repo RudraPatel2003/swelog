@@ -4,8 +4,8 @@ use serde::Deserialize;
 use serde_json::Value;
 
 use crate::{
-    LinearIssue,
     errors::UnsupportedLinearResponse,
+    issue::LinearIssue,
 };
 
 const NO_ISSUES_FOUND_MESSAGE: &str = "No issues found";
@@ -41,21 +41,23 @@ pub fn parse_issue_page(result: CallToolResult) -> Result<LinearIssuePage> {
     let value = extract_result_value(result)?;
 
     serde_json::from_value(value).map_err(|error| {
-        unsupported_response_error(format!(
-            "issue response did not match the expected shape: {error}"
-        ))
+        UnsupportedLinearResponse {
+            message: format!("issue response did not match the expected shape: {error}"),
+        }
+        .into()
     })
 }
 
 fn extract_result_value(result: CallToolResult) -> Result<Value> {
     if result.is_error == Some(true) {
-        let message = collect_result_text(&result);
+        let text = collect_result_text(&result);
 
-        return Err(unsupported_response_error(if message.is_empty() {
-            "Linear MCP tool returned an error".to_string()
-        } else {
-            message
-        }));
+        let message =
+            if text.is_empty() { "Linear MCP tool returned an error".to_string() } else { text };
+
+        let unsupported_linear_response_error = UnsupportedLinearResponse { message };
+
+        return Err(unsupported_linear_response_error.into());
     }
 
     if let Some(value) = result.structured_content {
@@ -69,7 +71,10 @@ fn extract_result_value(result: CallToolResult) -> Result<Value> {
     }
 
     serde_json::from_str(&text).map_err(|error| {
-        unsupported_response_error(format!("tool result did not contain structured JSON: {error}"))
+        UnsupportedLinearResponse {
+            message: format!("tool result did not contain structured JSON: {error}"),
+        }
+        .into()
     })
 }
 
@@ -81,10 +86,6 @@ fn collect_result_text(result: &CallToolResult) -> String {
         .map(|text| text.text.as_str())
         .collect::<Vec<_>>()
         .join("\n")
-}
-
-fn unsupported_response_error(message: impl Into<String>) -> miette::Report {
-    UnsupportedLinearResponse { message: message.into() }.into()
 }
 
 #[cfg(test)]

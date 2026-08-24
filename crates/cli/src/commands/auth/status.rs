@@ -1,8 +1,8 @@
 use clap::Args;
 use credentials::{
-    Credential,
-    read_credential,
-    read_credential_from_environment,
+    credential::Credential,
+    resolution::read_credential_from_environment,
+    store::read_credential,
 };
 use miette::Result;
 use owo_colors::OwoColorize;
@@ -34,7 +34,6 @@ impl StatusArgs {
     }
 }
 
-/// Describes where a credential resolves from, without ever printing its value.
 fn describe_credential_status(credential: Credential) -> Result<String> {
     if let Some(environment_variable) = credential.environment_variable()
         && read_credential_from_environment(credential).is_some()

@@ -6,6 +6,7 @@ use tempfile::{
 };
 
 use super::*;
+use crate::overwrite::Overwrite;
 
 const CONFIG_FILE_NAME: &str = "swelog.json";
 
@@ -31,7 +32,7 @@ fn get_test_context() -> TestContext {
 fn write_config_creates_parent_directories_and_json_file() {
     let TestContext { temporary_directory, config_file_path, config } = get_test_context();
 
-    let overwrite_existing_config = false;
+    let overwrite_existing_config = Overwrite::No;
 
     write_default_config(&config_file_path, &config, overwrite_existing_config)
         .expect("config should be written");
@@ -54,7 +55,7 @@ fn write_config_fails_when_file_exists_without_force() {
     fs::write(&config_file_path, EXISTING_CONFIG_FILE_CONTENT)
         .expect("existing config should be written");
 
-    let overwrite_existing_config = false;
+    let overwrite_existing_config = Overwrite::No;
 
     let result = write_default_config(&config_file_path, &config, overwrite_existing_config);
 
@@ -80,7 +81,7 @@ fn write_config_overwrites_when_force_is_set() {
     fs::write(&config_file_path, EXISTING_CONFIG_FILE_CONTENT)
         .expect("existing config should be written");
 
-    let overwrite_existing_config = true;
+    let overwrite_existing_config = Overwrite::Yes;
 
     let result = write_default_config(&config_file_path, &config, overwrite_existing_config);
 

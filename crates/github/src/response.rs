@@ -13,8 +13,7 @@ use crate::errors::{
     UnsuccessfulGitHubResponse,
 };
 
-/// Reads the response body, turning a rejected token into a diagnostic that
-/// points at `swelog auth clear github`.
+/// Instruct user to clear auth token if response is unauthorized or forbidden
 pub async fn read_successful_response_body(response: Response) -> Result<String> {
     let status_code = response.status();
 

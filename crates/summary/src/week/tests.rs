@@ -142,7 +142,7 @@ async fn summarize_weekly_work_writes_generated_weekly_log() {
         &test_context.config,
         &FakeLanguageModel,
         &test_monday_date(),
-        false,
+        Overwrite::No,
     )
     .await
     .expect("weekly log should be written");
@@ -169,7 +169,7 @@ async fn summarize_weekly_work_skips_missing_weekday_logs() {
         &test_context.config,
         &FakeLanguageModel,
         &test_monday_date(),
-        false,
+        Overwrite::No,
     )
     .await
     .expect("weekly log should be written from available daily logs");
@@ -194,7 +194,7 @@ async fn summarize_weekly_work_fails_when_no_daily_logs_exist() {
         &test_context.config,
         &FakeLanguageModel,
         &test_monday_date(),
-        false,
+        Overwrite::No,
     )
     .await
     .expect_err("missing daily logs should fail");
@@ -219,7 +219,7 @@ async fn summarize_weekly_work_fails_when_context_file_is_missing() {
         &test_context.config,
         &FakeLanguageModel,
         &test_monday_date(),
-        false,
+        Overwrite::No,
     )
     .await
     .expect_err("missing context file should fail");
@@ -245,7 +245,7 @@ async fn summarize_weekly_work_fails_when_work_file_is_missing() {
         &test_context.config,
         &FakeLanguageModel,
         &test_monday_date(),
-        false,
+        Overwrite::No,
     )
     .await
     .expect_err("missing work file should fail");
@@ -271,7 +271,7 @@ async fn summarize_weekly_work_fails_when_daily_log_directory_is_missing() {
         &test_context.config,
         &FakeLanguageModel,
         &test_monday_date(),
-        false,
+        Overwrite::No,
     )
     .await
     .expect_err("missing daily log directory should fail");
@@ -298,7 +298,7 @@ async fn summarize_weekly_work_fails_when_weekly_log_directory_is_missing() {
         &test_context.config,
         &FakeLanguageModel,
         &test_monday_date(),
-        false,
+        Overwrite::No,
     )
     .await
     .expect_err("missing weekly log directory should fail");
@@ -325,7 +325,7 @@ async fn summarize_weekly_work_fails_when_weekly_log_exists_without_force() {
         &test_context.config,
         &FakeLanguageModel,
         &test_monday_date(),
-        false,
+        Overwrite::No,
     )
     .await
     .expect_err("existing weekly log should fail without force");
@@ -358,7 +358,7 @@ async fn summarize_weekly_work_overwrites_existing_weekly_log_with_force() {
         &test_context.config,
         &FakeLanguageModel,
         &test_monday_date(),
-        true,
+        Overwrite::Yes,
     )
     .await
     .expect("existing weekly log should be overwritten with force");
@@ -384,7 +384,7 @@ async fn summarize_weekly_work_fails_when_work_file_is_not_default() {
         &test_context.config,
         &FakeLanguageModel,
         &test_monday_date(),
-        false,
+        Overwrite::No,
     )
     .await
     .expect_err("unsummarized work file should fail");

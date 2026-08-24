@@ -1,10 +1,8 @@
-use linear::{
+use linear::issue::{
     LinearIssue,
     LinearStatusType,
 };
 
-/// Renders the issues as `### {status}` groups, ordered by how close each
-/// status is to being worked on.
 pub fn format_linear_issues(issues: &[LinearIssue]) -> String {
     let mut sorted_issues = issues.iter().collect::<Vec<_>>();
 
@@ -37,9 +35,8 @@ fn format_linear_issue(issue: &LinearIssue) -> String {
     format!("- [{identifier}]({}) {title}", issue.url)
 }
 
-/// Issue titles are written by hand and may span lines, so collapse them onto
-/// the single line each work-file bullet occupies.
 fn collapse_whitespace(text: &str) -> String {
+    // Issue titles could be multiple lines in the response so collapse them down
     text.split_whitespace().collect::<Vec<_>>().join(" ")
 }
 

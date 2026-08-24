@@ -4,12 +4,11 @@ mod credential_store;
 use std::time::Duration;
 
 use credentials::{
-    Credential,
-    clear_credential,
+    credential::Credential,
+    store::clear_credential,
 };
 use miette::Result;
 use rmcp::transport::{
-    AuthError,
     AuthorizationManager,
     AuthorizationRequest,
     AuthorizationSession,
@@ -34,14 +33,14 @@ const AUTHORIZATION_TIMEOUT: Duration = Duration::from_secs(300);
 pub async fn get_authorization_manager() -> Result<AuthorizationManager> {
     let mut authorization_manager = AuthorizationManager::new(LINEAR_MCP_URL)
         .await
-        .map_err(|error| map_authorization_error(&error))?;
+        .map_err(|error| LinearAuthorizationFailed { message: error.to_string() })?;
 
     authorization_manager.set_credential_store(KeyringCredentialStore);
 
     if authorization_manager
         .initialize_from_store()
         .await
-        .map_err(|error| map_authorization_error(&error))?
+        .map_err(|error| LinearAuthorizationFailed { message: error.to_string() })?
     {
         return Ok(authorization_manager);
     }
@@ -63,7 +62,7 @@ async fn authorize_interactively(
     let metadata = authorization_manager
         .resolve_metadata()
         .await
-        .map_err(|error| map_authorization_error(&error))?
+        .map_err(|error| LinearAuthorizationFailed { message: error.to_string() })?
         .metadata;
 
     authorization_manager.set_metadata(metadata);
@@ -74,7 +73,7 @@ async fn authorize_interactively(
     let authorization_session =
         AuthorizationSession::new(authorization_manager, authorization_request)
             .await
-            .map_err(|(_, error)| map_authorization_error(&error))?;
+            .map_err(|(_, error)| LinearAuthorizationFailed { message: error.to_string() })?;
 
     let authorization_url = authorization_session.get_authorization_url();
 
@@ -91,11 +90,7 @@ async fn authorize_interactively(
     authorization_session
         .handle_callback_url(&callback_url)
         .await
-        .map_err(|error| map_authorization_error(&error))?;
+        .map_err(|error| LinearAuthorizationFailed { message: error.to_string() })?;
 
     Ok(authorization_session.auth_manager)
-}
-
-fn map_authorization_error(error: &AuthError) -> miette::Report {
-    LinearAuthorizationFailed { message: error.to_string() }.into()
 }

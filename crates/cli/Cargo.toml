@@ -1,6 +1,6 @@
 [package]
 name = "cli"
-version = "0.10.0"
+version = "0.11.0"
 authors = { workspace = true }
 edition = { workspace = true }
 description = { workspace = true }
@@ -33,3 +33,4 @@ owo-colors = { workspace = true }
 summary = { path = "../summary" }
 thiserror = { workspace = true }
 tokio = { workspace = true }
+updates = { path = "../updates" }

@@ -6,24 +6,25 @@ use chrono::{
     NaiveDate,
     Weekday,
 };
+use miette::Result;
 
 use crate::{
-    DATE_FORMAT,
+    date_format::DATE_FORMAT,
     errors::DateParseError,
 };
 
 /// Reads a date written in the swelog date format.
-pub fn parse_date(date: &str) -> Result<NaiveDate, DateParseError> {
+pub fn parse_date(date: &str) -> Result<NaiveDate> {
     NaiveDate::parse_from_str(date, DATE_FORMAT)
-        .map_err(|_| DateParseError::InvalidDate { date: date.to_string() })
+        .map_err(|_| DateParseError::InvalidDate { date: date.to_string() }.into())
 }
 
 /// Reads a date written in the swelog date format that must land on a Monday.
-pub fn parse_monday_date(date: &str) -> Result<NaiveDate, DateParseError> {
+pub fn parse_monday_date(date: &str) -> Result<NaiveDate> {
     let monday_date = parse_date(date)?;
 
     if monday_date.weekday() != Weekday::Mon {
-        return Err(DateParseError::DateIsNotAMonday { date: date.to_string() });
+        return Err(DateParseError::DateIsNotAMonday { date: date.to_string() }.into());
     }
 
     Ok(monday_date)

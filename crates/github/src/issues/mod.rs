@@ -22,11 +22,11 @@ use structs::{
 
 use crate::{
     errors::FailedToSendGitHubRequest,
-    response::read_successful_response_body,
-    utils::{
+    repository_name::{
         GITHUB_ACCEPT_HEADER,
         SWELOG_USER_AGENT,
     },
+    response::read_successful_response_body,
 };
 
 const MERGED_PRS_API_URL: &str = "https://api.github.com/search/issues";

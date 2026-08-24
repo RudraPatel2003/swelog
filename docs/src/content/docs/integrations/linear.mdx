@@ -40,6 +40,12 @@ work in general.
    ones you completed or canceled, because finishing an issue is exactly what a
    past day's log should capture.
 
+   `--yesterday` does the same for the day before:
+
+   ```sh
+   swelog fetch linear --yesterday
+   ```
+
 ## Output
 
 The generated section groups issues by status:
@@ -65,12 +71,14 @@ the timestamps Linear stores on the issue itself: `updatedAt`, `completedAt`,
 `canceledAt`, `startedAt`, and `createdAt`. An issue is recorded for a date when
 any of those lands on it, read in your local time zone.
 
-`completedAt`, `canceledAt`, `startedAt`, and `createdAt` never move, so issues
-you started, finished, canceled, or filed on a date are recovered no matter how
-much later you backfill. `updatedAt` only holds the most recent change, so an
-issue you touched on Monday and touched again on Tuesday is attributed to
-Tuesday alone. Backfill soon after the fact for the most complete result, and
-treat `--date` output as a prompt for your own notes rather than a full record.
+`completedAt`, `canceledAt`, `startedAt`, and `createdAt` never change, so
+issues you started, finished, canceled, or filed on a date come back no matter
+how long you wait to backfill.
+
+`updatedAt` only holds the most recent change. An issue you touched on Monday
+and again on Tuesday counts as Tuesday only. So backfill soon after the fact for
+the best result, and treat what `--date` returns as a reminder for your own
+notes rather than a full record.
 
 ## Switching accounts or organizations
 

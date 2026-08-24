@@ -1,0 +1,96 @@
+use std::{
+    fs,
+    path::{
+        Path,
+        PathBuf,
+    },
+    process,
+};
+
+use chrono::{
+    DateTime,
+    TimeDelta,
+    Utc,
+};
+use miette::{
+    IntoDiagnostic,
+    Result,
+    WrapErr,
+};
+use serde::{
+    Deserialize,
+    Serialize,
+};
+
+use crate::errors::UnavailableCacheDirectory;
+
+const APP_NAME: &str = "swelog";
+const VERSION_CACHE_FILE_NAME: &str = "version-check.json";
+
+const VERSION_CHECK_INTERVAL: TimeDelta = TimeDelta::days(1);
+
+#[derive(Debug, Deserialize, PartialEq, Eq, Serialize)]
+pub struct VersionCache {
+    pub latest_version: String,
+
+    pub checked_at: DateTime<Utc>,
+}
+
+pub fn get_version_cache_file_path() -> Result<PathBuf> {
+    let Some(cache_directory) = dirs::cache_dir() else {
+        let unavailable_cache_directory_error = UnavailableCacheDirectory;
+
+        return Err(unavailable_cache_directory_error.into());
+    };
+
+    let cache_file_path = cache_directory.join(APP_NAME).join(VERSION_CACHE_FILE_NAME);
+
+    Ok(cache_file_path)
+}
+
+pub fn read_version_cache(cache_file_path: &Path) -> Result<VersionCache> {
+    let cache_file_contents =
+        fs::read_to_string(cache_file_path).into_diagnostic().wrap_err_with(|| {
+            format!("failed to read the version cache at {}", cache_file_path.display())
+        })?;
+
+    let version_cache = serde_json::from_str(&cache_file_contents)
+        .into_diagnostic()
+        .wrap_err("failed to parse the version cache")?;
+
+    Ok(version_cache)
+}
+
+pub fn write_version_cache(cache_file_path: &Path, version_cache: &VersionCache) -> Result<()> {
+    if let Some(parent) = cache_file_path.parent() {
+        fs::create_dir_all(parent).into_diagnostic().wrap_err_with(|| {
+            format!("failed to create the version cache directory at {}", parent.display())
+        })?;
+    }
+
+    let json = serde_json::to_string(version_cache)
+        .into_diagnostic()
+        .wrap_err("failed to serialize the version cache")?;
+
+    let temporary_file_path = cache_file_path.with_extension(format!("{}.tmp", process::id()));
+
+    fs::write(&temporary_file_path, json).into_diagnostic().wrap_err_with(|| {
+        format!("failed to write the version cache at {}", temporary_file_path.display())
+    })?;
+
+    fs::rename(&temporary_file_path, cache_file_path).into_diagnostic().wrap_err_with(|| {
+        format!("failed to write the version cache at {}", cache_file_path.display())
+    })?;
+
+    Ok(())
+}
+
+#[must_use]
+pub fn is_refresh_due(version_cache: Option<&VersionCache>, now: DateTime<Utc>) -> bool {
+    version_cache.is_none_or(|version_cache| {
+        now.signed_duration_since(version_cache.checked_at) >= VERSION_CHECK_INTERVAL
+    })
+}
+
+#[cfg(test)]
+mod tests;

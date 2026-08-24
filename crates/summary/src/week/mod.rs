@@ -7,6 +7,7 @@ use chrono::{
     NaiveDate,
 };
 use config::{
+    overwrite::Overwrite,
     setup::{
         default_files::DEFAULT_WORK_FILE_CONTENT,
         swelog_paths::SwelogPaths,
@@ -40,7 +41,7 @@ pub async fn summarize_weekly_work_from_config(
     swelog_config: &SwelogConfig,
     language_model: &dyn LanguageModel,
     monday_date: &NaiveDate,
-    overwrite_existing_weekly_log: bool,
+    overwrite: Overwrite,
 ) -> Result<()> {
     let swelog_paths = SwelogPaths::new(swelog_config);
 
@@ -53,7 +54,7 @@ pub async fn summarize_weekly_work_from_config(
 
     let weekly_log_file = swelog_paths.weekly_log_directory.join(weekly_log_file_name);
 
-    if weekly_log_file.exists() && !overwrite_existing_weekly_log {
+    if weekly_log_file.exists() && overwrite == Overwrite::No {
         let weekly_log_already_exists_error = WeeklyLogAlreadyExists { weekly_log_file };
 
         return Err(weekly_log_already_exists_error.into());
