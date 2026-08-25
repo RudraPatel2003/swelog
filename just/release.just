@@ -1,3 +1,6 @@
+list-release-version:
+    cargo run -p xtask -- list-version
+
 check-release-version *args:
     cargo run -p xtask -- check-release-version "$@"
 
