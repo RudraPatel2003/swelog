@@ -1,4 +1,5 @@
 mod check_release_version;
+mod list_version;
 mod update_release_version;
 mod utils;
 
@@ -12,6 +13,7 @@ use miette::{
 
 use crate::{
     check_release_version::run_check_release_version,
+    list_version::run_list_version,
     update_release_version::run_update_release_version,
 };
 
@@ -27,6 +29,7 @@ fn main() -> Result<()> {
     match command.as_str() {
         "check-release-version" => run_check_release_version(args),
         "update-release-version" => run_update_release_version(args),
+        "list-version" => run_list_version(),
         _ => Err(get_usage_error()),
     }
 }

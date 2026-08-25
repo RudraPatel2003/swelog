@@ -20,7 +20,7 @@ use github::{
     repository_name::get_repository_name_from_repository_url,
     users::get_github_username,
 };
-use logging::work_file::upsert_managed_work_file_section_from_config;
+use logging::work_file::upsert_work_file_section_from_config;
 use miette::Result;
 
 use crate::commands::date_selection::{
@@ -92,12 +92,7 @@ impl GithubArgs {
 
         let github_activity = github_activity_lines.join("\n");
 
-        upsert_managed_work_file_section_from_config(
-            &swelog_config,
-            "github",
-            "GitHub",
-            &github_activity,
-        )?;
+        upsert_work_file_section_from_config(&swelog_config, "GitHub", &github_activity)?;
 
         println!("Recorded {} GitHub PRs in your work file.", github_activity_lines.len());
 

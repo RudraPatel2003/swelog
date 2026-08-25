@@ -28,7 +28,7 @@ day's log to include activity you would otherwise retype by hand.
 
 The default work file contains only `## Focus` and `## Log`. Integration
 sections are created lazily, the first time you fetch that integration's
-activity, and each one is managed by Swelog from then on:
+activity, and each one is owned by Swelog from then on:
 
 ```sh
 swelog fetch github
@@ -39,10 +39,11 @@ Both commands accept `--date MM-DD-YYYY` to record a previous day, and
 `--yesterday` as a shortcut for the most common one. See
 [Backfilling a Missed Day](/guides/backfilling/).
 
-:::caution[Managed sections are generated data]
-Swelog surrounds generated sections with invisible HTML markers. Treat the
-content inside these managed blocks as generated, because future fetches replace
-it. Your own notes belong in `## Focus` and `## Log`.
+:::caution[Integration sections are generated data]
+Swelog finds each integration's section by its heading, so `## GitHub` and
+`## Linear` are replaced wholesale by every fetch. Renaming a heading makes the
+next fetch write a fresh section under the original name. Your own notes belong
+in `## Focus` and `## Log`.
 :::
 
 ## Credentials

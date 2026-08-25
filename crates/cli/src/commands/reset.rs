@@ -1,18 +1,10 @@
-use std::fs;
-
 use clap::Args;
 use config::{
-    setup::{
-        default_files::DEFAULT_WORK_FILE_CONTENT,
-        swelog_paths::SwelogPaths,
-    },
+    setup::swelog_paths::SwelogPaths,
     utils::read_config_file,
+    work_file::create_or_reset_work_file,
 };
-use miette::{
-    IntoDiagnostic,
-    Result,
-    WrapErr,
-};
+use miette::Result;
 use owo_colors::OwoColorize;
 
 #[derive(Debug, Args)]
@@ -26,11 +18,7 @@ impl ResetArgs {
 
         let swelog_paths = SwelogPaths::new(&swelog_config);
 
-        fs::write(&swelog_paths.work_file, DEFAULT_WORK_FILE_CONTENT)
-            .into_diagnostic()
-            .wrap_err_with(|| {
-                format!("failed to write work file at {}", swelog_paths.work_file.display())
-            })?;
+        create_or_reset_work_file(&swelog_config)?;
 
         println!("Reset work file at {}", swelog_paths.work_file.display().cyan());
 

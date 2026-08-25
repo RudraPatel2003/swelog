@@ -11,10 +11,7 @@ use config::{
     swelog_config::SwelogConfig,
     utils::ensure_swelog_file_exists,
 };
-use errors::{
-    MalformedManagedSection,
-    SectionNotFound,
-};
+use errors::SectionNotFound;
 use miette::{
     IntoDiagnostic,
     Result,
@@ -32,8 +29,8 @@ use slicing::{
     slice_up_to,
 };
 
-/// Managed integration sections are inserted directly above this section so the
-/// user's own notes stay at the bottom of the work file.
+/// Integration sections are inserted directly above this section so the user's
+/// own notes stay at the bottom of the work file.
 const LOG_SECTION_TITLE: &str = "Log";
 
 pub fn append_work_file_section_from_config(
@@ -46,23 +43,22 @@ pub fn append_work_file_section_from_config(
     })
 }
 
-pub fn upsert_managed_work_file_section_from_config(
+pub fn upsert_work_file_section_from_config(
     swelog_config: &SwelogConfig,
-    section_id: &str,
     section_title: &str,
     content: &str,
 ) -> Result<()> {
     update_work_file_from_config(swelog_config, |work_file_content| {
-        upsert_managed_section(work_file_content, section_id, section_title, content)
+        Ok(upsert_section(work_file_content, section_title, content))
     })
 }
 
-pub fn remove_managed_work_file_section_from_config(
+pub fn remove_work_file_section_from_config(
     swelog_config: &SwelogConfig,
-    section_id: &str,
+    section_title: &str,
 ) -> Result<()> {
     update_work_file_from_config(swelog_config, |work_file_content| {
-        remove_managed_section(work_file_content, section_id)
+        Ok(remove_section(work_file_content, section_title))
     })
 }
 
@@ -108,41 +104,31 @@ fn append_to_section(markdown: &str, section: &str, content: &str) -> Result<Str
     Ok(result)
 }
 
-fn upsert_managed_section(
-    markdown: &str,
-    section_id: &str,
-    section_title: &str,
-    content: &str,
-) -> Result<String> {
-    let managed_block = format_managed_section(section_id, section_title, content);
+fn upsert_section(markdown: &str, section_title: &str, content: &str) -> String {
+    let section_block = format_section(section_title, content);
 
-    if let Some(managed_bounds) = find_managed_section_bounds(markdown, section_id)? {
-        return Ok(replace_block(markdown, managed_bounds, &managed_block));
-    }
+    let section_bounds = find_optional_section_bounds(markdown, section_title)
+        .unwrap_or_else(|| insertion_bounds_above_log(markdown));
 
-    if let Some(section_bounds) = find_optional_section_bounds(markdown, section_title) {
-        return Ok(replace_block(markdown, section_bounds, &managed_block));
-    }
-
-    let insertion_index = find_optional_section_bounds(markdown, LOG_SECTION_TITLE)
-        .map_or(markdown.len(), |section_bounds| section_bounds.start);
-
-    Ok(replace_block(markdown, insertion_index..insertion_index, &managed_block))
+    replace_block(markdown, section_bounds, &section_block)
 }
 
-fn remove_managed_section(markdown: &str, section_id: &str) -> Result<String> {
-    let Some(managed_bounds) = find_managed_section_bounds(markdown, section_id)? else {
-        return Ok(markdown.to_string());
-    };
-
-    Ok(remove_block(markdown, managed_bounds))
-}
-
-fn format_managed_section(section_id: &str, section_title: &str, content: &str) -> String {
-    format!(
-        "<!-- swelog:managed {section_id}:start -->\n## {section_title}\n{}\n<!-- swelog:managed {section_id}:end -->",
-        content.trim_matches('\n')
+fn remove_section(markdown: &str, section_title: &str) -> String {
+    find_optional_section_bounds(markdown, section_title).map_or_else(
+        || markdown.to_string(),
+        |section_bounds| remove_block(markdown, section_bounds),
     )
+}
+
+fn insertion_bounds_above_log(markdown: &str) -> Range<usize> {
+    let insertion_index = find_optional_section_bounds(markdown, LOG_SECTION_TITLE)
+        .map_or(markdown.len(), |log_section_bounds| log_section_bounds.start);
+
+    insertion_index..insertion_index
+}
+
+fn format_section(section_title: &str, content: &str) -> String {
+    format!("## {section_title}\n{}", content.trim_matches('\n'))
 }
 
 fn replace_block(markdown: &str, range: Range<usize>, block: &str) -> String {
@@ -236,41 +222,6 @@ const fn heading_level_number(heading_level: HeadingLevel) -> u8 {
         HeadingLevel::H5 => 5,
         HeadingLevel::H6 => 6,
     }
-}
-
-fn find_managed_section_bounds(markdown: &str, section_id: &str) -> Result<Option<Range<usize>>> {
-    let start_marker = format!("<!-- swelog:managed {section_id}:start -->");
-    let end_marker = format!("<!-- swelog:managed {section_id}:end -->");
-
-    let Some(start_range) = find_exact_line(markdown, &start_marker, 0) else {
-        return Ok(None);
-    };
-
-    let end_range = find_exact_line(markdown, &end_marker, start_range.end)
-        .ok_or_else(|| MalformedManagedSection { section_id: section_id.to_string() })?;
-
-    Ok(Some(start_range.start..end_range.end))
-}
-
-fn find_exact_line(
-    markdown: &str,
-    expected_line: &str,
-    start_index: usize,
-) -> Option<Range<usize>> {
-    let mut line_start = start_index;
-
-    for line in slice_from(markdown, start_index).split_inclusive('\n') {
-        let line_end = line_start.saturating_add(line.len());
-        let line_without_ending = line.trim_end_matches(['\r', '\n']);
-
-        if line_without_ending == expected_line {
-            return Some(line_start..line_end);
-        }
-
-        line_start = line_end;
-    }
-
-    None
 }
 
 #[cfg(test)]

@@ -3,10 +3,7 @@ pub mod swelog_paths;
 
 use std::fs;
 
-use default_files::{
-    DEFAULT_CONTEXT_FILE_CONTENT,
-    DEFAULT_WORK_FILE_CONTENT,
-};
+use default_files::DEFAULT_CONTEXT_FILE_CONTENT;
 use miette::{
     IntoDiagnostic,
     Result,
@@ -18,6 +15,7 @@ use crate::{
     errors::SwelogFilesAlreadyExist,
     overwrite::Overwrite,
     swelog_config::SwelogConfig,
+    work_file::create_or_reset_work_file,
 };
 
 pub fn setup_swelog_files_from_config(
@@ -40,9 +38,7 @@ pub fn setup_swelog_files_from_config(
             format!("failed to write context file at {}", swelog_paths.context_file.display())
         })?;
 
-    fs::write(&swelog_paths.work_file, DEFAULT_WORK_FILE_CONTENT).into_diagnostic().wrap_err_with(
-        || format!("failed to write work file at {}", swelog_paths.work_file.display()),
-    )?;
+    create_or_reset_work_file(swelog_config)?;
 
     fs::create_dir_all(&swelog_paths.daily_log_directory).into_diagnostic().wrap_err_with(
         || {

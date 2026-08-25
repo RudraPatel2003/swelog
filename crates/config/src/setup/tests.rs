@@ -9,7 +9,10 @@ use tempfile::{
 };
 
 use super::*;
-use crate::overwrite::Overwrite;
+use crate::{
+    overwrite::Overwrite,
+    setup::default_files::is_default_work_file_content,
+};
 
 const EXISTING_CONTEXT_FILE_CONTENT: &str = "existing context";
 const EXISTING_WORK_FILE_CONTENT: &str = "existing work";
@@ -72,7 +75,7 @@ fn setup_creates_swelog_files_and_directories() {
         fs::read_to_string(test_context.work_file()).expect("work file should be readable");
 
     assert_eq!(context_file_contents, DEFAULT_CONTEXT_FILE_CONTENT);
-    assert_eq!(work_file_contents, DEFAULT_WORK_FILE_CONTENT);
+    assert!(is_default_work_file_content(&work_file_contents));
     assert!(test_context.daily_log_directory().is_dir());
     assert!(test_context.weekly_log_directory().is_dir());
 
@@ -237,7 +240,7 @@ fn setup_overwrites_existing_files_when_force_is_set() {
         fs::read_to_string(test_context.work_file()).expect("work file should be readable");
 
     assert_eq!(context_file_contents, DEFAULT_CONTEXT_FILE_CONTENT);
-    assert_eq!(work_file_contents, DEFAULT_WORK_FILE_CONTENT);
+    assert!(is_default_work_file_content(&work_file_contents));
     assert!(test_context.daily_log_directory().is_dir());
     assert!(test_context.weekly_log_directory().is_dir());
 

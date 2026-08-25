@@ -28,12 +28,19 @@ fn instant(year: i32, month: u32, day: u32, hour: u32, minute: u32) -> DateTime<
 }
 
 fn issue(timestamps: LinearIssueTimestamps) -> LinearIssue {
+    issue_with_status(LinearStatusType::Started, timestamps)
+}
+
+fn issue_with_status(
+    status_type: LinearStatusType,
+    timestamps: LinearIssueTimestamps,
+) -> LinearIssue {
     LinearIssue {
         identifier: "ENG-1".to_string(),
         title: "Investigate the outage".to_string(),
         url: "https://linear.app/acme/issue/ENG-1".to_string(),
         status_name: "In Progress".to_string(),
-        status_type: LinearStatusType::Started,
+        status_type,
         timestamps,
     }
 }
@@ -75,6 +82,17 @@ fn was_issue_worked_on_matches_an_issue_completed_on_the_date_but_updated_later(
 }
 
 #[test]
+fn was_issue_worked_on_matches_an_issue_canceled_on_the_date_but_updated_later() {
+    let issue = issue(LinearIssueTimestamps {
+        canceled_at: Some(instant(2026, 8, 17, 16, 0)),
+        updated_at: Some(instant(2026, 8, 19, 9, 0)),
+        ..LinearIssueTimestamps::default()
+    });
+
+    assert!(was_issue_worked_on(&issue, date(2026, 8, 17), &timezone()));
+}
+
+#[test]
 fn was_issue_worked_on_ignores_an_issue_from_a_different_date() {
     let issue = issue(LinearIssueTimestamps {
         created_at: Some(instant(2026, 8, 10, 9, 0)),
@@ -102,4 +120,85 @@ fn was_issue_worked_on_reads_timestamps_in_the_supplied_time_zone() {
 
     assert!(was_issue_worked_on(&issue, date(2026, 8, 17), &timezone()));
     assert!(!was_issue_worked_on(&issue, date(2026, 8, 18), &timezone()));
+}
+
+#[test]
+fn is_issue_active_or_finished_today_keeps_an_unfinished_issue() {
+    let issue = issue_with_status(LinearStatusType::Unstarted, LinearIssueTimestamps::default());
+
+    assert!(is_issue_active_or_finished_today(&issue, date(2026, 8, 17), &timezone()));
+}
+
+#[test]
+fn is_issue_active_or_finished_today_keeps_an_issue_completed_today() {
+    let issue = issue_with_status(
+        LinearStatusType::Completed,
+        LinearIssueTimestamps {
+            completed_at: Some(instant(2026, 8, 17, 16, 0)),
+            ..LinearIssueTimestamps::default()
+        },
+    );
+
+    assert!(is_issue_active_or_finished_today(&issue, date(2026, 8, 17), &timezone()));
+}
+
+#[test]
+fn is_issue_active_or_finished_today_keeps_an_issue_canceled_today() {
+    let issue = issue_with_status(
+        LinearStatusType::Canceled,
+        LinearIssueTimestamps {
+            canceled_at: Some(instant(2026, 8, 17, 16, 0)),
+            ..LinearIssueTimestamps::default()
+        },
+    );
+
+    assert!(is_issue_active_or_finished_today(&issue, date(2026, 8, 17), &timezone()));
+}
+
+#[test]
+fn is_issue_active_or_finished_today_ignores_an_issue_completed_on_an_earlier_day() {
+    let issue = issue_with_status(
+        LinearStatusType::Completed,
+        LinearIssueTimestamps {
+            completed_at: Some(instant(2026, 8, 10, 16, 0)),
+            ..LinearIssueTimestamps::default()
+        },
+    );
+
+    assert!(!is_issue_active_or_finished_today(&issue, date(2026, 8, 17), &timezone()));
+}
+
+#[test]
+fn is_issue_active_or_finished_today_ignores_an_issue_completed_earlier_but_updated_today() {
+    let issue = issue_with_status(
+        LinearStatusType::Completed,
+        LinearIssueTimestamps {
+            completed_at: Some(instant(2026, 8, 10, 16, 0)),
+            updated_at: Some(instant(2026, 8, 17, 9, 0)),
+            ..LinearIssueTimestamps::default()
+        },
+    );
+
+    assert!(!is_issue_active_or_finished_today(&issue, date(2026, 8, 17), &timezone()));
+}
+
+#[test]
+fn is_issue_active_or_finished_today_ignores_a_finished_issue_without_timestamps() {
+    let issue = issue_with_status(LinearStatusType::Completed, LinearIssueTimestamps::default());
+
+    assert!(!is_issue_active_or_finished_today(&issue, date(2026, 8, 17), &timezone()));
+}
+
+#[test]
+fn is_issue_active_or_finished_today_reads_timestamps_in_the_supplied_time_zone() {
+    let issue = issue_with_status(
+        LinearStatusType::Completed,
+        LinearIssueTimestamps {
+            completed_at: Some(instant(2026, 8, 17, 23, 30)),
+            ..LinearIssueTimestamps::default()
+        },
+    );
+
+    assert!(is_issue_active_or_finished_today(&issue, date(2026, 8, 17), &timezone()));
+    assert!(!is_issue_active_or_finished_today(&issue, date(2026, 8, 18), &timezone()));
 }

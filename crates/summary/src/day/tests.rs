@@ -8,7 +8,7 @@ use chrono::NaiveDate;
 use config::{
     errors::SwelogFileNotFound,
     setup::{
-        default_files::DEFAULT_WORK_FILE_CONTENT,
+        default_files::is_default_work_file_content,
         swelog_paths::SwelogPaths,
     },
     swelog_config::SwelogConfig,
@@ -284,7 +284,7 @@ async fn summarize_daily_work_resets_work_file_by_default() {
     let work_file_content =
         fs::read_to_string(test_context.work_file()).expect("work file should be readable");
 
-    assert_eq!(work_file_content, DEFAULT_WORK_FILE_CONTENT);
+    assert!(is_default_work_file_content(&work_file_content));
 
     let daily_log_content =
         fs::read_to_string(test_context.daily_log_file()).expect("daily log should be readable");
