@@ -9,7 +9,7 @@ use chrono::{
 use config::{
     overwrite::Overwrite,
     setup::{
-        default_files::DEFAULT_WORK_FILE_CONTENT,
+        default_files::is_default_work_file_content,
         swelog_paths::SwelogPaths,
     },
     swelog_config::SwelogConfig,
@@ -70,7 +70,7 @@ pub async fn summarize_weekly_work_from_config(
             format!("failed to read work file at {}", swelog_paths.work_file.display())
         })?;
 
-    if work_file_content != DEFAULT_WORK_FILE_CONTENT {
+    if !is_default_work_file_content(&work_file_content) {
         let work_file_not_default_error = WorkFileNotDefault;
 
         return Err(work_file_not_default_error.into());

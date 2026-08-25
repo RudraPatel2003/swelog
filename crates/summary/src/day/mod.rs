@@ -6,13 +6,17 @@ use chrono::NaiveDate;
 use config::{
     overwrite::Overwrite,
     setup::{
-        default_files::DEFAULT_WORK_FILE_CONTENT,
+        default_files::is_default_work_file_content,
         swelog_paths::SwelogPaths,
     },
     swelog_config::SwelogConfig,
     utils::{
         ensure_swelog_directory_exists,
         ensure_swelog_file_exists,
+    },
+    work_file::{
+        create_or_reset_work_file,
+        hide_comments::set_hide_comments_flag,
     },
 };
 use dates::formatting::format_date;
@@ -78,7 +82,7 @@ pub async fn summarize_daily_work_from_config(
             format!("failed to read work file at {}", swelog_paths.work_file.display())
         })?;
 
-    if work_file_content == DEFAULT_WORK_FILE_CONTENT {
+    if is_default_work_file_content(&work_file_content) {
         let work_file_not_updated_error = WorkFileNotUpdated;
 
         return Err(work_file_not_updated_error.into());
@@ -96,11 +100,9 @@ pub async fn summarize_daily_work_from_config(
     })?;
 
     if keep_work_file == KeepWorkFile::No {
-        fs::write(&swelog_paths.work_file, DEFAULT_WORK_FILE_CONTENT)
-            .into_diagnostic()
-            .wrap_err_with(|| {
-                format!("failed to reset work file at {}", swelog_paths.work_file.display())
-            })?;
+        set_hide_comments_flag()?;
+
+        create_or_reset_work_file(swelog_config)?;
     }
 
     Ok(())

@@ -54,3 +54,11 @@ pub struct SwelogFilesAlreadyExist {
 pub struct SwelogFileNotFound {
     pub swelog_path: PathBuf,
 }
+
+#[derive(Debug, Diagnostic, Error)]
+#[error("unable to determine the cache directory")]
+#[diagnostic(
+    code(swelog::config::unavailable_cache_directory),
+    help("set a cache directory for your operating system, such as XDG_CACHE_HOME on Linux")
+)]
+pub(crate) struct UnavailableCacheDirectory;
