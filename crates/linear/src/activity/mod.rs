@@ -47,6 +47,23 @@ pub fn was_issue_worked_on(issue: &LinearIssue, date: NaiveDate, timezone: &impl
     .any(|instant| falls_on_date(instant, date, timezone))
 }
 
+pub fn is_issue_active_or_finished_today(
+    issue: &LinearIssue,
+    today: NaiveDate,
+    timezone: &impl TimeZone,
+) -> bool {
+    issue.status_type.is_active() || was_issue_finished_on(issue, today, timezone)
+}
+
+fn was_issue_finished_on(issue: &LinearIssue, date: NaiveDate, timezone: &impl TimeZone) -> bool {
+    let timestamps = issue.timestamps;
+
+    [timestamps.completed_at, timestamps.canceled_at]
+        .into_iter()
+        .flatten()
+        .any(|instant| falls_on_date(instant, date, timezone))
+}
+
 fn falls_on_date(instant: DateTime<Utc>, date: NaiveDate, timezone: &impl TimeZone) -> bool {
     instant.with_timezone(timezone).date_naive() == date
 }

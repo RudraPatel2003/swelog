@@ -23,6 +23,7 @@ use serde_json::Value;
 use crate::{
     activity::{
         get_updated_after_filter,
+        is_issue_active_or_finished_today,
         was_issue_worked_on,
     },
     errors::LinearMcpRequestFailed,
@@ -40,27 +41,15 @@ use crate::{
 
 const PAGE_SIZE: u64 = 50;
 
-/// Requesting fields explicitly keeps the response small and guarantees the
-/// activity timestamps that date filtering depends on are present.
-const ISSUE_FIELDS: [&str; 10] = [
-    "id",
-    "title",
-    "url",
-    "status",
-    "statusType",
-    "createdAt",
-    "startedAt",
-    "completedAt",
-    "canceledAt",
-    "updatedAt",
-];
-
-pub async fn get_active_assigned_issues(username: &str) -> Result<Vec<LinearIssue>> {
+pub async fn get_current_active_assigned_issues(
+    username: &str,
+    today: &NaiveDate,
+) -> Result<Vec<LinearIssue>> {
     let client = connect_to_linear_mcp().await?;
 
     let mut issues = fetch_all_issues(&client, username, None).await?;
 
-    issues.retain(|issue| issue.status_type.is_active());
+    issues.retain(|issue| is_issue_active_or_finished_today(issue, *today, &Local));
 
     disconnect_from_linear_mcp(client).await?;
 
@@ -72,7 +61,7 @@ pub async fn get_active_assigned_issues(username: &str) -> Result<Vec<LinearIssu
 ///
 /// Completed and canceled issues are kept, because finishing an issue is the
 /// kind of work a past day's log should record.
-pub async fn get_assigned_issues_worked_on(
+pub async fn get_assigned_issues_on_date(
     username: &str,
     date: &NaiveDate,
 ) -> Result<Vec<LinearIssue>> {
@@ -89,8 +78,6 @@ pub async fn get_assigned_issues_worked_on(
     Ok(issues)
 }
 
-/// Connects to the Linear MCP server, reauthorizing once if the server rejects
-/// the stored credentials.
 async fn connect_to_linear_mcp() -> Result<RunningService<RoleClient, ()>> {
     let mut reauthorization_attempted = false;
 
@@ -179,10 +166,12 @@ fn list_issues_arguments(
 ) -> JsonObject {
     let mut arguments = JsonObject::new();
 
+    let issue_fields_argument = get_issue_fields_argument();
+
     arguments.insert("assignee".to_string(), Value::String(username.to_string()));
     arguments.insert("includeArchived".to_string(), Value::Bool(false));
     arguments.insert("limit".to_string(), Value::Number(PAGE_SIZE.into()));
-    arguments.insert("fields".to_string(), issue_fields_argument());
+    arguments.insert("fields".to_string(), issue_fields_argument);
 
     if let Some(cursor) = cursor {
         arguments.insert("cursor".to_string(), Value::String(cursor.to_string()));
@@ -195,7 +184,21 @@ fn list_issues_arguments(
     arguments
 }
 
-fn issue_fields_argument() -> Value {
+/// Only fetch what is needed
+const ISSUE_FIELDS: [&str; 10] = [
+    "id",
+    "title",
+    "url",
+    "status",
+    "statusType",
+    "createdAt",
+    "startedAt",
+    "completedAt",
+    "canceledAt",
+    "updatedAt",
+];
+
+fn get_issue_fields_argument() -> Value {
     Value::Array(
         ISSUE_FIELDS.iter().map(|field| Value::String((*field).to_string())).collect::<Vec<_>>(),
     )

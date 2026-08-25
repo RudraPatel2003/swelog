@@ -13,12 +13,12 @@ use dates::{
     parsing::parse_date,
 };
 use linear::client::{
-    get_active_assigned_issues,
-    get_assigned_issues_worked_on,
+    get_assigned_issues_on_date,
+    get_current_active_assigned_issues,
 };
 use logging::work_file::{
-    remove_managed_work_file_section_from_config,
-    upsert_managed_work_file_section_from_config,
+    remove_work_file_section_from_config,
+    upsert_work_file_section_from_config,
 };
 use miette::Result;
 
@@ -33,13 +33,11 @@ use crate::commands::{
     },
 };
 
-const LINEAR_SECTION_ID: &str = "linear";
 const LINEAR_SECTION_TITLE: &str = "Linear";
 
 #[derive(Debug, Args)]
 pub struct LinearArgs {
-    /// Date to fetch Linear activity for in the format MM-DD-YYYY. Without this, your currently
-    /// active issues are fetched instead.
+    /// Date to fetch Linear activity for in the format MM-DD-YYYY.
     #[arg(long, value_name = DATE_VALUE_NAME, value_parser = parse_date)]
     date: Option<NaiveDate>,
 
@@ -61,27 +59,28 @@ impl LinearArgs {
 
         let date_selection = DateSelection::from_date_flags(self.date, self.use_yesterday);
 
-        let activity_date = resolve_selected_date(date_selection, Local::now().date_naive())?;
+        let today = Local::now().date_naive();
+
+        let activity_date = resolve_selected_date(date_selection, today)?;
 
         let issues = match activity_date {
             Some(activity_date) => {
-                get_assigned_issues_worked_on(linear_username, &activity_date).await?
+                get_assigned_issues_on_date(linear_username, &activity_date).await?
             }
 
-            None => get_active_assigned_issues(linear_username).await?,
+            None => get_current_active_assigned_issues(linear_username, &today).await?,
         };
 
         if issues.is_empty() {
-            remove_managed_work_file_section_from_config(&swelog_config, LINEAR_SECTION_ID)?;
+            remove_work_file_section_from_config(&swelog_config, LINEAR_SECTION_TITLE)?;
 
             println!("{}", format_empty_message(activity_date.as_ref()));
 
             return Ok(());
         }
 
-        upsert_managed_work_file_section_from_config(
+        upsert_work_file_section_from_config(
             &swelog_config,
-            LINEAR_SECTION_ID,
             LINEAR_SECTION_TITLE,
             &format_linear_issues(&issues),
         )?;

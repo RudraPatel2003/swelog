@@ -4,9 +4,7 @@ description: Record the Linear issues assigned to you, grouped by status.
 ---
 
 Linear fetching records the issues assigned to a configured workspace user.
-Without `--date` it records your currently active issues and omits completed and
-canceled ones. See [Integrations](/integrations/) for how integration sections
-work in general.
+By default, it gets the issues assigned to you today, plus the ones you just moved to canceled or completed.
 
 ## Setup
 
@@ -62,7 +60,7 @@ The generated section groups issues by status:
 - [ENG-456](https://linear.app/...) Document the Linear integration
 ```
 
-When no issues match, Swelog removes its managed Linear section.
+When no issues match, Swelog removes the `## Linear` section.
 
 ## What `--date` can and cannot recover
 
@@ -79,6 +77,20 @@ how long you wait to backfill.
 and again on Tuesday counts as Tuesday only. So backfill soon after the fact for
 the best result, and treat what `--date` returns as a reminder for your own
 notes rather than a full record.
+
+Archived issues are the one thing `--date` cannot reach. Swelog asks Linear to
+leave them out, so an issue you finished on a date and archived afterwards will
+not come back.
+
+## How today differs from `--date`
+
+`--date` asks what happened on a day, so it matches on any of the five
+timestamps above and keeps whatever it finds.
+
+The default fetch asks what is on your plate, so it keeps every unfinished issue
+regardless of age, and adds a finished one only when its `completedAt` or
+`canceledAt` lands on today. `updatedAt` is deliberately ignored here: an issue
+you closed last week and commented on today stays out of the list.
 
 ## Switching accounts or organizations
 
