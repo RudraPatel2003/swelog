@@ -22,7 +22,7 @@ By default, it gets the issues assigned to you today, plus the ones you just mov
    swelog fetch linear
    ```
 
-3. On first use, Swelog prints a Linear authorization URL and attempts to open
+3. On first use, swelog prints a Linear authorization URL and attempts to open
    it in your browser. If the browser does not open, use the printed URL.
 
 4. Complete authorization. Swelog stores the resulting OAuth credentials in your
@@ -62,7 +62,7 @@ The generated section groups issues by status:
 
 ## What `--date` can and cannot recover
 
-The Linear MCP server does not expose issue history, so Swelog can only match on
+The Linear MCP server does not expose issue history, so swelog can only match on
 the timestamps Linear stores on the issue itself: `updatedAt`, `completedAt`,
 `canceledAt`, `startedAt`, and `createdAt`. An issue is recorded for a date when
 any of those lands on it, read in your local time zone.
