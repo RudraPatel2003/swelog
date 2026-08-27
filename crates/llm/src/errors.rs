@@ -7,7 +7,7 @@ use thiserror::Error;
     code(swelog::llm::summarization_not_configured),
     help(
         "add `llm` and `llmModel` to your swelog config, or run `swelog log` to write the daily \
-         log without a language model. See https://swelog-cli.vercel.app/summarization/"
+         log without a language model. See https://swelog.rudrapatel.net/summarization/"
     )
 )]
 pub struct SummarizationNotConfigured;

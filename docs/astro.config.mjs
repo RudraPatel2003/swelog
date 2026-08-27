@@ -4,7 +4,7 @@ import { defineConfig } from "astro/config";
 
 // https://astro.build/config
 export default defineConfig({
-  site: "https://swelog-cli.vercel.app",
+  site: "https://swelog.rudrapatel.net",
   integrations: [
     starlight({
       title: "swelog",

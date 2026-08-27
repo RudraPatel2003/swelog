@@ -30,22 +30,22 @@ swelog --help
 ## Getting Started
 
 Full documentation lives at
-**[the swelog docs site](https://swelog-cli.vercel.app/)**, including:
+**[the swelog docs site](https://swelog.rudrapatel.net/)**, including:
 
-- [Quick Start](https://swelog-cli.vercel.app/getting-started/quick-start/) —
+- [Quick Start](https://swelog.rudrapatel.net/getting-started/quick-start/) —
   configure your vault and file your first day
-- [Configuration](https://swelog-cli.vercel.app/getting-started/configuration/)
+- [Configuration](https://swelog.rudrapatel.net/getting-started/configuration/)
   — every field in `swelog.json`
-- [Summarization](https://swelog-cli.vercel.app/summarization/) — the optional
+- [Summarization](https://swelog.rudrapatel.net/summarization/) — the optional
   LLM pass, weekly logs, and the Ollama, OpenAI, and OpenRouter providers
-- [Integrations](https://swelog-cli.vercel.app/integrations/) — pull activity
+- [Integrations](https://swelog.rudrapatel.net/integrations/) — pull activity
   from GitHub, Linear, and Google Calendar
-- [Authentication](https://swelog-cli.vercel.app/reference/authentication/) —
+- [Authentication](https://swelog.rudrapatel.net/reference/authentication/) —
   how credentials are stored and cleared
-- [Command reference](https://swelog-cli.vercel.app/reference/commands/) — the
+- [Command reference](https://swelog.rudrapatel.net/reference/commands/) — the
   full command tree
-- [Privacy Policy](https://swelog-cli.vercel.app/legal/privacy/) and
-  [Terms of Service](https://swelog-cli.vercel.app/legal/terms/) — what stays on
+- [Privacy Policy](https://swelog.rudrapatel.net/legal/privacy/) and
+  [Terms of Service](https://swelog.rudrapatel.net/legal/terms/) — what stays on
   your machine and what does not
 
 ## Contributing
