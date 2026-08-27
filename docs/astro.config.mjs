@@ -33,6 +33,18 @@ export default defineConfig({
           ],
         },
         {
+          label: "Integrations",
+          items: [
+            { label: "Overview", slug: "integrations" },
+            { label: "GitHub", slug: "integrations/github" },
+            {
+              label: "Google Calendar",
+              slug: "integrations/google-calendar",
+            },
+            { label: "Linear", slug: "integrations/linear" },
+          ],
+        },
+        {
           label: "Summarization",
           items: [
             { label: "Overview", slug: "summarization" },
@@ -40,18 +52,17 @@ export default defineConfig({
           ],
         },
         {
-          label: "Integrations",
-          items: [
-            { label: "Overview", slug: "integrations" },
-            { label: "GitHub", slug: "integrations/github" },
-            { label: "Linear", slug: "integrations/linear" },
-          ],
-        },
-        {
           label: "Reference",
           items: [
             { label: "Commands", slug: "reference/commands" },
             { label: "Authentication", slug: "reference/authentication" },
+          ],
+        },
+        {
+          label: "Legal",
+          items: [
+            { label: "Privacy Policy", slug: "legal/privacy" },
+            { label: "Terms of Service", slug: "legal/terms" },
           ],
         },
       ],

@@ -1,24 +1,39 @@
+use chrono::Local;
 use clap::Args;
 use config::utils::read_config_file;
-use logging::work_file::append_work_file_section_from_config;
+use daily_log::{
+    file::get_daily_log_file_name,
+    write::write_daily_log_from_config,
+};
 use miette::Result;
 use owo_colors::OwoColorize;
 
+use crate::shared::daily_log_args::DailyLogArgs;
+
 #[derive(Debug, Args)]
 pub struct LogArgs {
-    /// Work item to add as a Markdown bullet.
-    work_item: String,
+    #[command(flatten)]
+    daily_log_args: DailyLogArgs,
 }
 
 impl LogArgs {
     pub fn run(self) -> Result<()> {
         let swelog_config = read_config_file()?;
 
-        let formatted_work_item = format!("- {}", self.work_item);
+        let today = Local::now().date_naive();
 
-        append_work_file_section_from_config(&swelog_config, &formatted_work_item, "Log")?;
+        let log_date = self.daily_log_args.resolve_log_date(today)?;
 
-        println!("Logged work item into {}", swelog_config.work_file_name.cyan());
+        write_daily_log_from_config(
+            &swelog_config,
+            &log_date,
+            self.daily_log_args.overwrite(),
+            self.daily_log_args.keep_work_file(),
+        )?;
+
+        let daily_log_file_name = get_daily_log_file_name(&log_date);
+
+        println!("Logged your work into {}", daily_log_file_name.cyan());
 
         Ok(())
     }

@@ -13,6 +13,10 @@ use config::{
     },
     swelog_config::SwelogConfig,
 };
+use daily_log::{
+    errors::DailyLogAlreadyExists,
+    file::get_daily_log_file_name,
+};
 use llm::language_model::LanguageModel;
 use miette::Result;
 use tempfile::{
@@ -183,7 +187,7 @@ async fn summarize_daily_work_fails_when_daily_log_directory_is_missing() {
 
     test_context.write_swelog_files();
 
-    fs::remove_dir(test_context.daily_log_directory())
+    fs::remove_dir_all(test_context.daily_log_directory())
         .expect("daily log directory should be removed");
 
     let error = summarize_daily_work_from_config(

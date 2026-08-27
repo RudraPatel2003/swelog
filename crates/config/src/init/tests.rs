@@ -97,3 +97,20 @@ fn write_config_overwrites_when_force_is_set() {
 
     drop(temporary_directory);
 }
+
+#[test]
+fn write_default_config_omits_optional_fields() {
+    let TestContext { temporary_directory, config_file_path, config } = get_test_context();
+
+    write_default_config(&config_file_path, &config, Overwrite::No)
+        .expect("config should be written");
+
+    let file_contents =
+        fs::read_to_string(&config_file_path).expect("config file should be readable");
+
+    assert!(!file_contents.contains("llm"));
+    assert!(!file_contents.contains("llmModel"));
+    assert!(!file_contents.contains("linearUsername"));
+
+    drop(temporary_directory);
+}

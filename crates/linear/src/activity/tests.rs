@@ -5,7 +5,7 @@ use chrono::{
 };
 
 use super::*;
-use crate::issue::{
+use crate::client::structs::{
     LinearIssueTimestamps,
     LinearStatusType,
 };

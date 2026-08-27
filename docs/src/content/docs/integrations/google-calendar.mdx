@@ -1,0 +1,97 @@
+---
+title: Google Calendar
+description: Record the meetings you had on a day into your work file.
+---
+
+Google Calendar fetching records the meetings on the calendar belonging to the
+account you authorize.
+
+## Setup
+
+1. Fetch today's meetings:
+
+   ```sh
+   swelog fetch google-calendar
+   ```
+
+2. On first use, Swelog prints a Google authorization URL and attempts to open
+   it in your browser. If the browser does not open, use the printed URL.
+
+3. Grant Swelog read-only access to your calendar. Swelog asks for the
+   `calendar.events.readonly` scope and nothing else, so it can never change or
+   delete an event.
+
+4. Swelog stores the resulting OAuth tokens in your operating system keyring and
+   refreshes them on later runs.
+
+5. To backfill a previous date, provide `MM-DD-YYYY`:
+
+   ```sh
+   swelog fetch google-calendar --date 08-17-2026
+   ```
+
+   `--yesterday` does the same for the day before:
+
+   ```sh
+   swelog fetch google-calendar --yesterday
+   ```
+
+## Output
+
+The command creates or updates the `## Google Calendar` section before
+`## Log`, with one bullet per meeting ordered by start time. Each bullet reads
+as a time range, a pipe, and the event title:
+
+```markdown
+## Google Calendar
+
+- 10:00 AM - 10:15 AM | Standup
+- ~~11:00 AM - 11:30 AM | Eng all-hands~~
+- 1:00 PM - 2:00 PM | Design review
+- 3:00 PM - 4:00 PM | Focus block
+```
+
+Meetings you declined, and meetings the organizer cancelled, are struck through
+rather than dropped.
+
+Times are written in your local time zone, and the day runs from local midnight
+to the next local midnight.
+
+## Which calendar is read
+
+Swelog only reads the primary calendar of the account that authorized — the one
+Google shows under your own name. Calendars shared with you, team calendars, and
+any secondary calendars you have created are never read, and there is no setting
+that changes this.
+
+To record a different account's calendar, authorize as that account instead. See
+[Switching accounts](#switching-accounts).
+
+## What counts as a meeting
+
+Swelog records the events that describe how the day was actually spent:
+
+| Event                              | Recorded       |
+| ---------------------------------- | -------------- |
+| A timed event you accepted         | Yes            |
+| A timed event you never replied to | Yes            |
+| A solo hold, such as a focus block | Yes            |
+| An event you declined              | Struck through |
+| An event the organizer cancelled   | Struck through |
+| An all-day event                   | No             |
+
+All-day events are skipped because they describe a whole day rather than a block
+of it — out-of-office entries, holidays, and birthdays would otherwise crowd out
+the meetings that sit beside them.
+
+## Switching accounts
+
+Clear the stored authorization and fetch again:
+
+```sh
+swelog auth clear google-calendar
+swelog fetch google-calendar
+```
+
+The next fetch starts a new browser authorization flow, where you can pick a
+different Google account.

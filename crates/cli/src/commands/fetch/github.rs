@@ -20,13 +20,15 @@ use github::{
     repository_name::get_repository_name_from_repository_url,
     users::get_github_username,
 };
-use logging::work_file::upsert_work_file_section_from_config;
+use markdown::work_file::upsert_work_file_section_from_config;
 use miette::Result;
 
-use crate::commands::date_selection::{
+use crate::shared::date_selection::{
     DateSelection,
     resolve_selected_date,
 };
+
+const GITHUB_SECTION_TITLE: &str = "GitHub";
 
 #[derive(Debug, Args)]
 pub struct GithubArgs {
@@ -92,7 +94,11 @@ impl GithubArgs {
 
         let github_activity = github_activity_lines.join("\n");
 
-        upsert_work_file_section_from_config(&swelog_config, "GitHub", &github_activity)?;
+        upsert_work_file_section_from_config(
+            &swelog_config,
+            GITHUB_SECTION_TITLE,
+            &github_activity,
+        )?;
 
         println!("Recorded {} GitHub PRs in your work file.", github_activity_lines.len());
 

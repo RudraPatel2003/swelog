@@ -16,20 +16,20 @@ use linear::client::{
     get_assigned_issues_on_date,
     get_current_active_assigned_issues,
 };
-use logging::work_file::{
+use markdown::work_file::{
     remove_work_file_section_from_config,
     upsert_work_file_section_from_config,
 };
 use miette::Result;
 
-use crate::commands::{
-    date_selection::{
-        DateSelection,
-        resolve_selected_date,
-    },
-    fetch::linear::{
+use crate::{
+    commands::fetch::linear::{
         errors::MissingLinearUsername,
         formatting::format_linear_issues,
+    },
+    shared::date_selection::{
+        DateSelection,
+        resolve_selected_date,
     },
 };
 

@@ -1,10 +1,38 @@
 ---
 title: Summarization
-description: How swelog turns your work file into daily and weekly logs.
+description: An optional language model pass that rewrites your notes into daily and weekly logs.
 ---
 
-Swelog uses the same configured model for daily and weekly summaries. See
-[Providers and Models](/summarization/providers/) for provider setup.
+Summarization is optional. Turn this on when you want your raw notes
+rewritten into something polished enough to reread months later.
+
+## Setup
+
+Add two fields to `swelog.json`:
+
+```json
+{
+  "llm": "ollama",
+  "llmModel": "llama3.2"
+}
+```
+
+See [Providers and Models](/summarization/providers/) for what each provider
+expects and how its credential is stored. Until both fields are present,
+`swelog summarize` fails and tells you so.
+
+Summaries also read `CONTEXT.md`, which is where you describe your role, team,
+systems, and priorities. Nothing else in swelog uses that file.
+
+## `swelog log` and `swelog summarize day`
+
+Both take the same flags and both end the day the same way: a file in your daily
+log folder, and a reset `WORK.md`. They differ in what lands in the file.
+
+| Command                | Daily log contents                                                                    |
+| ---------------------- | ------------------------------------------------------------------------------------- |
+| `swelog log`           | Your notes verbatim, under a `# Daily Log - MM-DD-YYYY` heading.                      |
+| `swelog summarize day` | A generated summary, with your raw notes preserved underneath as `## Original Notes`. |
 
 ## Commands
 
@@ -22,6 +50,9 @@ Swelog uses the same configured model for daily and weekly summaries. See
 | `swelog summarize week --force`              | Replace an existing weekly log.                                    |
 
 ## Weekly summaries
+
+`swelog summarize week` works off whatever daily logs exist, whether
+`swelog log` or `swelog summarize day` wrote them.
 
 Without `--week-of`, weekly summarization uses the Monday of the week containing
 today, including when today is that Monday. Some weeks you only work one day, and
@@ -44,3 +75,9 @@ Daily summarization always reads the current `WORK.md`. `--date` only chooses th
 file the summary is written to, so it is what you use to backfill a missed day.
 For the day before, `--yesterday` saves you working out the date.
 See [Backfilling a Missed Day](/guides/backfilling/).
+
+:::caution[Summarizing sends your notes to a provider]
+`swelog summarize` uploads the full contents of your work file and your context
+file to whichever provider you configured. It is the one place your own notes
+leave your computer. See the [Privacy Policy](/legal/privacy/).
+:::

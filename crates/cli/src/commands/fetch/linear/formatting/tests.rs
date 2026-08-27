@@ -1,4 +1,4 @@
-use linear::issue::LinearIssueTimestamps;
+use linear::client::structs::LinearIssueTimestamps;
 
 use super::*;
 

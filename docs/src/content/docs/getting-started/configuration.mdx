@@ -9,17 +9,21 @@ inside `<obsidianVaultPath>/<swelogFolderName>`.
 
 ## Fields
 
-| Field                 | Required | Description                                                                                        |
-| --------------------- | -------- | -------------------------------------------------------------------------------------------------- |
-| `obsidianVaultPath`   | Yes      | Absolute path to the Obsidian vault. Commands fail until this is configured.                       |
-| `swelogFolderName`    | Yes      | Folder created inside the vault for Swelog files.                                                  |
-| `workFileName`        | Yes      | Markdown file used to collect the current day's raw notes.                                         |
-| `contextFileName`     | Yes      | Markdown file containing role, team, systems, and priority context.                                |
-| `dailyLogFolderName`  | Yes      | Directory containing generated daily logs.                                                         |
-| `weeklyLogFolderName` | Yes      | Directory containing generated weekly logs.                                                        |
-| `llm`                 | Yes      | Summarization provider: `ollama`, `openAi`, or `openRouter`.                                       |
-| `llmModel`            | Yes      | Model identifier interpreted by the configured provider.                                           |
-| `linearUsername`      | No       | Exact Linear assignee name used by `swelog fetch linear`. Leave as `null` when Linear is not used. |
+| Field                 | Required | Description                                                                                            |
+| --------------------- | -------- | ------------------------------------------------------------------------------------------------------ |
+| `obsidianVaultPath`   | Yes      | Absolute path to the Obsidian vault. Commands fail until this is configured.                           |
+| `swelogFolderName`    | Yes      | Folder created inside the vault for Swelog files.                                                      |
+| `workFileName`        | Yes      | Markdown file used to collect the current day's raw notes.                                             |
+| `dailyLogFolderName`  | Yes      | Directory containing generated daily logs.                                                             |
+| `weeklyLogFolderName` | Yes      | Directory containing generated weekly logs.                                                            |
+| `contextFileName`     | Yes      | Markdown file containing role, team, systems, and priority context. Used by summarization only.        |
+| `llm`                 | No       | Summarization provider: `ollama`, `openAi`, or `openRouter`. Set only when you use `swelog summarize`. |
+| `llmModel`            | No       | Model identifier interpreted by the configured provider. Set only when you use `swelog summarize`.     |
+| `linearUsername`      | No       | Exact Linear assignee name used by `swelog fetch linear`. Omit when Linear is not used.                |
+
+`swelog init` writes only the required fields. The optional ones are absent
+until you add them by hand, so a config that has never been edited works with
+`swelog log`, `swelog fetch`, and everything else that does not need a model.
 
 ## Viewing the current configuration
 

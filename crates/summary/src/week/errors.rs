@@ -19,7 +19,8 @@ pub struct WeeklyLogAlreadyExists {
 #[diagnostic(
     code(swelog::summary::work_file_not_default),
     help(
-        "run `swelog summarize` to summarize the current work file, or `swelog reset` to discard it"
+        "run `swelog log` to file the current work file into a daily log, or `swelog reset` to \
+         discard it"
     )
 )]
 pub struct WorkFileNotDefault;
@@ -29,8 +30,8 @@ pub struct WorkFileNotDefault;
 #[diagnostic(
     code(swelog::summary::no_daily_logs_found),
     help(
-        "run `swelog summarize day` for at least one weekday of that week, or use `swelog \
-         summarize week --last-week` to summarize the previous week"
+        "run `swelog log` or `swelog summarize day` for at least one weekday of that week, or \
+         use `swelog summarize week --last-week` to summarize the previous week"
     )
 )]
 pub struct NoDailyLogsFound {

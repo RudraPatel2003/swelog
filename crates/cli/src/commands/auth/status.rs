@@ -7,7 +7,7 @@ use credentials::{
 use miette::Result;
 use owo_colors::OwoColorize;
 
-const LABEL_WIDTH: usize = 22;
+const LABEL_WIDTH: usize = 31;
 
 #[derive(Debug, Args)]
 pub struct StatusArgs {}

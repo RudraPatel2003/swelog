@@ -3,7 +3,7 @@ title: swelog
 description: A Rust CLI for tracking daily accomplishments in Obsidian.
 template: splash
 hero:
-  tagline: Track your daily accomplishments in Obsidian. Capture raw notes throughout the day, summarize them into daily logs with an LLM, and roll them up into weekly summaries.
+  tagline: Track your daily accomplishments in Obsidian. Write notes as you work, fetch external data, and file it away with one command.
   image:
     alt: The swelog terminal prompt mark
     file: ../../assets/swelog-banner.svg
@@ -21,19 +21,28 @@ import { Card, CardGrid } from "@astrojs/starlight/components";
 
 <CardGrid stagger>
   <Card title="Capture as you go" icon="pencil">
-    Add work items from the terminal with `swelog log`, or write them straight
-    into `WORK.md` in Obsidian.
+    Keep the day's raw notes in `WORK.md`, in the same Obsidian vault as
+    everything else you write.
   </Card>
-  <Card title="Summarize with an LLM" icon="star">
-    Turn raw notes into a daily log using Ollama, OpenAI, or OpenRouter. Roll
-    daily logs into a weekly summary when the week is done.
+  <Card title="File the day" icon="star">
+    `swelog log` moves `WORK.md` into a dated daily log and hands you a clean
+    work file for tomorrow.
   </Card>
   <Card title="Pull in real activity" icon="puzzle">
-    Fetch the pull requests you opened and merged from GitHub, and the issues
-    assigned to you from Linear.
+    Fetch the pull requests you opened and merged from GitHub, the issues
+    assigned to you from Linear, and the meetings you had from Google Calendar.
   </Card>
-  <Card title="Backfill missed days" icon="seti:clock">
-    Every day-scoped command takes `--date MM-DD-YYYY`, so a day you missed can
-    be reconstructed later.
+  <Card title="Summarize with an LLM (optional)" icon="seti:clock">
+    Turn on `swelog summarize` when you want raw notes rewritten into a polished
+    log, using Ollama, OpenAI, or OpenRouter.
   </Card>
 </CardGrid>
+
+## Your data stays yours
+
+Swelog runs entirely on your own computer. There is no Swelog account and no
+Swelog server, so your notes and credentials never reach us. Nothing leaves your
+machine until you opt into an integration or summarization. See the
+[Privacy Policy](/legal/privacy/) for what the tool stores, what it sends over
+the network, and what happens to the notes you hand to a language model, and the
+[Terms of Service](/legal/terms/) for the terms you agree to by using it.

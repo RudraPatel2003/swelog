@@ -1,4 +1,4 @@
-use linear::issue::{
+use linear::client::structs::{
     LinearIssue,
     LinearStatusType,
 };

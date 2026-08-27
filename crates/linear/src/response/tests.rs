@@ -4,7 +4,7 @@ use rmcp::model::{
 };
 
 use super::*;
-use crate::issue::LinearStatusType;
+use crate::client::structs::LinearStatusType;
 
 fn structured_result(value: Value) -> CallToolResult {
     CallToolResult::structured(value)

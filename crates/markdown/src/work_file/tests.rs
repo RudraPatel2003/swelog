@@ -1,0 +1,194 @@
+use std::{
+    fs,
+    path::PathBuf,
+};
+
+use config::{
+    errors::SwelogFileNotFound,
+    setup::swelog_paths::SwelogPaths,
+    swelog_config::SwelogConfig,
+};
+use tempfile::{
+    TempDir,
+    tempdir,
+};
+
+use super::*;
+
+const LINEAR_SECTION_CONTENT: &str = "- [ENG-123](https://linear.app/issue/ENG-123) Ship it";
+
+struct TestContext {
+    temporary_directory: TempDir,
+    config: SwelogConfig,
+}
+
+impl TestContext {
+    fn swelog_paths(&self) -> SwelogPaths {
+        SwelogPaths::new(&self.config)
+    }
+
+    fn swelog_directory(&self) -> PathBuf {
+        self.swelog_paths().swelog_directory
+    }
+
+    fn work_file(&self) -> PathBuf {
+        self.swelog_paths().work_file
+    }
+
+    fn write_work_file(&self, content: &str) {
+        fs::create_dir_all(self.swelog_directory()).expect("swelog directory should be created");
+
+        fs::write(self.work_file(), content).expect("work file should be written");
+    }
+}
+
+fn get_test_context() -> TestContext {
+    let temporary_directory = tempdir().expect("temp directory should be created");
+
+    let config = SwelogConfig {
+        obsidian_vault_path: temporary_directory.path().to_path_buf(),
+        ..SwelogConfig::get_default_config()
+    };
+
+    TestContext { temporary_directory, config }
+}
+
+#[test]
+fn upsert_work_file_section_writes_the_section_into_the_work_file() {
+    let test_context = get_test_context();
+
+    test_context
+        .write_work_file("# Today's Work\n\n## Focus\n- Ship it\n\n## Log\n- Existing log\n");
+
+    upsert_work_file_section_from_config(&test_context.config, "Linear", LINEAR_SECTION_CONTENT)
+        .expect("section should be upserted");
+
+    let work_file_content =
+        fs::read_to_string(test_context.work_file()).expect("work file should be readable");
+
+    assert_eq!(
+        work_file_content,
+        format!(
+            "# Today's Work\n\n## Focus\n- Ship it\n\n## \
+             Linear\n{LINEAR_SECTION_CONTENT}\n\n## Log\n- Existing log\n"
+        )
+    );
+
+    drop(test_context.temporary_directory);
+}
+
+#[test]
+fn remove_work_file_section_writes_the_updated_work_file() {
+    let test_context = get_test_context();
+
+    test_context
+        .write_work_file("# Today's Work\n\n## Linear\n- Issue\n\n## Log\n- Existing log\n");
+
+    remove_work_file_section_from_config(&test_context.config, "Linear")
+        .expect("section should be removed");
+
+    let work_file_content =
+        fs::read_to_string(test_context.work_file()).expect("work file should be readable");
+
+    assert_eq!(work_file_content, "# Today's Work\n\n## Log\n- Existing log\n");
+
+    drop(test_context.temporary_directory);
+}
+
+#[test]
+fn upsert_work_file_section_fails_when_work_file_is_missing() {
+    let test_context = get_test_context();
+
+    fs::create_dir_all(test_context.swelog_directory())
+        .expect("swelog directory should be created");
+
+    let error = upsert_work_file_section_from_config(
+        &test_context.config,
+        "Linear",
+        LINEAR_SECTION_CONTENT,
+    )
+    .expect_err("missing work file should fail");
+
+    let error =
+        error.downcast_ref::<SwelogFileNotFound>().expect("error should be SwelogFileNotFound");
+
+    assert_eq!(error.swelog_path, test_context.work_file());
+
+    drop(test_context.temporary_directory);
+}
+
+#[test]
+fn upsert_section_inserts_before_log() {
+    let markdown = "# Today's Work\n\n## Focus\n- Ship it\n\n## Log\n- Existing log\n";
+
+    let updated_markdown = upsert_section(
+        markdown,
+        "Linear",
+        "### In Progress\n- [ENG-123](https://linear.app/issue/ENG-123) Ship it",
+    );
+
+    assert_eq!(
+        updated_markdown,
+        "# Today's Work\n\n## Focus\n- Ship it\n\n## Linear\n### In Progress\n- [ENG-123](https://linear.app/issue/ENG-123) Ship it\n\n## Log\n- Existing log\n"
+    );
+}
+
+#[test]
+fn upsert_section_appends_when_work_file_has_no_log_section() {
+    let markdown = "# Today's Work\n\n## Focus\n- Ship it\n";
+
+    let updated_markdown = upsert_section(markdown, "Linear", "- New");
+
+    assert_eq!(updated_markdown, "# Today's Work\n\n## Focus\n- Ship it\n\n## Linear\n- New\n");
+}
+
+#[test]
+fn upsert_section_replaces_existing_section_content() {
+    let markdown = "# Today's Work\n\n## Linear\n- Old\n\n## Log\n";
+
+    let updated_markdown = upsert_section(markdown, "Linear", "- New");
+
+    assert_eq!(updated_markdown, "# Today's Work\n\n## Linear\n- New\n\n## Log\n");
+}
+
+#[test]
+fn upsert_section_leaves_other_sections_untouched() {
+    let markdown = "# Today's Work\n\n## Linear\n- Old\n\n## GitHub\n- Merged a PR\n\n## Log\n- Existing log\n";
+
+    let updated_markdown = upsert_section(markdown, "Linear", "- New");
+
+    assert_eq!(
+        updated_markdown,
+        "# Today's Work\n\n## Linear\n- New\n\n## GitHub\n- Merged a PR\n\n## Log\n- Existing log\n"
+    );
+}
+
+#[test]
+fn upsert_section_ignores_heading_in_code_block() {
+    let markdown = "# Today's Work\n\n```markdown\n## Linear\n```\n\n## Log\n";
+
+    let updated_markdown = upsert_section(markdown, "Linear", "- New");
+
+    assert_eq!(
+        updated_markdown,
+        "# Today's Work\n\n```markdown\n## Linear\n```\n\n## Linear\n- New\n\n## Log\n"
+    );
+}
+
+#[test]
+fn remove_section_removes_only_the_named_section() {
+    let markdown = "# Today's Work\n\n## Linear\n- Issue\n\n## Log\n- Existing log\n";
+
+    let updated_markdown = remove_section(markdown, "Linear");
+
+    assert_eq!(updated_markdown, "# Today's Work\n\n## Log\n- Existing log\n");
+}
+
+#[test]
+fn remove_section_leaves_markdown_unchanged_when_section_is_missing() {
+    let markdown = "# Today's Work\n\n## Focus\n- Ship it\n\n## Log\n";
+
+    let updated_markdown = remove_section(markdown, "Linear");
+
+    assert_eq!(updated_markdown, markdown);
+}

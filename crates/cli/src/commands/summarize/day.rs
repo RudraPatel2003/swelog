@@ -1,47 +1,18 @@
-use chrono::{
-    Local,
-    NaiveDate,
-};
+use chrono::Local;
 use clap::Args;
-use config::{
-    overwrite::Overwrite,
-    utils::read_config_file,
-};
-use dates::{
-    date_format::DATE_VALUE_NAME,
-    parsing::parse_date,
-};
+use config::utils::read_config_file;
+use daily_log::file::get_daily_log_file_name;
 use llm::language_model_factory::get_language_model_from_config;
 use miette::Result;
 use owo_colors::OwoColorize;
-use summary::day::{
-    KeepWorkFile,
-    get_daily_log_file_name,
-    summarize_daily_work_from_config,
-};
+use summary::day::summarize_daily_work_from_config;
 
-use crate::commands::date_selection::{
-    DateSelection,
-    resolve_selected_date,
-};
+use crate::shared::daily_log_args::DailyLogArgs;
 
 #[derive(Debug, Args)]
 pub struct DailySummaryArgs {
-    /// Date to write the daily log for in the format MM-DD-YYYY. Defaults to today.
-    #[arg(long, value_name = DATE_VALUE_NAME, value_parser = parse_date)]
-    date: Option<NaiveDate>,
-
-    /// Write the daily log for yesterday instead of today.
-    #[arg(long = "yesterday", conflicts_with = "date")]
-    use_yesterday: bool,
-
-    /// Overwrite existing daily log file.
-    #[arg(long = "force")]
-    overwrite_existing_daily_log: bool,
-
-    /// Keep the current contents of the configured work file.
-    #[arg(long = "keep")]
-    keep_work_file: bool,
+    #[command(flatten)]
+    daily_log_args: DailyLogArgs,
 }
 
 impl DailySummaryArgs {
@@ -52,16 +23,14 @@ impl DailySummaryArgs {
 
         let today = Local::now().date_naive();
 
-        let date_selection = DateSelection::from_date_flags(self.date, self.use_yesterday);
-
-        let log_date = resolve_selected_date(date_selection, today)?.unwrap_or(today);
+        let log_date = self.daily_log_args.resolve_log_date(today)?;
 
         summarize_daily_work_from_config(
             &swelog_config,
             language_model.as_ref(),
             &log_date,
-            Overwrite::from_force_flag(self.overwrite_existing_daily_log),
-            KeepWorkFile::from_keep_flag(self.keep_work_file),
+            self.daily_log_args.overwrite(),
+            self.daily_log_args.keep_work_file(),
         )
         .await?;
 

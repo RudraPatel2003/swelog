@@ -5,9 +5,7 @@ description: Optional sources that pull real activity into your work file.
 
 import { CardGrid, LinkCard } from "@astrojs/starlight/components";
 
-Integrations are optional. Swelog works entirely on the notes you write
-yourself, and every command below is something you opt into when you want the
-day's log to include activity you would otherwise retype by hand.
+Integrations are optional. Use them to fetch external data.
 
 ## Available integrations
 
@@ -18,6 +16,11 @@ day's log to include activity you would otherwise retype by hand.
     description="Record the pull requests you opened and merged."
   />
   <LinkCard
+    title="Google Calendar"
+    href="/integrations/google-calendar/"
+    description="Record the meetings you had on a day."
+  />
+  <LinkCard
     title="Linear"
     href="/integrations/linear/"
     description="Record the issues assigned to you, grouped by status."
@@ -26,28 +29,15 @@ day's log to include activity you would otherwise retype by hand.
 
 ## How they fit into the work file
 
-The default work file contains only `## Focus` and `## Log`. Integration
-sections are created lazily, the first time you fetch that integration's
-activity, and each one is owned by Swelog from then on:
+The default work file contains only `## Focus` and `## Log`. Running any integration command creates a section for it.
 
 ```sh
-swelog fetch github
-swelog fetch linear
+swelog fetch github # creates "## GitHub"
+swelog fetch google-calendar # creates "## Google Calendar"
+swelog fetch linear # creates "## Linear"
 ```
 
-Both commands accept `--date MM-DD-YYYY` to record a previous day, and
-`--yesterday` as a shortcut for the most common one. See
-[Backfilling a Missed Day](/guides/backfilling/).
-
-:::caution[Integration sections are generated data]
-Swelog finds each integration's section by its heading, so `## GitHub` and
-`## Linear` are replaced wholesale by every fetch. Renaming a heading makes the
-next fetch write a fresh section under the original name. Your own notes belong
-in `## Focus` and `## Log`.
+:::caution[Integration sections are managed data]
+Swelog finds each integration's section by its heading, so `## GitHub`,
+`## Google Calendar`, and `## Linear` so do not rename them.
 :::
-
-## Credentials
-
-Each integration asks for its credential the first time you use it and stores it
-in your operating system's credential store, never in `swelog.json`. See
-[Authentication](/reference/authentication/) for how to inspect and clear them.

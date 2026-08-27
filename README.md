@@ -9,8 +9,9 @@
 
 `swelog-cli` is a Rust CLI for tracking daily accomplishments in Obsidian.
 
-Capture raw notes and optional integration activity throughout the day, summarize
-them into daily logs with an LLM, and combine daily logs into a weekly summary.
+Write notes as you work, then file the day into a dated daily log with one
+command. Optional integrations pull in real activity, and an
+optional LLM pass can summarize the notes for you.
 
 ## Installation
 
@@ -32,17 +33,20 @@ Full documentation lives at
 **[the swelog docs site](https://swelog-cli.vercel.app/)**, including:
 
 - [Quick Start](https://swelog-cli.vercel.app/getting-started/quick-start/) —
-  configure your vault and record your first summarized day
+  configure your vault and file your first day
 - [Configuration](https://swelog-cli.vercel.app/getting-started/configuration/)
   — every field in `swelog.json`
-- [Summarization](https://swelog-cli.vercel.app/summarization/) — daily and
-  weekly logs, and the Ollama, OpenAI, and OpenRouter providers
+- [Summarization](https://swelog-cli.vercel.app/summarization/) — the optional
+  LLM pass, weekly logs, and the Ollama, OpenAI, and OpenRouter providers
 - [Integrations](https://swelog-cli.vercel.app/integrations/) — pull activity
-  from GitHub and Linear
+  from GitHub, Linear, and Google Calendar
 - [Authentication](https://swelog-cli.vercel.app/reference/authentication/) —
   how credentials are stored and cleared
 - [Command reference](https://swelog-cli.vercel.app/reference/commands/) — the
   full command tree
+- [Privacy Policy](https://swelog-cli.vercel.app/legal/privacy/) and
+  [Terms of Service](https://swelog-cli.vercel.app/legal/terms/) — what stays on
+  your machine and what does not
 
 ## Contributing
 
@@ -52,8 +56,9 @@ Full documentation lives at
 - Just
 - cargo-nextest for running the test suite
 - Obsidian
-- Ollama when testing the default summarization provider
+- Ollama when testing the optional summarization feature
 - Provider credentials when testing hosted models or integrations
+- A Google Cloud OAuth client when testing the Google Calendar integration
 
 ### Development
 
@@ -97,6 +102,32 @@ Update the version of the CLI when preparing for a release:
 
 ```sh
 just update-release-version <release-tag>
+```
+
+### Google Calendar OAuth Client
+
+`swelog fetch google-calendar` authorizes against a Google OAuth client that is compiled into the binary.
+
+The release binary gets it from the `SWELOG_GOOGLE_CLIENT_ID` and `SWELOG_GOOGLE_CLIENT_SECRET` repository secrets. Both are required to build with `--release`, so `just build-release` fails when either is missing or empty. Debug builds do not need them, and report the missing client at runtime instead.
+
+To test the integration locally, create your own client:
+
+1. In the [Google Cloud Console](https://console.cloud.google.com/), create a
+   project and enable the **Google Calendar API**.
+2. On the **OAuth consent screen**, add the
+   `https://www.googleapis.com/auth/calendar.events.readonly` scope, and add
+   your own Google account as a test user.
+3. Under **Credentials**, create an **OAuth client ID** of type **Desktop app**.
+   Google treats the secret it issues as non-confidential, which is why it can
+   ship in the binary.
+
+Then export both variables in the shell you build from:
+
+```sh
+export SWELOG_GOOGLE_CLIENT_ID="<client-id>.apps.googleusercontent.com"
+export SWELOG_GOOGLE_CLIENT_SECRET="<client-secret>"
+
+just run fetch google-calendar
 ```
 
 ### Documentation Site
