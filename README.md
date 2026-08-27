@@ -10,7 +10,7 @@
 `swelog-cli` is a Rust CLI for tracking daily accomplishments in Obsidian.
 
 Write notes as you work, then file the day into a dated daily log with one
-command. No API key required. Optional integrations pull in real activity, and an
+command. Optional integrations pull in real activity, and an
 optional LLM pass can summarize the notes for you.
 
 ## Installation
