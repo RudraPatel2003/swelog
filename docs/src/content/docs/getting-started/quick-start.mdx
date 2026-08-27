@@ -1,6 +1,6 @@
 ---
 title: Quick Start
-description: Configure swelog, create your vault files, and record your first summarized day.
+description: Configure swelog, create your vault files, and file your first day.
 ---
 
 ## 1. Create the configuration file
@@ -15,7 +15,7 @@ directory. Run `swelog config` at any time to display the exact path.
 ## 2. Configure your Obsidian vault
 
 Open `swelog.json` and set `obsidianVaultPath` to the absolute path of your
-vault. You can also select a summarization provider and model at this point.
+vault. That is the only field you have to fill in.
 
 ```json
 {
@@ -24,10 +24,7 @@ vault. You can also select a summarization provider and model at this point.
   "workFileName": "WORK.md",
   "contextFileName": "CONTEXT.md",
   "dailyLogFolderName": "Daily",
-  "weeklyLogFolderName": "Weekly",
-  "llm": "ollama",
-  "llmModel": "llama3.2",
-  "linearUsername": null
+  "weeklyLogFolderName": "Weekly"
 }
 ```
 
@@ -42,25 +39,29 @@ swelog setup
 Swelog creates the work and context files plus the daily and weekly log
 directories under `<obsidianVaultPath>/<swelogFolderName>`.
 
-## 4. Add your context
+## 4. Write today's notes
 
-Open `CONTEXT.md` and describe your role, team, systems, and priorities. Swelog
-includes this context when generating daily and weekly summaries.
+Open `WORK.md` in Obsidian and jot down what you did under `## Log`. Short
+bullets are enough — this is a scratch pad, not a finished document.
 
-## 5. Record and summarize work
+## 5. File the day
 
 ```sh
-swelog log "Met with the payments team about retry failures"
-swelog summarize
+swelog log
 ```
 
-The first command adds a bullet to the `## Log` section of `WORK.md`. The second
-creates today's daily log and resets `WORK.md` unless `--keep` is provided.
+This writes `Daily/MM-DD-YYYY.md` with your notes under a
+`# Daily Log - MM-DD-YYYY` heading, then resets `WORK.md` so tomorrow starts
+clean. Pass `--keep` to leave `WORK.md` alone.
 
 ## Next steps
 
 - Settle into the [Daily Workflow](/guides/daily-workflow/).
-- Pull in activity from [GitHub](/integrations/github/) or
+- Pull in activity from [GitHub](/integrations/github/),
+  [Google Calendar](/integrations/google-calendar/), or
   [Linear](/integrations/linear/).
+- Turn on [Summarization](/summarization/) if you want a language model to write
+  the log for you. That is also what `CONTEXT.md` is for — describe your role,
+  team, systems, and priorities there, and swelog includes it in every summary.
 - Reconstruct a day you missed with
   [Backfilling a Missed Day](/guides/backfilling/).

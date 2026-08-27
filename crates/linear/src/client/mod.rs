@@ -1,3 +1,5 @@
+pub mod structs;
+
 use chrono::{
     Local,
     NaiveDate,
@@ -26,17 +28,17 @@ use crate::{
         is_issue_active_or_finished_today,
         was_issue_worked_on,
     },
+    client::structs::{
+        LinearIssue,
+        LinearIssuePage,
+    },
     errors::LinearMcpRequestFailed,
-    issue::LinearIssue,
     oauth::{
         LINEAR_MCP_URL,
         clear_linear_authorization,
         get_authorization_manager,
     },
-    response::{
-        LinearIssuePage,
-        parse_issue_page,
-    },
+    response::parse_issue_page,
 };
 
 const PAGE_SIZE: u64 = 50;

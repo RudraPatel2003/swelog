@@ -18,12 +18,29 @@ the CLI itself.
 
 ## Capturing work
 
-| Command                | Behavior                                                    |
-| ---------------------- | ----------------------------------------------------------- |
-| `swelog log "message"` | Append a bullet to the `## Log` section of your work file.  |
-| `swelog reset`         | Reset your work file to the default Focus-and-Log template. |
+Write the day's notes into `WORK.md` yourself, in Obsidian or any editor.
 
-## Summarizing
+| Command        | Behavior                                                    |
+| -------------- | ----------------------------------------------------------- |
+| `swelog reset` | Reset your work file to the default Focus-and-Log template. |
+
+## Filing the day
+
+| Command                        | Behavior                                                         |
+| ------------------------------ | ---------------------------------------------------------------- |
+| `swelog log`                   | Write your work file into the daily folder and reset it. No LLM. |
+| `swelog log --date MM-DD-YYYY` | Write the daily log for the supplied date. Defaults to today.    |
+| `swelog log --yesterday`       | Write the daily log for yesterday.                               |
+| `swelog log --force`           | Overwrite an existing daily log file.                            |
+| `swelog log --keep`            | Keep the current contents of the work file.                      |
+
+The daily log is your work file verbatim, with its heading replaced by
+`# Daily Log - MM-DD-YYYY`.
+
+## Summarizing (optional)
+
+Requires `llm` and `llmModel` in your config. See
+[Summarization](/summarization/).
 
 | Command                                      | Behavior                                                      |
 | -------------------------------------------- | ------------------------------------------------------------- |
@@ -42,16 +59,21 @@ See [Summarization](/summarization/) for the rules that govern each.
 
 ## Fetching integration activity
 
-| Command                                 | Behavior                                       |
-| --------------------------------------- | ---------------------------------------------- |
-| `swelog fetch github`                   | Fetch the PRs you opened and merged on a date. |
-| `swelog fetch github --date MM-DD-YYYY` | Date to fetch GitHub activity for.             |
-| `swelog fetch github --yesterday`       | Fetch yesterday's GitHub activity.             |
-| `swelog fetch linear`                   | Fetch the issues assigned to your username.    |
-| `swelog fetch linear --date MM-DD-YYYY` | Date to fetch Linear activity for.             |
-| `swelog fetch linear --yesterday`       | Fetch yesterday's Linear activity.             |
+| Command                                          | Behavior                                       |
+| ------------------------------------------------ | ---------------------------------------------- |
+| `swelog fetch github`                            | Fetch the PRs you opened and merged on a date. |
+| `swelog fetch github --date MM-DD-YYYY`          | Date to fetch GitHub activity for.             |
+| `swelog fetch github --yesterday`                | Fetch yesterday's GitHub activity.             |
+| `swelog fetch google-calendar`                   | Fetch the meetings you had on a date.          |
+| `swelog fetch google-calendar --date MM-DD-YYYY` | Date to fetch meetings for.                    |
+| `swelog fetch google-calendar --yesterday`       | Fetch yesterday's meetings.                    |
+| `swelog fetch linear`                            | Fetch the issues assigned to your username.    |
+| `swelog fetch linear --date MM-DD-YYYY`          | Date to fetch Linear activity for.             |
+| `swelog fetch linear --yesterday`                | Fetch yesterday's Linear activity.             |
 
-See [GitHub](/integrations/github/) and [Linear](/integrations/linear/).
+See [GitHub](/integrations/github/),
+[Google Calendar](/integrations/google-calendar/), and
+[Linear](/integrations/linear/).
 
 ## Managing credentials
 
@@ -61,12 +83,8 @@ See [GitHub](/integrations/github/) and [Linear](/integrations/linear/).
 | `swelog auth clear <credential>` | Remove a stored credential so the next command asks for it again. |
 | `swelog auth clear --all`        | Remove every stored credential.                                   |
 
-`<credential>` is one of `github`, `open-ai`, `open-router`, or `linear`. See
-[Authentication](/reference/authentication/).
-
-## Date format
-
-Every date flag uses `MM-DD-YYYY`, for example `08-17-2026`.
+`<credential>` is one of `github`, `open-ai`, `open-router`, `linear`, or
+`google-calendar`. See [Authentication](/reference/authentication/).
 
 ## Relative date flags
 

@@ -1,41 +1,13 @@
 use miette::Result;
 use rmcp::model::CallToolResult;
-use serde::Deserialize;
 use serde_json::Value;
 
 use crate::{
+    client::structs::LinearIssuePage,
     errors::UnsupportedLinearResponse,
-    issue::LinearIssue,
 };
 
 const NO_ISSUES_FOUND_MESSAGE: &str = "No issues found";
-
-#[derive(Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct LinearIssuePage {
-    #[serde(default)]
-    pub issues: Vec<LinearIssue>,
-
-    /// The Linear MCP server returns this as `cursor`; the alias keeps older
-    /// `nextCursor` responses working.
-    #[serde(default, rename = "cursor", alias = "nextCursor")]
-    pub next_cursor: Option<String>,
-
-    #[serde(default)]
-    pub has_next_page: Option<bool>,
-}
-
-impl LinearIssuePage {
-    /// Returns the cursor for the following page, or `None` when this is the
-    /// last page.
-    pub fn take_next_cursor(&mut self) -> Option<String> {
-        if self.has_next_page == Some(false) {
-            return None;
-        }
-
-        self.next_cursor.take().filter(|next_cursor| !next_cursor.is_empty())
-    }
-}
 
 pub fn parse_issue_page(result: CallToolResult) -> Result<LinearIssuePage> {
     let value = extract_result_value(result)?;

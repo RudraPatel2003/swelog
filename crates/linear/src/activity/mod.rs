@@ -9,8 +9,8 @@ use dates::formatting::format_date;
 use miette::Result;
 
 use crate::{
+    client::structs::LinearIssue,
     errors::LinearDateOutOfRange,
-    issue::LinearIssue,
 };
 
 const LINEAR_FILTER_DATE_FORMAT: &str = "%Y-%m-%d";

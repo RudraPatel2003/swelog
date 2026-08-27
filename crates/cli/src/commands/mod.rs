@@ -1,6 +1,5 @@
 mod auth;
 mod config;
-mod date_selection;
 mod fetch;
 mod init;
 mod log;
@@ -31,7 +30,7 @@ pub enum Commands {
     /// day`.
     Summarize(SummarizeArgs),
 
-    /// Add a work item to your configured work file.
+    /// Write your work file into a dated daily log.
     Log(LogArgs),
 
     /// Reset your work file to the default content.

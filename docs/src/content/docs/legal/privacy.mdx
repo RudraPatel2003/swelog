@@ -1,0 +1,165 @@
+---
+title: Privacy Policy
+description:
+  What Swelog stores, what leaves your machine, and what happens to the data you
+  connect.
+---
+
+_Last updated: August 26, 2026_
+
+The privacy of your data — and it is your data, not ours! — is a big deal to us.
+This policy lays out what Swelog stores, what it sends over the network, and
+what rights you have over it.
+
+Swelog is a command-line program that runs on your own computer. **There is no
+Swelog server, no Swelog account, and no Swelog database.** We never receive
+your notes, your credentials, or any record that you ran the program. We have no
+way to sell your data, because we never have it.
+
+## What Swelog stores, and where
+
+Everything Swelog writes stays on your machine:
+
+| Data                                              | Where it lives                                            |
+| ------------------------------------------------- | --------------------------------------------------------- |
+| Your notes, daily logs, and weekly logs           | The Obsidian vault folder you configured                  |
+| Your settings                                     | `swelog.json` in your operating system's config directory |
+| API tokens and OAuth tokens                       | Your operating system's credential store                  |
+| The last version check, and interface preferences | Your operating system's cache directory                   |
+
+Credentials go to Keychain on macOS, Credential Manager on Windows, and the
+Secret Service on Linux. They are never written to `swelog.json` or to any file
+in your vault. See [Authentication](/reference/authentication/) for how to
+inspect and clear them.
+
+## What leaves your machine
+
+Swelog talks to other services on your behalf, using credentials you supply. It
+never routes any of this through a server we control.
+
+### Checking for updates
+
+Swelog asks the public npm registry at `registry.npmjs.org` whether a newer
+version of `swelog-cli` has been published. This runs at most once a day and
+sends no information about you, your notes, or your configuration — only an
+ordinary HTTP request identifying the program. The result is cached on disk so
+the request is not repeated.
+
+### Integrations you opt into
+
+Each of these runs only when you invoke the matching command, and only ever
+reads:
+
+- **`swelog fetch github`** contacts `api.github.com` with your personal access
+  token to read the pull requests you opened and merged.
+- **`swelog fetch linear`** contacts `mcp.linear.app` with an authorization you
+  grant in the browser to read the issues assigned to you.
+- **`swelog fetch google-calendar`** contacts `accounts.google.com`,
+  `oauth2.googleapis.com`, and `www.googleapis.com` to read events on your
+  primary calendar. See [Google user data](#google-user-data) below.
+
+### Summarization
+
+Summarization is opt-in and runs only when you have set `llm` and `llmModel` in
+`swelog.json`. Without them, `swelog log` files your notes into daily logs
+entirely on your own machine and nothing is sent anywhere.
+
+When it is configured, `swelog summarize` sends **the full contents of your work
+file and your context file** to whichever language model provider you chose, so
+it can write the summary. This is the one place your own notes leave your
+computer, and it is worth understanding before you use it:
+
+- **Ollama** runs on your own machine. Nothing leaves it.
+- **OpenAI** receives your notes at `api.openai.com`, under
+  [OpenAI's privacy policy](https://openai.com/policies/privacy-policy/).
+- **OpenRouter** receives your notes at `openrouter.ai`, under
+  [OpenRouter's privacy policy](https://openrouter.ai/privacy), and forwards
+  them to whichever model you selected.
+
+If your notes contain anything you would not want a third party to process,
+choose Ollama, leave summarization unconfigured and use `swelog log`, or keep
+that material out of the work file. See
+[Providers and Models](/summarization/providers/).
+
+## Google user data
+
+Swelog's use of information received from Google APIs adheres to the
+[Google API Services User Data Policy](https://developers.google.com/terms/api-services-user-data-policy),
+including the Limited Use requirements.
+
+Specifically:
+
+- Swelog requests only the
+  `https://www.googleapis.com/auth/calendar.events.readonly` scope. It can read
+  events. It cannot create, change, or delete anything on your calendar.
+- Swelog reads only the primary calendar of the account that authorized, and
+  only within the single day you asked for.
+- Event titles and times are written into your work file on your own computer.
+  They are not transmitted to us, and they are not shared with anyone else —
+  except that, if you then run `swelog summarize` with a hosted provider, that
+  work file is sent to the provider you chose, as described above.
+- Google data is never used for advertising, never sold, and never used to
+  train, retrain, or improve any model that we operate.
+- Your Google tokens are stored in your operating system's credential store and
+  are removed by `swelog auth clear google-calendar`.
+
+## When we access or disclose your information
+
+We can't. We hold no copy of anything Swelog touches, so there is nothing for us
+to access, hand over in response to a legal request, or lose in a breach.
+
+If a government or anyone else asks us for your Swelog data, the only truthful
+answer we can give is that we do not have it.
+
+## Your rights with respect to your information
+
+Your data sits on your own computer, so you do not need our permission or
+cooperation to exercise any right over it:
+
+- **Access and portability.** Your notes and logs are plain Markdown files in
+  your vault. Open them, copy them, and move them wherever you like.
+- **Correction.** Edit the files directly.
+- **Erasure.** Delete the files. Run `swelog auth clear --all` to remove every
+  stored credential. Delete `swelog.json` and the Swelog folder in your cache
+  directory to remove everything else.
+- **Restriction.** Every integration is opt-in. Not running a command means that
+  service is never contacted.
+
+Data you have already sent to GitHub, Linear, Google, or a language model
+provider is held by them under their own policies, and rights over that data are
+exercised with them directly.
+
+## How your data is secured
+
+Every network request Swelog makes uses
+[TLS](https://en.wikipedia.org/wiki/Transport_Layer_Security). Credentials are
+kept in your operating system's credential store rather than in a plaintext
+file, and are sent only to the service they belong to. Google authorization uses
+OAuth with PKCE, so no long-lived password is exchanged and the callback is
+handled on a loopback address on your own machine.
+
+Beyond that, the security of your notes is the security of your computer and of
+your Obsidian vault. If your vault syncs to a cloud service, that service's
+protections and policies apply to it.
+
+## Data retention
+
+Swelog keeps files until you delete them. It has no retention schedule to
+enforce and no backups of your data, because it has no copy of your data.
+
+## Changes and questions
+
+We may update this policy as Swelog changes. Whenever we make a significant
+change, we will refresh the date at the top of this page. The full history of
+changes is in the
+[project repository](https://github.com/RudraPatel2003/swelog-cli).
+
+Have a question, comment, or concern about this policy or about your data?
+Please
+[open an issue](https://github.com/RudraPatel2003/swelog-cli/issues).
+
+---
+
+Adapted from the
+[37signals policies](https://github.com/basecamp/policies), used under
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).

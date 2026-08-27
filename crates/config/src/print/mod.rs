@@ -10,6 +10,7 @@ use crate::{
 };
 
 const LABEL_WIDTH: usize = 21;
+const NOT_CONFIGURED: &str = "Not configured";
 
 pub fn print_config(config: &SwelogConfig) -> Result<()> {
     let config_file_path = get_config_file_path()?;
@@ -24,12 +25,6 @@ pub fn print_config(config: &SwelogConfig) -> Result<()> {
 }
 
 fn format_config(config: &SwelogConfig) -> String {
-    let language_model_provider = match config.language_model_provider {
-        LanguageModelProvider::Ollama => "Ollama",
-        LanguageModelProvider::OpenAi => "OpenAI",
-        LanguageModelProvider::OpenRouter => "OpenRouter",
-    };
-
     let mut output = String::new();
 
     output.push_str("Vault\n");
@@ -50,18 +45,33 @@ fn format_config(config: &SwelogConfig) -> String {
     output.push_str(&format_row("Weekly log folder", &config.weekly_log_folder_name));
     output.push('\n');
 
-    output.push_str("Language Model\n");
-    output.push_str(&format_row("Provider", language_model_provider));
-    output.push_str(&format_row("Model", &config.language_model));
+    output.push_str("Summarization\n");
+    output.push_str(&format_row(
+        "Provider",
+        format_language_model_provider(config.language_model_provider.as_ref()),
+    ));
+    output
+        .push_str(&format_row("Model", config.language_model.as_deref().unwrap_or(NOT_CONFIGURED)));
     output.push('\n');
 
     output.push_str("Integrations\n");
     output.push_str(&format_row(
         "Linear username",
-        config.linear_username.as_deref().unwrap_or("Not configured"),
+        config.linear_username.as_deref().unwrap_or(NOT_CONFIGURED),
     ));
 
     output
+}
+
+const fn format_language_model_provider(
+    language_model_provider: Option<&LanguageModelProvider>,
+) -> &'static str {
+    match language_model_provider {
+        Some(LanguageModelProvider::Ollama) => "Ollama",
+        Some(LanguageModelProvider::OpenAi) => "OpenAI",
+        Some(LanguageModelProvider::OpenRouter) => "OpenRouter",
+        None => NOT_CONFIGURED,
+    }
 }
 
 fn format_row(label: &str, value: &str) -> String {

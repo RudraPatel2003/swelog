@@ -19,6 +19,7 @@ workspace = true
 async-trait = { workspace = true }
 chrono = { workspace = true }
 config = { path = "../config" }
+daily_log = { path = "../daily_log" }
 dates = { path = "../dates" }
 miette = { workspace = true }
 llm = { path = "../llm" }

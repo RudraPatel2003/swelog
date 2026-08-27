@@ -19,7 +19,7 @@ use summary::week::{
     summarize_weekly_work_from_config,
 };
 
-use crate::commands::date_selection::{
+use crate::shared::date_selection::{
     WeekSelection,
     resolve_monday_date,
 };
@@ -59,7 +59,7 @@ impl WeeklySummaryArgs {
 
         let weekly_log_file_name = get_weekly_log_file_name(&monday_date);
 
-        println!("Succesfully summarized your weekly work into {}", weekly_log_file_name.cyan());
+        println!("Successfully summarized your weekly work into {}", weekly_log_file_name.cyan());
 
         Ok(())
     }

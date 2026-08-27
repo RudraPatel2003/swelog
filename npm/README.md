@@ -2,8 +2,9 @@
 
 `swelog-cli` is a Rust CLI for tracking daily accomplishments in Obsidian.
 
-Capture raw notes and optional integration activity throughout the day, summarize
-them into daily logs with an LLM, and combine daily logs into a weekly summary.
+Write notes as you work, then file the day into a dated daily log with one
+command. No API key required. Optional integrations pull in real activity, and an
+optional LLM pass can summarize the notes for you.
 
 ## Installation
 
@@ -25,17 +26,20 @@ Full documentation lives at
 **[the swelog docs site](https://swelog-cli.vercel.app/)**, including:
 
 - [Quick Start](https://swelog-cli.vercel.app/getting-started/quick-start/) —
-  configure your vault and record your first summarized day
+  configure your vault and file your first day
 - [Configuration](https://swelog-cli.vercel.app/getting-started/configuration/)
   — every field in `swelog.json`
-- [Summarization](https://swelog-cli.vercel.app/summarization/) — daily and
-  weekly logs, and the Ollama, OpenAI, and OpenRouter providers
+- [Summarization](https://swelog-cli.vercel.app/summarization/) — the optional
+  LLM pass, weekly logs, and the Ollama, OpenAI, and OpenRouter providers
 - [Integrations](https://swelog-cli.vercel.app/integrations/) — pull activity
-  from GitHub and Linear
+  from GitHub, Linear, and Google Calendar
 - [Authentication](https://swelog-cli.vercel.app/reference/authentication/) —
   how credentials are stored and cleared
 - [Command reference](https://swelog-cli.vercel.app/reference/commands/) — the
   full command tree
+- [Privacy Policy](https://swelog-cli.vercel.app/legal/privacy/) and
+  [Terms of Service](https://swelog-cli.vercel.app/legal/terms/) — what stays on
+  your machine and what does not
 
 ## Contributing
 

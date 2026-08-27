@@ -18,6 +18,7 @@ use config::{
         ensure_swelog_file_exists,
     },
 };
+use daily_log::file::get_daily_log_file_name;
 use dates::formatting::format_date;
 use errors::{
     NoDailyLogsFound,
@@ -34,8 +35,6 @@ use miette::{
     Result,
     WrapErr,
 };
-
-use crate::day::get_daily_log_file_name;
 
 pub async fn summarize_weekly_work_from_config(
     swelog_config: &SwelogConfig,

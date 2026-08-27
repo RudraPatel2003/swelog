@@ -20,7 +20,7 @@ pub struct MissingCredential {
 #[diagnostic(
     code(swelog::credentials::missing_authorization),
     help(
-        "run `swelog auth clear {command_name}` and then `swelog fetch linear` to authorize again."
+        "run `swelog auth clear {command_name}` and then `swelog fetch {command_name}` to authorize again."
     )
 )]
 pub struct MissingAuthorization {

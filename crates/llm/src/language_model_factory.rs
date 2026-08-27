@@ -9,18 +9,38 @@ use credentials::{
 use miette::Result;
 
 use crate::{
+    errors::SummarizationNotConfigured,
     language_model::LanguageModel,
     ollama_language_model::OllamaLanguageModel,
     open_ai_language_model::OpenAiLanguageModel,
     open_router_language_model::OpenRouterLanguageModel,
 };
 
+struct SummarizationSettings<'a> {
+    language_model_provider: &'a LanguageModelProvider,
+    language_model: String,
+}
+
+impl<'a> SummarizationSettings<'a> {
+    fn from_config(swelog_config: &'a SwelogConfig) -> Result<Self> {
+        let language_model_provider =
+            swelog_config.language_model_provider.as_ref().ok_or(SummarizationNotConfigured)?;
+
+        let language_model =
+            swelog_config.language_model.clone().ok_or(SummarizationNotConfigured)?;
+
+        Ok(Self { language_model_provider, language_model })
+    }
+}
+
 pub fn get_language_model_from_config(
     swelog_config: &SwelogConfig,
 ) -> Result<Box<dyn LanguageModel>> {
-    let language_model = swelog_config.language_model.clone();
+    let summarization_settings = SummarizationSettings::from_config(swelog_config)?;
 
-    match &swelog_config.language_model_provider {
+    let language_model = summarization_settings.language_model;
+
+    match summarization_settings.language_model_provider {
         LanguageModelProvider::Ollama => {
             let ollama_language_model = OllamaLanguageModel::new(language_model);
 

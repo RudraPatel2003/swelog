@@ -1,28 +1,22 @@
-mod errors;
-
 use std::fs;
 
 use chrono::NaiveDate;
 use config::{
     overwrite::Overwrite,
-    setup::{
-        default_files::is_default_work_file_content,
-        swelog_paths::SwelogPaths,
-    },
+    setup::swelog_paths::SwelogPaths,
     swelog_config::SwelogConfig,
     utils::{
         ensure_swelog_directory_exists,
         ensure_swelog_file_exists,
     },
-    work_file::{
-        create_or_reset_work_file,
-        hide_comments::set_hide_comments_flag,
-    },
 };
-use dates::formatting::format_date;
-use errors::{
-    DailyLogAlreadyExists,
-    WorkFileNotUpdated,
+use daily_log::{
+    file::resolve_daily_log_file,
+    work_file::{
+        KeepWorkFile,
+        finish_work_file,
+        read_work_file_notes,
+    },
 };
 use llm::{
     language_model::LanguageModel,
@@ -34,21 +28,6 @@ use miette::{
     WrapErr,
 };
 
-/// Whether the work file keeps its contents after the summary is written.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum KeepWorkFile {
-    Yes,
-    No,
-}
-
-impl KeepWorkFile {
-    /// Converts the `--keep` flag clap parsed into the choice it stands for.
-    #[must_use]
-    pub const fn from_keep_flag(keep: bool) -> Self {
-        if keep { Self::Yes } else { Self::No }
-    }
-}
-
 pub async fn summarize_daily_work_from_config(
     swelog_config: &SwelogConfig,
     language_model: &dyn LanguageModel,
@@ -58,64 +37,40 @@ pub async fn summarize_daily_work_from_config(
 ) -> Result<()> {
     let swelog_paths = SwelogPaths::new(swelog_config);
 
-    ensure_swelog_file_exists(&swelog_paths.context_file)?;
-    ensure_swelog_file_exists(&swelog_paths.work_file)?;
     ensure_swelog_directory_exists(&swelog_paths.daily_log_directory)?;
 
-    let daily_log_file_name = get_daily_log_file_name(log_date);
+    let daily_log_file = resolve_daily_log_file(&swelog_paths, log_date, overwrite)?;
 
-    let daily_log_file = swelog_paths.daily_log_directory.join(daily_log_file_name);
+    let context_file_content = read_context_file(&swelog_paths)?;
 
-    if daily_log_file.exists() && overwrite == Overwrite::No {
-        let daily_log_already_exists_error = DailyLogAlreadyExists { daily_log_file };
-
-        return Err(daily_log_already_exists_error.into());
-    }
-
-    let context_file_content =
-        fs::read_to_string(&swelog_paths.context_file).into_diagnostic().wrap_err_with(|| {
-            format!("failed to read context file at {}", swelog_paths.context_file.display())
-        })?;
-
-    let work_file_content =
-        fs::read_to_string(&swelog_paths.work_file).into_diagnostic().wrap_err_with(|| {
-            format!("failed to read work file at {}", swelog_paths.work_file.display())
-        })?;
-
-    if is_default_work_file_content(&work_file_content) {
-        let work_file_not_updated_error = WorkFileNotUpdated;
-
-        return Err(work_file_not_updated_error.into());
-    }
+    let work_file_content = read_work_file_notes(&swelog_paths)?;
 
     let prompt = get_daily_log_prompt(&work_file_content, &context_file_content, log_date);
 
     let generated_daily_log_content = language_model.generate_response(&prompt).await?;
 
     let daily_log_content =
-        build_daily_log_content(&generated_daily_log_content, &work_file_content);
+        build_summarized_daily_log_content(&generated_daily_log_content, &work_file_content);
 
     fs::write(&daily_log_file, daily_log_content).into_diagnostic().wrap_err_with(|| {
         format!("failed to write daily log file at {}", daily_log_file.display())
     })?;
 
-    if keep_work_file == KeepWorkFile::No {
-        set_hide_comments_flag()?;
-
-        create_or_reset_work_file(swelog_config)?;
-    }
-
-    Ok(())
+    finish_work_file(swelog_config, keep_work_file)
 }
 
-#[must_use]
-pub fn get_daily_log_file_name(log_date: &NaiveDate) -> String {
-    let formatted_date = format_date(log_date);
+fn read_context_file(swelog_paths: &SwelogPaths) -> Result<String> {
+    ensure_swelog_file_exists(&swelog_paths.context_file)?;
 
-    format!("{formatted_date}.md")
+    fs::read_to_string(&swelog_paths.context_file).into_diagnostic().wrap_err_with(|| {
+        format!("failed to read context file at {}", swelog_paths.context_file.display())
+    })
 }
 
-fn build_daily_log_content(generated_daily_log_content: &str, work_file_content: &str) -> String {
+fn build_summarized_daily_log_content(
+    generated_daily_log_content: &str,
+    work_file_content: &str,
+) -> String {
     let original_notes_content = demote_markdown_headings(work_file_content);
 
     format!(

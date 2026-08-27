@@ -1,0 +1,31 @@
+[package]
+name = "google_calendar"
+version = "0.12.0"
+publish = false
+authors = { workspace = true }
+edition = { workspace = true }
+description = { workspace = true }
+keywords = { workspace = true }
+categories = { workspace = true }
+repository = { workspace = true }
+homepage = { workspace = true }
+readme = { workspace = true }
+license = { workspace = true }
+
+[lints]
+workspace = true
+
+[dependencies]
+chrono = { workspace = true }
+credentials = { path = "../credentials" }
+dates = { path = "../dates" }
+miette = { workspace = true }
+oauth = { path = "../oauth" }
+oauth2 = { workspace = true }
+reqwest = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true }
+url = { workspace = true }
+webbrowser = { workspace = true }

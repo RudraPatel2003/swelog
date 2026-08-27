@@ -23,14 +23,17 @@ chrono = { workspace = true }
 clap = { workspace = true, features = ["derive"] }
 config = { path = "../config" }
 credentials = { path = "../credentials" }
+daily_log = { path = "../daily_log" }
 dates = { path = "../dates" }
 github = { path = "../github" }
+google_calendar = { path = "../google_calendar" }
 llm = { path = "../llm" }
 linear = { path = "../linear" }
-logging = { path = "../logging" }
+markdown = { path = "../markdown" }
 miette = { workspace = true, features = ["fancy"] }
 owo-colors = { workspace = true }
 summary = { path = "../summary" }
 thiserror = { workspace = true }
+time = { path = "../time" }
 tokio = { workspace = true }
 updates = { path = "../updates" }

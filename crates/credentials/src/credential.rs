@@ -7,11 +7,12 @@ pub enum Credential {
     OpenAi,
     OpenRouter,
     Linear,
+    GoogleCalendar,
 }
 
 impl Credential {
-    pub const ALL_CREDENTIALS: [Self; 4] =
-        [Self::Github, Self::OpenAi, Self::OpenRouter, Self::Linear];
+    pub const ALL_CREDENTIALS: [Self; 5] =
+        [Self::Github, Self::OpenAi, Self::OpenRouter, Self::Linear, Self::GoogleCalendar];
 
     #[must_use]
     pub const fn label(self) -> &'static str {
@@ -20,6 +21,7 @@ impl Credential {
             Self::OpenAi => "OpenAI API key",
             Self::OpenRouter => "OpenRouter API key",
             Self::Linear => "Linear authorization",
+            Self::GoogleCalendar => "Google Calendar authorization",
         }
     }
 
@@ -30,6 +32,7 @@ impl Credential {
             Self::OpenAi => "open-ai",
             Self::OpenRouter => "open-router",
             Self::Linear => "linear",
+            Self::GoogleCalendar => "google-calendar",
         }
     }
 
@@ -39,7 +42,7 @@ impl Credential {
             Self::Github => Some("GITHUB_TOKEN"),
             Self::OpenAi => Some("OPENAI_API_KEY"),
             Self::OpenRouter => Some("OPENROUTER_API_KEY"),
-            Self::Linear => None, // OAuth only
+            Self::Linear | Self::GoogleCalendar => None, // OAuth only
         }
     }
 
@@ -51,7 +54,7 @@ impl Credential {
             }
             Self::OpenAi => Some("Create one at https://platform.openai.com/api-keys."),
             Self::OpenRouter => Some("Create one at https://openrouter.ai/keys."),
-            Self::Linear => None, // OAuth only
+            Self::Linear | Self::GoogleCalendar => None, // OAuth only
         }
     }
 
@@ -61,6 +64,7 @@ impl Credential {
             Self::OpenAi => "openai-api-key",
             Self::OpenRouter => "openrouter-api-key",
             Self::Linear => "linear-oauth",
+            Self::GoogleCalendar => "google-calendar-oauth",
         }
     }
 }

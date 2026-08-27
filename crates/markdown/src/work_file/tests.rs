@@ -15,7 +15,7 @@ use tempfile::{
 
 use super::*;
 
-const WORK_ITEM: &str = "- Meeting with manager";
+const LINEAR_SECTION_CONTENT: &str = "- [ENG-123](https://linear.app/issue/ENG-123) Ship it";
 
 struct TestContext {
     temporary_directory: TempDir,
@@ -54,53 +54,60 @@ fn get_test_context() -> TestContext {
 }
 
 #[test]
-fn log_work_item_appends_bullet_to_log_section() {
+fn upsert_work_file_section_writes_the_section_into_the_work_file() {
     let test_context = get_test_context();
 
-    test_context.write_work_file(
-        "# Today's Work\n\n## Focus\n- Finish report\n\n## Log\n<!-- Quick capture. -->\n\n## Follow-ups\n- Update ticket\n",
-    );
+    test_context
+        .write_work_file("# Today's Work\n\n## Focus\n- Ship it\n\n## Log\n- Existing log\n");
 
-    append_work_file_section_from_config(&test_context.config, WORK_ITEM, "Log")
-        .expect("work item should be appended");
+    upsert_work_file_section_from_config(&test_context.config, "Linear", LINEAR_SECTION_CONTENT)
+        .expect("section should be upserted");
 
     let work_file_content =
         fs::read_to_string(test_context.work_file()).expect("work file should be readable");
 
     assert_eq!(
         work_file_content,
-        "# Today's Work\n\n## Focus\n- Finish report\n\n## Log\n<!-- Quick capture. -->\n- Meeting with manager\n\n## Follow-ups\n- Update ticket\n"
+        format!(
+            "# Today's Work\n\n## Focus\n- Ship it\n\n## \
+             Linear\n{LINEAR_SECTION_CONTENT}\n\n## Log\n- Existing log\n"
+        )
     );
 
     drop(test_context.temporary_directory);
 }
 
 #[test]
-fn log_work_item_inserts_newline_when_log_section_has_no_trailing_newline() {
+fn remove_work_file_section_writes_the_updated_work_file() {
     let test_context = get_test_context();
 
-    test_context.write_work_file("# Today's Work\n\n## Log");
+    test_context
+        .write_work_file("# Today's Work\n\n## Linear\n- Issue\n\n## Log\n- Existing log\n");
 
-    append_work_file_section_from_config(&test_context.config, WORK_ITEM, "Log")
-        .expect("work item should be appended");
+    remove_work_file_section_from_config(&test_context.config, "Linear")
+        .expect("section should be removed");
 
     let work_file_content =
         fs::read_to_string(test_context.work_file()).expect("work file should be readable");
 
-    assert_eq!(work_file_content, "# Today's Work\n\n## Log\n- Meeting with manager\n");
+    assert_eq!(work_file_content, "# Today's Work\n\n## Log\n- Existing log\n");
 
     drop(test_context.temporary_directory);
 }
 
 #[test]
-fn log_work_item_fails_when_work_file_is_missing() {
+fn upsert_work_file_section_fails_when_work_file_is_missing() {
     let test_context = get_test_context();
 
     fs::create_dir_all(test_context.swelog_directory())
         .expect("swelog directory should be created");
 
-    let error = append_work_file_section_from_config(&test_context.config, WORK_ITEM, "Log")
-        .expect_err("missing work file should fail");
+    let error = upsert_work_file_section_from_config(
+        &test_context.config,
+        "Linear",
+        LINEAR_SECTION_CONTENT,
+    )
+    .expect_err("missing work file should fail");
 
     let error =
         error.downcast_ref::<SwelogFileNotFound>().expect("error should be SwelogFileNotFound");
@@ -108,32 +115,6 @@ fn log_work_item_fails_when_work_file_is_missing() {
     assert_eq!(error.swelog_path, test_context.work_file());
 
     drop(test_context.temporary_directory);
-}
-
-#[test]
-fn append_to_section_does_not_insert_blank_line_after_existing_content() {
-    let markdown = "# Today's Work\n\n## Log\n- Existing item\n\n## Follow-ups\n- Update ticket\n";
-
-    let updated_markdown = append_to_section(markdown, "Log", "- Meeting with manager")
-        .expect("append to section should succeed");
-
-    assert_eq!(
-        updated_markdown,
-        "# Today's Work\n\n## Log\n- Existing item\n- Meeting with manager\n\n## Follow-ups\n- Update ticket\n"
-    );
-}
-
-#[test]
-fn append_to_section_keeps_blank_line_before_next_section() {
-    let markdown = "# Today's Work\n\n## Log\n\n## Follow-ups\n- Update ticket\n";
-
-    let updated_markdown = append_to_section(markdown, "Log", "- Meeting with manager")
-        .expect("append to section should succeed");
-
-    assert_eq!(
-        updated_markdown,
-        "# Today's Work\n\n## Log\n- Meeting with manager\n\n## Follow-ups\n- Update ticket\n"
-    );
 }
 
 #[test]

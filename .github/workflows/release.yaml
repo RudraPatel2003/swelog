@@ -58,6 +58,9 @@ jobs:
 
       - name: Build release binary
         run: just build-release "${{ matrix.target }}"
+        env:
+          SWELOG_GOOGLE_CLIENT_ID: ${{ secrets.SWELOG_GOOGLE_CLIENT_ID }}
+          SWELOG_GOOGLE_CLIENT_SECRET: ${{ secrets.SWELOG_GOOGLE_CLIENT_SECRET }}
 
       - name: Stage release asset
         shell: bash

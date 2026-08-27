@@ -23,7 +23,7 @@ enum SummarizeCommands {
     /// Summarize your configured work file and log it into the daily folder.
     Day(DailySummaryArgs),
 
-    /// Summarize the past week of daily logs into a weekl log.
+    /// Summarize the past week of daily logs into a weekly log.
     Week(WeeklySummaryArgs),
 }
 
