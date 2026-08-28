@@ -9,6 +9,7 @@ use credentials::{
 use miette::Result;
 
 use crate::{
+    anthropic_language_model::AnthropicLanguageModel,
     errors::SummarizationNotConfigured,
     language_model::LanguageModel,
     ollama_language_model::OllamaLanguageModel,
@@ -41,6 +42,15 @@ pub fn get_language_model_from_config(
     let language_model = summarization_settings.language_model;
 
     match summarization_settings.language_model_provider {
+        LanguageModelProvider::Anthropic => {
+            let anthropic_api_key = get_or_prompt_for_credential(Credential::Anthropic)?;
+
+            let anthropic_language_model =
+                AnthropicLanguageModel::new(language_model, anthropic_api_key);
+
+            Ok(Box::new(anthropic_language_model))
+        }
+
         LanguageModelProvider::Ollama => {
             let ollama_language_model = OllamaLanguageModel::new(language_model);
 
