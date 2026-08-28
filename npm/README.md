@@ -30,7 +30,8 @@ Full documentation lives at
 - [Configuration](https://swelog.rudrapatel.net/getting-started/configuration/)
   — every field in `swelog.json`
 - [Summarization](https://swelog.rudrapatel.net/summarization/) — the optional
-  LLM pass, weekly logs, and the Ollama, OpenAI, and OpenRouter providers
+  LLM pass, weekly logs, and the Ollama, OpenAI, OpenRouter, and Anthropic
+  providers
 - [Integrations](https://swelog.rudrapatel.net/integrations/) — pull activity
   from GitHub, Linear, and Google Calendar
 - [Authentication](https://swelog.rudrapatel.net/reference/authentication/) —

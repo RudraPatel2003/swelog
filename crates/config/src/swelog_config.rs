@@ -15,6 +15,7 @@ pub const DEFAULT_CONTEXT_FILE_NAME: &str = "CONTEXT.md";
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub enum LanguageModelProvider {
+    Anthropic,
     Ollama,
     OpenAi,
     OpenRouter,

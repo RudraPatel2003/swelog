@@ -1,3 +1,4 @@
+pub mod anthropic_language_model;
 pub mod errors;
 pub mod language_model;
 pub mod language_model_factory;

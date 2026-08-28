@@ -6,13 +6,20 @@ pub enum Credential {
     Github,
     OpenAi,
     OpenRouter,
+    Anthropic,
     Linear,
     GoogleCalendar,
 }
 
 impl Credential {
-    pub const ALL_CREDENTIALS: [Self; 5] =
-        [Self::Github, Self::OpenAi, Self::OpenRouter, Self::Linear, Self::GoogleCalendar];
+    pub const ALL_CREDENTIALS: [Self; 6] = [
+        Self::Github,
+        Self::OpenAi,
+        Self::OpenRouter,
+        Self::Anthropic,
+        Self::Linear,
+        Self::GoogleCalendar,
+    ];
 
     #[must_use]
     pub const fn label(self) -> &'static str {
@@ -20,6 +27,7 @@ impl Credential {
             Self::Github => "GitHub token",
             Self::OpenAi => "OpenAI API key",
             Self::OpenRouter => "OpenRouter API key",
+            Self::Anthropic => "Anthropic API key",
             Self::Linear => "Linear authorization",
             Self::GoogleCalendar => "Google Calendar authorization",
         }
@@ -31,6 +39,7 @@ impl Credential {
             Self::Github => "github",
             Self::OpenAi => "open-ai",
             Self::OpenRouter => "open-router",
+            Self::Anthropic => "anthropic",
             Self::Linear => "linear",
             Self::GoogleCalendar => "google-calendar",
         }
@@ -42,6 +51,7 @@ impl Credential {
             Self::Github => Some("GITHUB_TOKEN"),
             Self::OpenAi => Some("OPENAI_API_KEY"),
             Self::OpenRouter => Some("OPENROUTER_API_KEY"),
+            Self::Anthropic => Some("ANTHROPIC_API_KEY"),
             Self::Linear | Self::GoogleCalendar => None, // OAuth only
         }
     }
@@ -54,6 +64,7 @@ impl Credential {
             }
             Self::OpenAi => Some("Create one at https://platform.openai.com/api-keys."),
             Self::OpenRouter => Some("Create one at https://openrouter.ai/keys."),
+            Self::Anthropic => Some("Create one at https://console.anthropic.com/settings/keys."),
             Self::Linear | Self::GoogleCalendar => None, // OAuth only
         }
     }
@@ -63,6 +74,7 @@ impl Credential {
             Self::Github => "github-token",
             Self::OpenAi => "openai-api-key",
             Self::OpenRouter => "openrouter-api-key",
+            Self::Anthropic => "anthropic-api-key",
             Self::Linear => "linear-oauth",
             Self::GoogleCalendar => "google-calendar-oauth",
         }

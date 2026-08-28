@@ -67,6 +67,7 @@ const fn format_language_model_provider(
     language_model_provider: Option<&LanguageModelProvider>,
 ) -> &'static str {
     match language_model_provider {
+        Some(LanguageModelProvider::Anthropic) => "Anthropic",
         Some(LanguageModelProvider::Ollama) => "Ollama",
         Some(LanguageModelProvider::OpenAi) => "OpenAI",
         Some(LanguageModelProvider::OpenRouter) => "OpenRouter",
