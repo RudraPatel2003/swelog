@@ -2,7 +2,7 @@ use linear::client::structs::LinearIssueTimestamps;
 
 use super::*;
 
-fn issue(
+fn get_mock_issue(
     identifier: &str,
     title: &str,
     status_name: &str,
@@ -18,41 +18,54 @@ fn issue(
     }
 }
 
+const ACTIVE_STATUSES_GROUPED_AND_ORDERED: &str = r"### In Progress
+- [ENG-2](https://linear.app/issue/ENG-2) Started issue
+
+### Todo
+- [ENG-1](https://linear.app/issue/ENG-1) Todo issue
+
+### Backlog
+- [ENG-3](https://linear.app/issue/ENG-3) Backlog issue";
+
 #[test]
 fn format_linear_issues_groups_and_orders_active_statuses() {
-    let issues = vec![
-        issue("ENG-1", "Todo issue", "Todo", LinearStatusType::Unstarted),
-        issue("ENG-2", "Started issue", "In Progress", LinearStatusType::Started),
-        issue("ENG-3", "Backlog issue", "Backlog", LinearStatusType::Backlog),
-    ];
+    let todo_issue = get_mock_issue("ENG-1", "Todo issue", "Todo", LinearStatusType::Unstarted);
+
+    let started_issue =
+        get_mock_issue("ENG-2", "Started issue", "In Progress", LinearStatusType::Started);
+
+    let backlog_issue =
+        get_mock_issue("ENG-3", "Backlog issue", "Backlog", LinearStatusType::Backlog);
+
+    let issues = vec![todo_issue, started_issue, backlog_issue];
 
     let markdown = format_linear_issues(&issues);
 
-    assert_eq!(
-        markdown,
-        "### In Progress\n- [ENG-2](https://linear.app/issue/ENG-2) Started issue\n\n### Todo\n- [ENG-1](https://linear.app/issue/ENG-1) Todo issue\n\n### Backlog\n- [ENG-3](https://linear.app/issue/ENG-3) Backlog issue"
-    );
+    assert_eq!(markdown, ACTIVE_STATUSES_GROUPED_AND_ORDERED);
 }
+
+const ISSUES_SHARING_A_STATUS: &str = r"### In Progress
+- [ENG-1](https://linear.app/issue/ENG-1) First
+- [ENG-2](https://linear.app/issue/ENG-2) Second";
 
 #[test]
 fn format_linear_issues_groups_issues_sharing_a_status() {
-    let issues = vec![
-        issue("ENG-1", "First", "In Progress", LinearStatusType::Started),
-        issue("ENG-2", "Second", "In Progress", LinearStatusType::Started),
-    ];
+    let first_issue = get_mock_issue("ENG-1", "First", "In Progress", LinearStatusType::Started);
+    let second_issue = get_mock_issue("ENG-2", "Second", "In Progress", LinearStatusType::Started);
+
+    let issues = vec![first_issue, second_issue];
 
     let markdown = format_linear_issues(&issues);
 
-    assert_eq!(
-        markdown,
-        "### In Progress\n- [ENG-1](https://linear.app/issue/ENG-1) First\n- [ENG-2](https://linear.app/issue/ENG-2) Second"
-    );
+    assert_eq!(markdown, ISSUES_SHARING_A_STATUS);
 }
 
 #[test]
 fn format_linear_issues_collapses_whitespace_and_escapes_link_text() {
-    let issues =
-        vec![issue("ENG-1", "Fix [OAuth]\ncallback", "In Progress", LinearStatusType::Started)];
+    let mock_issue =
+        get_mock_issue("ENG-1", "Fix [OAuth]\ncallback", "In Progress", LinearStatusType::Started);
+
+    let issues = vec![mock_issue];
 
     let markdown = format_linear_issues(&issues);
 

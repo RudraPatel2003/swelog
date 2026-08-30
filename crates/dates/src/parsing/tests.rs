@@ -4,7 +4,9 @@ use super::*;
 fn parse_date_reads_month_day_year_order() {
     let parsed_date = parse_date("08-17-2026").expect("date should parse");
 
-    assert_eq!(parsed_date, NaiveDate::from_ymd_opt(2026, 8, 17).expect("date should be valid"));
+    let expected_date = NaiveDate::from_ymd_opt(2026, 8, 17).expect("date should be valid");
+
+    assert_eq!(parsed_date, expected_date);
 }
 
 #[test]

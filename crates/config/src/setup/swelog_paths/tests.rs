@@ -2,7 +2,7 @@ use std::path::Path;
 
 use super::*;
 
-fn get_test_config() -> SwelogConfig {
+fn get_mock_config() -> SwelogConfig {
     SwelogConfig {
         obsidian_vault_path: PathBuf::from("/home/user/vault"),
         ..SwelogConfig::get_default_config()
@@ -11,7 +11,9 @@ fn get_test_config() -> SwelogConfig {
 
 #[test]
 fn swelog_paths_nest_every_path_under_the_swelog_folder() {
-    let swelog_paths = SwelogPaths::new(&get_test_config());
+    let config = get_mock_config();
+
+    let swelog_paths = SwelogPaths::new(&config);
 
     assert_eq!(swelog_paths.swelog_directory, Path::new("/home/user/vault/swelog"));
     assert_eq!(swelog_paths.work_file, Path::new("/home/user/vault/swelog/WORK.md"));
@@ -21,7 +23,9 @@ fn swelog_paths_nest_every_path_under_the_swelog_folder() {
 
 #[test]
 fn swelog_paths_put_the_context_file_beside_the_work_file() {
-    let swelog_paths = SwelogPaths::new(&get_test_config());
+    let config = get_mock_config();
+
+    let swelog_paths = SwelogPaths::new(&config);
 
     assert_eq!(swelog_paths.context_file, Path::new("/home/user/vault/swelog/CONTEXT.md"));
     assert_eq!(swelog_paths.context_file.parent(), swelog_paths.work_file.parent());
@@ -67,7 +71,9 @@ fn context_file_name_is_not_configurable() {
 
 #[test]
 fn all_paths_omits_the_context_file() {
-    let swelog_paths = SwelogPaths::new(&get_test_config());
+    let config = get_mock_config();
+
+    let swelog_paths = SwelogPaths::new(&config);
 
     let all_paths = swelog_paths.all_paths();
 

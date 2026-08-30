@@ -30,8 +30,6 @@ const MONDAY_DAILY_LOG_CONTENT: &str = "# Daily Log - 06-01-2026\n\nDebugged API
 const WEDNESDAY_DAILY_LOG_CONTENT: &str = "# Daily Log - 06-03-2026\n\nReviewed auth PR";
 const FRIDAY_DAILY_LOG_CONTENT: &str = "# Daily Log - 06-05-2026\n\nPlanned release";
 const EXISTING_WEEKLY_LOG_CONTENT: &str = "existing weekly log";
-const UNSUMMARIZED_WORK_FILE_CONTENT: &str =
-    "# Today's Work\n\n## Log\n- Still needs a daily summary\n";
 
 struct TestContext {
     temporary_directory: TempDir,
@@ -127,14 +125,20 @@ fn test_friday_date() -> NaiveDate {
 async fn summarize_weekly_work_writes_generated_weekly_log() {
     let test_context = get_test_context();
 
+    let monday_date = test_monday_date();
+
+    let wednesday_date = test_wednesday_date();
+
     test_context.write_swelog_files();
-    test_context.write_daily_log(test_monday_date(), MONDAY_DAILY_LOG_CONTENT);
-    test_context.write_daily_log(test_wednesday_date(), WEDNESDAY_DAILY_LOG_CONTENT);
+
+    test_context.write_daily_log(monday_date, MONDAY_DAILY_LOG_CONTENT);
+
+    test_context.write_daily_log(wednesday_date, WEDNESDAY_DAILY_LOG_CONTENT);
 
     summarize_weekly_work_from_config(
         &test_context.config,
         &FakeLanguageModel,
-        &test_monday_date(),
+        &monday_date,
         Some(CONTEXT_FILE_CONTENT),
         Overwrite::No,
     )
@@ -145,8 +149,11 @@ async fn summarize_weekly_work_writes_generated_weekly_log() {
         fs::read_to_string(test_context.weekly_log_file()).expect("weekly log should be readable");
 
     assert!(weekly_log_content.starts_with("generated from prompt:\n"));
+
     assert!(weekly_log_content.contains(MONDAY_DAILY_LOG_CONTENT));
+
     assert!(weekly_log_content.contains(WEDNESDAY_DAILY_LOG_CONTENT));
+
     assert!(weekly_log_content.contains(CONTEXT_FILE_CONTENT));
 
     drop(test_context.temporary_directory);
@@ -156,13 +163,18 @@ async fn summarize_weekly_work_writes_generated_weekly_log() {
 async fn summarize_weekly_work_skips_missing_weekday_logs() {
     let test_context = get_test_context();
 
+    let monday_date = test_monday_date();
+
+    let friday_date = test_friday_date();
+
     test_context.write_swelog_files();
-    test_context.write_daily_log(test_friday_date(), FRIDAY_DAILY_LOG_CONTENT);
+
+    test_context.write_daily_log(friday_date, FRIDAY_DAILY_LOG_CONTENT);
 
     summarize_weekly_work_from_config(
         &test_context.config,
         &FakeLanguageModel,
-        &test_monday_date(),
+        &monday_date,
         Some(CONTEXT_FILE_CONTENT),
         Overwrite::No,
     )
@@ -173,7 +185,9 @@ async fn summarize_weekly_work_skips_missing_weekday_logs() {
         fs::read_to_string(test_context.weekly_log_file()).expect("weekly log should be readable");
 
     assert!(weekly_log_content.contains(FRIDAY_DAILY_LOG_CONTENT));
+
     assert!(!weekly_log_content.contains(MONDAY_DAILY_LOG_CONTENT));
+
     assert!(!weekly_log_content.contains(WEDNESDAY_DAILY_LOG_CONTENT));
 
     drop(test_context.temporary_directory);
@@ -183,12 +197,14 @@ async fn summarize_weekly_work_skips_missing_weekday_logs() {
 async fn summarize_weekly_work_fails_when_no_daily_logs_exist() {
     let test_context = get_test_context();
 
+    let monday_date = test_monday_date();
+
     test_context.write_swelog_files();
 
     let error = summarize_weekly_work_from_config(
         &test_context.config,
         &FakeLanguageModel,
-        &test_monday_date(),
+        &monday_date,
         Some(CONTEXT_FILE_CONTENT),
         Overwrite::No,
     )
@@ -197,7 +213,7 @@ async fn summarize_weekly_work_fails_when_no_daily_logs_exist() {
 
     let error = error.downcast_ref::<NoDailyLogsFound>().expect("error should be NoDailyLogsFound");
 
-    assert_eq!(error.monday_date, test_monday_date());
+    assert_eq!(error.monday_date, monday_date);
 
     drop(test_context.temporary_directory);
 }
@@ -206,13 +222,16 @@ async fn summarize_weekly_work_fails_when_no_daily_logs_exist() {
 async fn summarize_weekly_work_prompts_without_context_when_none_is_given() {
     let test_context = get_test_context();
 
+    let monday_date = test_monday_date();
+
     test_context.write_swelog_files();
-    test_context.write_daily_log(test_monday_date(), MONDAY_DAILY_LOG_CONTENT);
+
+    test_context.write_daily_log(monday_date, MONDAY_DAILY_LOG_CONTENT);
 
     summarize_weekly_work_from_config(
         &test_context.config,
         &FakeLanguageModel,
-        &test_monday_date(),
+        &monday_date,
         None,
         Overwrite::No,
     )
@@ -223,6 +242,7 @@ async fn summarize_weekly_work_prompts_without_context_when_none_is_given() {
         fs::read_to_string(test_context.weekly_log_file()).expect("weekly log should be readable");
 
     assert!(weekly_log_content.contains("no context given"));
+
     assert!(!weekly_log_content.contains(CONTEXT_FILE_CONTENT));
 
     drop(test_context.temporary_directory);
@@ -232,15 +252,18 @@ async fn summarize_weekly_work_prompts_without_context_when_none_is_given() {
 async fn summarize_weekly_work_fails_when_work_file_is_missing() {
     let test_context = get_test_context();
 
+    let monday_date = test_monday_date();
+
     test_context.write_swelog_files();
-    test_context.write_daily_log(test_monday_date(), MONDAY_DAILY_LOG_CONTENT);
+
+    test_context.write_daily_log(monday_date, MONDAY_DAILY_LOG_CONTENT);
 
     fs::remove_file(test_context.work_file()).expect("work file should be removed");
 
     let error = summarize_weekly_work_from_config(
         &test_context.config,
         &FakeLanguageModel,
-        &test_monday_date(),
+        &monday_date,
         Some(CONTEXT_FILE_CONTENT),
         Overwrite::No,
     )
@@ -259,6 +282,8 @@ async fn summarize_weekly_work_fails_when_work_file_is_missing() {
 async fn summarize_weekly_work_fails_when_daily_log_directory_is_missing() {
     let test_context = get_test_context();
 
+    let monday_date = test_monday_date();
+
     test_context.write_swelog_files();
 
     fs::remove_dir(test_context.daily_log_directory())
@@ -267,7 +292,7 @@ async fn summarize_weekly_work_fails_when_daily_log_directory_is_missing() {
     let error = summarize_weekly_work_from_config(
         &test_context.config,
         &FakeLanguageModel,
-        &test_monday_date(),
+        &monday_date,
         Some(CONTEXT_FILE_CONTENT),
         Overwrite::No,
     )
@@ -286,8 +311,11 @@ async fn summarize_weekly_work_fails_when_daily_log_directory_is_missing() {
 async fn summarize_weekly_work_fails_when_weekly_log_directory_is_missing() {
     let test_context = get_test_context();
 
+    let monday_date = test_monday_date();
+
     test_context.write_swelog_files();
-    test_context.write_daily_log(test_monday_date(), MONDAY_DAILY_LOG_CONTENT);
+
+    test_context.write_daily_log(monday_date, MONDAY_DAILY_LOG_CONTENT);
 
     fs::remove_dir(test_context.weekly_log_directory())
         .expect("weekly log directory should be removed");
@@ -295,7 +323,7 @@ async fn summarize_weekly_work_fails_when_weekly_log_directory_is_missing() {
     let error = summarize_weekly_work_from_config(
         &test_context.config,
         &FakeLanguageModel,
-        &test_monday_date(),
+        &monday_date,
         Some(CONTEXT_FILE_CONTENT),
         Overwrite::No,
     )
@@ -314,8 +342,11 @@ async fn summarize_weekly_work_fails_when_weekly_log_directory_is_missing() {
 async fn summarize_weekly_work_fails_when_weekly_log_exists_without_force() {
     let test_context = get_test_context();
 
+    let monday_date = test_monday_date();
+
     test_context.write_swelog_files();
-    test_context.write_daily_log(test_monday_date(), MONDAY_DAILY_LOG_CONTENT);
+
+    test_context.write_daily_log(monday_date, MONDAY_DAILY_LOG_CONTENT);
 
     fs::write(test_context.weekly_log_file(), EXISTING_WEEKLY_LOG_CONTENT)
         .expect("existing weekly log should be written");
@@ -323,7 +354,7 @@ async fn summarize_weekly_work_fails_when_weekly_log_exists_without_force() {
     let error = summarize_weekly_work_from_config(
         &test_context.config,
         &FakeLanguageModel,
-        &test_monday_date(),
+        &monday_date,
         Some(CONTEXT_FILE_CONTENT),
         Overwrite::No,
     )
@@ -348,8 +379,11 @@ async fn summarize_weekly_work_fails_when_weekly_log_exists_without_force() {
 async fn summarize_weekly_work_overwrites_existing_weekly_log_with_force() {
     let test_context = get_test_context();
 
+    let monday_date = test_monday_date();
+
     test_context.write_swelog_files();
-    test_context.write_daily_log(test_monday_date(), MONDAY_DAILY_LOG_CONTENT);
+
+    test_context.write_daily_log(monday_date, MONDAY_DAILY_LOG_CONTENT);
 
     fs::write(test_context.weekly_log_file(), EXISTING_WEEKLY_LOG_CONTENT)
         .expect("existing weekly log should be written");
@@ -357,7 +391,7 @@ async fn summarize_weekly_work_overwrites_existing_weekly_log_with_force() {
     summarize_weekly_work_from_config(
         &test_context.config,
         &FakeLanguageModel,
-        &test_monday_date(),
+        &monday_date,
         Some(CONTEXT_FILE_CONTENT),
         Overwrite::Yes,
     )
@@ -368,23 +402,34 @@ async fn summarize_weekly_work_overwrites_existing_weekly_log_with_force() {
         fs::read_to_string(test_context.weekly_log_file()).expect("weekly log should be readable");
 
     assert_ne!(weekly_log_content, EXISTING_WEEKLY_LOG_CONTENT);
+
     assert!(weekly_log_content.contains(MONDAY_DAILY_LOG_CONTENT));
 
     drop(test_context.temporary_directory);
 }
 
+const UNSUMMARIZED_WORK_FILE_CONTENT: &str = r"# Today's Work
+
+## Log
+- Still needs a daily summary
+";
+
 #[tokio::test]
 async fn summarize_weekly_work_fails_when_work_file_is_not_default() {
     let test_context = get_test_context();
 
+    let monday_date = test_monday_date();
+
     test_context.write_swelog_files();
-    test_context.write_daily_log(test_monday_date(), MONDAY_DAILY_LOG_CONTENT);
+
+    test_context.write_daily_log(monday_date, MONDAY_DAILY_LOG_CONTENT);
+
     test_context.write_work_file(UNSUMMARIZED_WORK_FILE_CONTENT);
 
     let error = summarize_weekly_work_from_config(
         &test_context.config,
         &FakeLanguageModel,
-        &test_monday_date(),
+        &monday_date,
         Some(CONTEXT_FILE_CONTENT),
         Overwrite::No,
     )

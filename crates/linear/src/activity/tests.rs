@@ -10,28 +10,28 @@ use crate::client::structs::{
     LinearStatusType,
 };
 
-fn date(year: i32, month: u32, day: u32) -> NaiveDate {
+fn get_mock_date(year: i32, month: u32, day: u32) -> NaiveDate {
     NaiveDate::from_ymd_opt(year, month, day).expect("test date should be valid")
 }
 
 /// UTC-05:00, so a late evening timestamp here lands on the next day in UTC.
-fn timezone() -> FixedOffset {
+fn get_mock_timezone() -> FixedOffset {
     FixedOffset::west_opt(18_000).expect("test offset should be valid")
 }
 
-fn instant(year: i32, month: u32, day: u32, hour: u32, minute: u32) -> DateTime<Utc> {
-    timezone()
+fn get_mock_instant(year: i32, month: u32, day: u32, hour: u32, minute: u32) -> DateTime<Utc> {
+    get_mock_timezone()
         .with_ymd_and_hms(year, month, day, hour, minute, 0)
         .single()
         .expect("test instant should be unambiguous")
         .to_utc()
 }
 
-fn issue(timestamps: LinearIssueTimestamps) -> LinearIssue {
-    issue_with_status(LinearStatusType::Started, timestamps)
+fn get_mock_issue(timestamps: LinearIssueTimestamps) -> LinearIssue {
+    get_mock_issue_with_status(LinearStatusType::Started, timestamps)
 }
 
-fn issue_with_status(
+fn get_mock_issue_with_status(
     status_type: LinearStatusType,
     timestamps: LinearIssueTimestamps,
 ) -> LinearIssue {
@@ -47,158 +47,248 @@ fn issue_with_status(
 
 #[test]
 fn get_updated_after_filter_starts_a_day_before_the_requested_date() {
-    let updated_after =
-        get_updated_after_filter(date(2026, 8, 17)).expect("filter should be built");
+    let activity_date = get_mock_date(2026, 8, 17);
+
+    let updated_after = get_updated_after_filter(activity_date).expect("filter should be built");
 
     assert_eq!(updated_after, "2026-08-16T00:00:00Z");
 }
 
 #[test]
 fn get_updated_after_filter_crosses_a_year_boundary() {
-    let updated_after = get_updated_after_filter(date(2026, 1, 1)).expect("filter should be built");
+    let activity_date = get_mock_date(2026, 1, 1);
+
+    let updated_after = get_updated_after_filter(activity_date).expect("filter should be built");
 
     assert_eq!(updated_after, "2025-12-31T00:00:00Z");
 }
 
 #[test]
 fn was_issue_worked_on_matches_an_issue_updated_on_the_date() {
-    let issue = issue(LinearIssueTimestamps {
-        updated_at: Some(instant(2026, 8, 17, 14, 30)),
-        ..LinearIssueTimestamps::default()
-    });
+    let updated_at = get_mock_instant(2026, 8, 17, 14, 30);
 
-    assert!(was_issue_worked_on(&issue, date(2026, 8, 17), &timezone()));
+    let timestamps =
+        LinearIssueTimestamps { updated_at: Some(updated_at), ..LinearIssueTimestamps::default() };
+
+    let mock_issue = get_mock_issue(timestamps);
+
+    let activity_date = get_mock_date(2026, 8, 17);
+
+    let timezone = get_mock_timezone();
+
+    assert!(was_issue_worked_on(&mock_issue, activity_date, &timezone));
 }
 
 #[test]
 fn was_issue_worked_on_matches_an_issue_completed_on_the_date_but_updated_later() {
-    let issue = issue(LinearIssueTimestamps {
-        completed_at: Some(instant(2026, 8, 17, 16, 0)),
-        updated_at: Some(instant(2026, 8, 19, 9, 0)),
-        ..LinearIssueTimestamps::default()
-    });
+    let completed_at = get_mock_instant(2026, 8, 17, 16, 0);
 
-    assert!(was_issue_worked_on(&issue, date(2026, 8, 17), &timezone()));
+    let updated_at = get_mock_instant(2026, 8, 19, 9, 0);
+
+    let timestamps = LinearIssueTimestamps {
+        completed_at: Some(completed_at),
+        updated_at: Some(updated_at),
+        ..LinearIssueTimestamps::default()
+    };
+
+    let mock_issue = get_mock_issue(timestamps);
+
+    let activity_date = get_mock_date(2026, 8, 17);
+
+    let timezone = get_mock_timezone();
+
+    assert!(was_issue_worked_on(&mock_issue, activity_date, &timezone));
 }
 
 #[test]
 fn was_issue_worked_on_matches_an_issue_canceled_on_the_date_but_updated_later() {
-    let issue = issue(LinearIssueTimestamps {
-        canceled_at: Some(instant(2026, 8, 17, 16, 0)),
-        updated_at: Some(instant(2026, 8, 19, 9, 0)),
-        ..LinearIssueTimestamps::default()
-    });
+    let canceled_at = get_mock_instant(2026, 8, 17, 16, 0);
 
-    assert!(was_issue_worked_on(&issue, date(2026, 8, 17), &timezone()));
+    let updated_at = get_mock_instant(2026, 8, 19, 9, 0);
+
+    let timestamps = LinearIssueTimestamps {
+        canceled_at: Some(canceled_at),
+        updated_at: Some(updated_at),
+        ..LinearIssueTimestamps::default()
+    };
+
+    let mock_issue = get_mock_issue(timestamps);
+
+    let activity_date = get_mock_date(2026, 8, 17);
+
+    let timezone = get_mock_timezone();
+
+    assert!(was_issue_worked_on(&mock_issue, activity_date, &timezone));
 }
 
 #[test]
 fn was_issue_worked_on_ignores_an_issue_from_a_different_date() {
-    let issue = issue(LinearIssueTimestamps {
-        created_at: Some(instant(2026, 8, 10, 9, 0)),
-        started_at: Some(instant(2026, 8, 11, 9, 0)),
-        updated_at: Some(instant(2026, 8, 18, 9, 0)),
-        ..LinearIssueTimestamps::default()
-    });
+    let created_at = get_mock_instant(2026, 8, 10, 9, 0);
 
-    assert!(!was_issue_worked_on(&issue, date(2026, 8, 17), &timezone()));
+    let started_at = get_mock_instant(2026, 8, 11, 9, 0);
+
+    let updated_at = get_mock_instant(2026, 8, 18, 9, 0);
+
+    let timestamps = LinearIssueTimestamps {
+        created_at: Some(created_at),
+        started_at: Some(started_at),
+        updated_at: Some(updated_at),
+        ..LinearIssueTimestamps::default()
+    };
+
+    let mock_issue = get_mock_issue(timestamps);
+
+    let activity_date = get_mock_date(2026, 8, 17);
+
+    let timezone = get_mock_timezone();
+
+    assert!(!was_issue_worked_on(&mock_issue, activity_date, &timezone));
 }
 
 #[test]
 fn was_issue_worked_on_ignores_an_issue_without_timestamps() {
-    let issue = issue(LinearIssueTimestamps::default());
+    let mock_issue = get_mock_issue(LinearIssueTimestamps::default());
 
-    assert!(!was_issue_worked_on(&issue, date(2026, 8, 17), &timezone()));
+    let activity_date = get_mock_date(2026, 8, 17);
+
+    let timezone = get_mock_timezone();
+
+    assert!(!was_issue_worked_on(&mock_issue, activity_date, &timezone));
 }
 
 #[test]
 fn was_issue_worked_on_reads_timestamps_in_the_supplied_time_zone() {
-    let issue = issue(LinearIssueTimestamps {
-        updated_at: Some(instant(2026, 8, 17, 23, 30)),
-        ..LinearIssueTimestamps::default()
-    });
+    let updated_at = get_mock_instant(2026, 8, 17, 23, 30);
 
-    assert!(was_issue_worked_on(&issue, date(2026, 8, 17), &timezone()));
-    assert!(!was_issue_worked_on(&issue, date(2026, 8, 18), &timezone()));
+    let timestamps =
+        LinearIssueTimestamps { updated_at: Some(updated_at), ..LinearIssueTimestamps::default() };
+
+    let mock_issue = get_mock_issue(timestamps);
+
+    let timezone = get_mock_timezone();
+
+    let matching_date = get_mock_date(2026, 8, 17);
+
+    let following_date = get_mock_date(2026, 8, 18);
+
+    assert!(was_issue_worked_on(&mock_issue, matching_date, &timezone));
+
+    assert!(!was_issue_worked_on(&mock_issue, following_date, &timezone));
 }
 
 #[test]
 fn is_issue_active_or_finished_today_keeps_an_unfinished_issue() {
-    let issue = issue_with_status(LinearStatusType::Unstarted, LinearIssueTimestamps::default());
+    let mock_issue =
+        get_mock_issue_with_status(LinearStatusType::Unstarted, LinearIssueTimestamps::default());
 
-    assert!(is_issue_active_or_finished_today(&issue, date(2026, 8, 17), &timezone()));
+    let activity_date = get_mock_date(2026, 8, 17);
+
+    let timezone = get_mock_timezone();
+
+    assert!(is_issue_active_or_finished_today(&mock_issue, activity_date, &timezone));
 }
 
 #[test]
 fn is_issue_active_or_finished_today_keeps_an_issue_completed_today() {
-    let issue = issue_with_status(
-        LinearStatusType::Completed,
-        LinearIssueTimestamps {
-            completed_at: Some(instant(2026, 8, 17, 16, 0)),
-            ..LinearIssueTimestamps::default()
-        },
-    );
+    let completed_at = get_mock_instant(2026, 8, 17, 16, 0);
+    let timestamps = LinearIssueTimestamps {
+        completed_at: Some(completed_at),
+        ..LinearIssueTimestamps::default()
+    };
 
-    assert!(is_issue_active_or_finished_today(&issue, date(2026, 8, 17), &timezone()));
+    let mock_issue = get_mock_issue_with_status(LinearStatusType::Completed, timestamps);
+
+    let activity_date = get_mock_date(2026, 8, 17);
+
+    let timezone = get_mock_timezone();
+
+    assert!(is_issue_active_or_finished_today(&mock_issue, activity_date, &timezone));
 }
 
 #[test]
 fn is_issue_active_or_finished_today_keeps_an_issue_canceled_today() {
-    let issue = issue_with_status(
-        LinearStatusType::Canceled,
-        LinearIssueTimestamps {
-            canceled_at: Some(instant(2026, 8, 17, 16, 0)),
-            ..LinearIssueTimestamps::default()
-        },
-    );
+    let canceled_at = get_mock_instant(2026, 8, 17, 16, 0);
+    let timestamps = LinearIssueTimestamps {
+        canceled_at: Some(canceled_at),
+        ..LinearIssueTimestamps::default()
+    };
 
-    assert!(is_issue_active_or_finished_today(&issue, date(2026, 8, 17), &timezone()));
+    let mock_issue = get_mock_issue_with_status(LinearStatusType::Canceled, timestamps);
+
+    let activity_date = get_mock_date(2026, 8, 17);
+
+    let timezone = get_mock_timezone();
+
+    assert!(is_issue_active_or_finished_today(&mock_issue, activity_date, &timezone));
 }
 
 #[test]
 fn is_issue_active_or_finished_today_ignores_an_issue_completed_on_an_earlier_day() {
-    let issue = issue_with_status(
-        LinearStatusType::Completed,
-        LinearIssueTimestamps {
-            completed_at: Some(instant(2026, 8, 10, 16, 0)),
-            ..LinearIssueTimestamps::default()
-        },
-    );
+    let completed_at = get_mock_instant(2026, 8, 10, 16, 0);
+    let timestamps = LinearIssueTimestamps {
+        completed_at: Some(completed_at),
+        ..LinearIssueTimestamps::default()
+    };
 
-    assert!(!is_issue_active_or_finished_today(&issue, date(2026, 8, 17), &timezone()));
+    let mock_issue = get_mock_issue_with_status(LinearStatusType::Completed, timestamps);
+
+    let activity_date = get_mock_date(2026, 8, 17);
+
+    let timezone = get_mock_timezone();
+
+    assert!(!is_issue_active_or_finished_today(&mock_issue, activity_date, &timezone));
 }
 
 #[test]
 fn is_issue_active_or_finished_today_ignores_an_issue_completed_earlier_but_updated_today() {
-    let issue = issue_with_status(
-        LinearStatusType::Completed,
-        LinearIssueTimestamps {
-            completed_at: Some(instant(2026, 8, 10, 16, 0)),
-            updated_at: Some(instant(2026, 8, 17, 9, 0)),
-            ..LinearIssueTimestamps::default()
-        },
-    );
+    let completed_at = get_mock_instant(2026, 8, 10, 16, 0);
 
-    assert!(!is_issue_active_or_finished_today(&issue, date(2026, 8, 17), &timezone()));
+    let updated_at = get_mock_instant(2026, 8, 17, 9, 0);
+
+    let timestamps = LinearIssueTimestamps {
+        completed_at: Some(completed_at),
+        updated_at: Some(updated_at),
+        ..LinearIssueTimestamps::default()
+    };
+
+    let mock_issue = get_mock_issue_with_status(LinearStatusType::Completed, timestamps);
+
+    let activity_date = get_mock_date(2026, 8, 17);
+
+    let timezone = get_mock_timezone();
+
+    assert!(!is_issue_active_or_finished_today(&mock_issue, activity_date, &timezone));
 }
 
 #[test]
 fn is_issue_active_or_finished_today_ignores_a_finished_issue_without_timestamps() {
-    let issue = issue_with_status(LinearStatusType::Completed, LinearIssueTimestamps::default());
+    let mock_issue =
+        get_mock_issue_with_status(LinearStatusType::Completed, LinearIssueTimestamps::default());
 
-    assert!(!is_issue_active_or_finished_today(&issue, date(2026, 8, 17), &timezone()));
+    let activity_date = get_mock_date(2026, 8, 17);
+
+    let timezone = get_mock_timezone();
+
+    assert!(!is_issue_active_or_finished_today(&mock_issue, activity_date, &timezone));
 }
 
 #[test]
 fn is_issue_active_or_finished_today_reads_timestamps_in_the_supplied_time_zone() {
-    let issue = issue_with_status(
-        LinearStatusType::Completed,
-        LinearIssueTimestamps {
-            completed_at: Some(instant(2026, 8, 17, 23, 30)),
-            ..LinearIssueTimestamps::default()
-        },
-    );
+    let completed_at = get_mock_instant(2026, 8, 17, 23, 30);
+    let timestamps = LinearIssueTimestamps {
+        completed_at: Some(completed_at),
+        ..LinearIssueTimestamps::default()
+    };
 
-    assert!(is_issue_active_or_finished_today(&issue, date(2026, 8, 17), &timezone()));
-    assert!(!is_issue_active_or_finished_today(&issue, date(2026, 8, 18), &timezone()));
+    let mock_issue = get_mock_issue_with_status(LinearStatusType::Completed, timestamps);
+
+    let timezone = get_mock_timezone();
+
+    let matching_date = get_mock_date(2026, 8, 17);
+
+    let following_date = get_mock_date(2026, 8, 18);
+
+    assert!(is_issue_active_or_finished_today(&mock_issue, matching_date, &timezone));
+
+    assert!(!is_issue_active_or_finished_today(&mock_issue, following_date, &timezone));
 }

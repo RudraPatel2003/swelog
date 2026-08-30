@@ -21,11 +21,23 @@ use crate::{
     file::get_daily_log_file_name,
 };
 
-const WORK_FILE_CONTENT: &str =
-    "# Today's Work\n\n## Focus\n- Debug API timeout\n\n## Log\n- Reviewed auth PR\n";
+const WORK_FILE_CONTENT: &str = r"# Today's Work
 
-const EXPECTED_DAILY_LOG_CONTENT: &str =
-    "# Daily Log - 05-23-2026\n\n## Focus\n- Debug API timeout\n\n## Log\n- Reviewed auth PR\n";
+## Focus
+- Debug API timeout
+
+## Log
+- Reviewed auth PR
+";
+
+const EXPECTED_DAILY_LOG_CONTENT: &str = r"# Daily Log - 05-23-2026
+
+## Focus
+- Debug API timeout
+
+## Log
+- Reviewed auth PR
+";
 
 const EXISTING_DAILY_LOG_CONTENT: &str = "existing daily log";
 
@@ -48,7 +60,9 @@ impl TestContext {
     }
 
     fn daily_log_file(&self) -> PathBuf {
-        let daily_log_file_name = get_daily_log_file_name(&test_log_date());
+        let log_date = test_log_date();
+
+        let daily_log_file_name = get_daily_log_file_name(&log_date);
 
         self.daily_log_directory().join(daily_log_file_name)
     }
@@ -82,13 +96,10 @@ fn write_daily_log_writes_the_work_file_into_the_daily_log_directory() {
 
     test_context.write_swelog_files();
 
-    write_daily_log_from_config(
-        &test_context.config,
-        &test_log_date(),
-        Overwrite::No,
-        KeepWorkFile::No,
-    )
-    .expect("daily log should be written");
+    let log_date = test_log_date();
+
+    write_daily_log_from_config(&test_context.config, &log_date, Overwrite::No, KeepWorkFile::No)
+        .expect("daily log should be written");
 
     let daily_log_content =
         fs::read_to_string(test_context.daily_log_file()).expect("daily log should be readable");
@@ -106,13 +117,10 @@ fn write_daily_log_does_not_require_a_context_file() {
 
     assert!(!test_context.swelog_paths().context_file.exists());
 
-    write_daily_log_from_config(
-        &test_context.config,
-        &test_log_date(),
-        Overwrite::No,
-        KeepWorkFile::No,
-    )
-    .expect("daily log should be written without a context file");
+    let log_date = test_log_date();
+
+    write_daily_log_from_config(&test_context.config, &log_date, Overwrite::No, KeepWorkFile::No)
+        .expect("daily log should be written without a context file");
 
     drop(test_context.temporary_directory);
 }
@@ -121,6 +129,8 @@ fn write_daily_log_does_not_require_a_context_file() {
 fn write_daily_log_fails_when_work_file_is_not_updated() {
     let test_context = get_test_context();
 
+    let log_date = test_log_date();
+
     test_context.write_swelog_files();
 
     fs::write(test_context.work_file(), DEFAULT_WORK_FILE_CONTENT)
@@ -128,7 +138,7 @@ fn write_daily_log_fails_when_work_file_is_not_updated() {
 
     let error = write_daily_log_from_config(
         &test_context.config,
-        &test_log_date(),
+        &log_date,
         Overwrite::No,
         KeepWorkFile::No,
     )
@@ -147,11 +157,13 @@ fn write_daily_log_fails_when_work_file_is_missing() {
 
     test_context.write_swelog_files();
 
+    let log_date = test_log_date();
+
     fs::remove_file(test_context.work_file()).expect("work file should be removed");
 
     let error = write_daily_log_from_config(
         &test_context.config,
-        &test_log_date(),
+        &log_date,
         Overwrite::No,
         KeepWorkFile::No,
     )
@@ -171,12 +183,14 @@ fn write_daily_log_fails_when_daily_log_directory_is_missing() {
 
     test_context.write_swelog_files();
 
+    let log_date = test_log_date();
+
     fs::remove_dir_all(test_context.daily_log_directory())
         .expect("daily log directory should be removed");
 
     let error = write_daily_log_from_config(
         &test_context.config,
-        &test_log_date(),
+        &log_date,
         Overwrite::No,
         KeepWorkFile::No,
     )
@@ -196,12 +210,14 @@ fn write_daily_log_fails_when_daily_log_exists_without_force() {
 
     test_context.write_swelog_files();
 
+    let log_date = test_log_date();
+
     fs::write(test_context.daily_log_file(), EXISTING_DAILY_LOG_CONTENT)
         .expect("existing daily log should be written");
 
     let error = write_daily_log_from_config(
         &test_context.config,
-        &test_log_date(),
+        &log_date,
         Overwrite::No,
         KeepWorkFile::No,
     )
@@ -227,16 +243,13 @@ fn write_daily_log_overwrites_existing_daily_log_with_force() {
 
     test_context.write_swelog_files();
 
+    let log_date = test_log_date();
+
     fs::write(test_context.daily_log_file(), EXISTING_DAILY_LOG_CONTENT)
         .expect("existing daily log should be written");
 
-    write_daily_log_from_config(
-        &test_context.config,
-        &test_log_date(),
-        Overwrite::Yes,
-        KeepWorkFile::No,
-    )
-    .expect("existing daily log should be overwritten with force");
+    write_daily_log_from_config(&test_context.config, &log_date, Overwrite::Yes, KeepWorkFile::No)
+        .expect("existing daily log should be overwritten with force");
 
     let daily_log_content =
         fs::read_to_string(test_context.daily_log_file()).expect("daily log should be readable");
@@ -250,15 +263,12 @@ fn write_daily_log_overwrites_existing_daily_log_with_force() {
 fn write_daily_log_resets_work_file_by_default() {
     let test_context = get_test_context();
 
+    let log_date = test_log_date();
+
     test_context.write_swelog_files();
 
-    write_daily_log_from_config(
-        &test_context.config,
-        &test_log_date(),
-        Overwrite::No,
-        KeepWorkFile::No,
-    )
-    .expect("daily log should be written");
+    write_daily_log_from_config(&test_context.config, &log_date, Overwrite::No, KeepWorkFile::No)
+        .expect("daily log should be written");
 
     let work_file_content =
         fs::read_to_string(test_context.work_file()).expect("work file should be readable");
@@ -274,13 +284,10 @@ fn write_daily_log_keeps_work_file_when_keep_is_set() {
 
     test_context.write_swelog_files();
 
-    write_daily_log_from_config(
-        &test_context.config,
-        &test_log_date(),
-        Overwrite::No,
-        KeepWorkFile::Yes,
-    )
-    .expect("daily log should be written");
+    let log_date = test_log_date();
+
+    write_daily_log_from_config(&test_context.config, &log_date, Overwrite::No, KeepWorkFile::Yes)
+        .expect("daily log should be written");
 
     let work_file_content =
         fs::read_to_string(test_context.work_file()).expect("work file should be readable");

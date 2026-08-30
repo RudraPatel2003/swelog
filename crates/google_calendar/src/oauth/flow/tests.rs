@@ -2,7 +2,7 @@ use super::*;
 
 const REDIRECT_URI: &str = "http://127.0.0.1:52341/callback";
 
-fn test_application() -> GoogleOAuthApplication {
+fn get_mock_application() -> GoogleOAuthApplication {
     GoogleOAuthApplication { client_id: "test-client-id", client_secret: "test-secret" }
 }
 
@@ -20,7 +20,9 @@ fn find_query_parameter(authorization_url: &Url, name: &str) -> Option<String> {
 
 #[test]
 fn build_authorization_url_targets_the_google_authorization_endpoint() {
-    let authorization_url = build_test_authorization_url(&test_application());
+    let application = get_mock_application();
+
+    let authorization_url = build_test_authorization_url(&application);
 
     assert_eq!(authorization_url.scheme(), "https");
     assert_eq!(authorization_url.host_str(), Some("accounts.google.com"));
@@ -29,7 +31,9 @@ fn build_authorization_url_targets_the_google_authorization_endpoint() {
 
 #[test]
 fn build_authorization_url_asks_for_an_authorization_code_with_pkce() {
-    let authorization_url = build_test_authorization_url(&test_application());
+    let application = get_mock_application();
+
+    let authorization_url = build_test_authorization_url(&application);
 
     assert_eq!(find_query_parameter(&authorization_url, "response_type"), Some("code".to_string()));
     assert_eq!(
@@ -45,7 +49,9 @@ fn build_authorization_url_asks_for_an_authorization_code_with_pkce() {
 
 #[test]
 fn build_authorization_url_asks_for_offline_access_so_a_refresh_token_is_returned() {
-    let authorization_url = build_test_authorization_url(&test_application());
+    let application = get_mock_application();
+
+    let authorization_url = build_test_authorization_url(&application);
 
     assert_eq!(
         find_query_parameter(&authorization_url, "access_type"),
@@ -56,7 +62,9 @@ fn build_authorization_url_asks_for_offline_access_so_a_refresh_token_is_returne
 
 #[test]
 fn build_authorization_url_asks_only_for_read_only_event_access() {
-    let authorization_url = build_test_authorization_url(&test_application());
+    let application = get_mock_application();
+
+    let authorization_url = build_test_authorization_url(&application);
 
     assert_eq!(
         find_query_parameter(&authorization_url, "scope"),
@@ -66,7 +74,9 @@ fn build_authorization_url_asks_only_for_read_only_event_access() {
 
 #[test]
 fn build_authorization_url_carries_the_loopback_redirect_uri() {
-    let authorization_url = build_test_authorization_url(&test_application());
+    let application = get_mock_application();
+
+    let authorization_url = build_test_authorization_url(&application);
 
     assert_eq!(
         find_query_parameter(&authorization_url, "redirect_uri"),
@@ -80,7 +90,9 @@ fn build_authorization_url_carries_the_loopback_redirect_uri() {
 
 #[test]
 fn build_authorization_url_never_carries_the_client_secret() {
-    let authorization_url = build_test_authorization_url(&test_application());
+    let application = get_mock_application();
+
+    let authorization_url = build_test_authorization_url(&application);
 
     assert!(find_query_parameter(&authorization_url, "client_secret").is_none());
 }

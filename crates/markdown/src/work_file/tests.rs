@@ -57,22 +57,38 @@ fn get_test_context() -> TestContext {
 fn upsert_work_file_section_writes_the_section_into_the_work_file() {
     let test_context = get_test_context();
 
-    test_context
-        .write_work_file("# Today's Work\n\n## Focus\n- Ship it\n\n## Log\n- Existing log\n");
+    let work_file_content = r"# Today's Work
+
+## Focus
+- Ship it
+
+## Log
+- Existing log
+";
+
+    test_context.write_work_file(work_file_content);
 
     upsert_work_file_section_from_config(&test_context.config, "Linear", LINEAR_SECTION_CONTENT)
         .expect("section should be upserted");
 
-    let work_file_content =
+    let updated_work_file_content =
         fs::read_to_string(test_context.work_file()).expect("work file should be readable");
 
-    assert_eq!(
-        work_file_content,
-        format!(
-            "# Today's Work\n\n## Focus\n- Ship it\n\n## \
-             Linear\n{LINEAR_SECTION_CONTENT}\n\n## Log\n- Existing log\n"
-        )
+    let expected_work_file_content = format!(
+        r"# Today's Work
+
+## Focus
+- Ship it
+
+## Linear
+{LINEAR_SECTION_CONTENT}
+
+## Log
+- Existing log
+"
     );
+
+    assert_eq!(updated_work_file_content, expected_work_file_content);
 
     drop(test_context.temporary_directory);
 }
@@ -81,16 +97,30 @@ fn upsert_work_file_section_writes_the_section_into_the_work_file() {
 fn remove_work_file_section_writes_the_updated_work_file() {
     let test_context = get_test_context();
 
-    test_context
-        .write_work_file("# Today's Work\n\n## Linear\n- Issue\n\n## Log\n- Existing log\n");
+    let work_file_content = r"# Today's Work
+
+## Linear
+- Issue
+
+## Log
+- Existing log
+";
+
+    test_context.write_work_file(work_file_content);
 
     remove_work_file_section_from_config(&test_context.config, "Linear")
         .expect("section should be removed");
 
-    let work_file_content =
+    let updated_work_file_content =
         fs::read_to_string(test_context.work_file()).expect("work file should be readable");
 
-    assert_eq!(work_file_content, "# Today's Work\n\n## Log\n- Existing log\n");
+    let expected_work_file_content = r"# Today's Work
+
+## Log
+- Existing log
+";
+
+    assert_eq!(updated_work_file_content, expected_work_file_content);
 
     drop(test_context.temporary_directory);
 }
@@ -119,18 +149,34 @@ fn upsert_work_file_section_fails_when_work_file_is_missing() {
 
 #[test]
 fn upsert_section_inserts_before_log() {
-    let markdown = "# Today's Work\n\n## Focus\n- Ship it\n\n## Log\n- Existing log\n";
+    let markdown = r"# Today's Work
 
-    let updated_markdown = upsert_section(
-        markdown,
-        "Linear",
-        "### In Progress\n- [ENG-123](https://linear.app/issue/ENG-123) Ship it",
-    );
+## Focus
+- Ship it
 
-    assert_eq!(
-        updated_markdown,
-        "# Today's Work\n\n## Focus\n- Ship it\n\n## Linear\n### In Progress\n- [ENG-123](https://linear.app/issue/ENG-123) Ship it\n\n## Log\n- Existing log\n"
-    );
+## Log
+- Existing log
+";
+
+    let new_section_content =
+        "### In Progress\n- [ENG-123](https://linear.app/issue/ENG-123) Ship it";
+
+    let updated_markdown = upsert_section(markdown, "Linear", new_section_content);
+
+    let expected_markdown = r"# Today's Work
+
+## Focus
+- Ship it
+
+## Linear
+### In Progress
+- [ENG-123](https://linear.app/issue/ENG-123) Ship it
+
+## Log
+- Existing log
+";
+
+    assert_eq!(updated_markdown, expected_markdown);
 }
 
 #[test]
@@ -139,54 +185,131 @@ fn upsert_section_appends_when_work_file_has_no_log_section() {
 
     let updated_markdown = upsert_section(markdown, "Linear", "- New");
 
-    assert_eq!(updated_markdown, "# Today's Work\n\n## Focus\n- Ship it\n\n## Linear\n- New\n");
+    let expected_markdown = r"# Today's Work
+
+## Focus
+- Ship it
+
+## Linear
+- New
+";
+
+    assert_eq!(updated_markdown, expected_markdown);
 }
 
 #[test]
 fn upsert_section_replaces_existing_section_content() {
-    let markdown = "# Today's Work\n\n## Linear\n- Old\n\n## Log\n";
+    let markdown = r"# Today's Work
+
+## Linear
+- Old
+
+## Log
+";
 
     let updated_markdown = upsert_section(markdown, "Linear", "- New");
 
-    assert_eq!(updated_markdown, "# Today's Work\n\n## Linear\n- New\n\n## Log\n");
+    let expected_markdown = r"# Today's Work
+
+## Linear
+- New
+
+## Log
+";
+
+    assert_eq!(updated_markdown, expected_markdown);
 }
 
 #[test]
 fn upsert_section_leaves_other_sections_untouched() {
-    let markdown = "# Today's Work\n\n## Linear\n- Old\n\n## GitHub\n- Merged a PR\n\n## Log\n- Existing log\n";
+    let markdown = r"# Today's Work
+
+## Linear
+- Old
+
+## GitHub
+- Merged a PR
+
+## Log
+- Existing log
+";
 
     let updated_markdown = upsert_section(markdown, "Linear", "- New");
 
-    assert_eq!(
-        updated_markdown,
-        "# Today's Work\n\n## Linear\n- New\n\n## GitHub\n- Merged a PR\n\n## Log\n- Existing log\n"
-    );
+    let expected_markdown = r"# Today's Work
+
+## Linear
+- New
+
+## GitHub
+- Merged a PR
+
+## Log
+- Existing log
+";
+
+    assert_eq!(updated_markdown, expected_markdown);
 }
 
 #[test]
 fn upsert_section_ignores_heading_in_code_block() {
-    let markdown = "# Today's Work\n\n```markdown\n## Linear\n```\n\n## Log\n";
+    let markdown = r"# Today's Work
+
+```markdown
+## Linear
+```
+
+## Log
+";
 
     let updated_markdown = upsert_section(markdown, "Linear", "- New");
 
-    assert_eq!(
-        updated_markdown,
-        "# Today's Work\n\n```markdown\n## Linear\n```\n\n## Linear\n- New\n\n## Log\n"
-    );
+    let expected_markdown = r"# Today's Work
+
+```markdown
+## Linear
+```
+
+## Linear
+- New
+
+## Log
+";
+
+    assert_eq!(updated_markdown, expected_markdown);
 }
 
 #[test]
 fn remove_section_removes_only_the_named_section() {
-    let markdown = "# Today's Work\n\n## Linear\n- Issue\n\n## Log\n- Existing log\n";
+    let markdown = r"# Today's Work
+
+## Linear
+- Issue
+
+## Log
+- Existing log
+";
 
     let updated_markdown = remove_section(markdown, "Linear");
 
-    assert_eq!(updated_markdown, "# Today's Work\n\n## Log\n- Existing log\n");
+    let expected_markdown = r"# Today's Work
+
+## Log
+- Existing log
+";
+
+    assert_eq!(updated_markdown, expected_markdown);
 }
 
 #[test]
 fn remove_section_leaves_markdown_unchanged_when_section_is_missing() {
-    let markdown = "# Today's Work\n\n## Focus\n- Ship it\n\n## Log\n";
+    let markdown = r"# Today's Work
+
+## Focus
+- Ship it
+
+## Log
+";
 
     let updated_markdown = remove_section(markdown, "Linear");
 
