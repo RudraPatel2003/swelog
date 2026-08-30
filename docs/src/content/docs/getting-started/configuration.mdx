@@ -9,20 +9,16 @@ inside `<obsidianVaultPath>/<swelogFolderName>`.
 
 ## Fields
 
-| Field                 | Required | Description                                                                                                         |
-| --------------------- | -------- | ------------------------------------------------------------------------------------------------------------------- |
-| `obsidianVaultPath`   | Yes      | Absolute path to the Obsidian vault. Commands fail until this is configured.                                        |
-| `swelogFolderName`    | Yes      | Folder created inside the vault for swelog files.                                                                   |
-| `workFileName`        | Yes      | Markdown file used to collect the current day's raw notes.                                                          |
-| `dailyLogFolderName`  | Yes      | Directory containing generated daily logs.                                                                          |
-| `weeklyLogFolderName` | Yes      | Directory containing generated weekly logs.                                                                         |
-| `llm`                 | No       | Summarization provider: `ollama`, `openAi`, `openRouter`, or `anthropic`. Set only when you use `swelog summarize`. |
-| `llmModel`            | No       | Model identifier interpreted by the configured provider. Set only when you use `swelog summarize`.                  |
-| `linearUsername`      | No       | Exact Linear assignee name used by `swelog fetch linear`. Omit when Linear is not used.                             |
-
-`swelog init` writes only the required fields. The optional ones are absent
-until you add them by hand, so a config that has never been edited works with
-`swelog log`, `swelog fetch`, and everything else that does not need a model.
+| Field                 | Required | Description                                                                                                                      |
+| --------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------|
+| `obsidianVaultPath`   | Yes      | Absolute path to the Obsidian vault.                                                                                             |
+| `swelogFolderName`    | Yes      | Folder created inside the vault for swelog files.                                                                                |
+| `workFileName`        | Yes      | Markdown file used to collect the current day's raw notes.                                                                       |
+| `dailyLogFolderName`  | Yes      | Directory containing generated daily logs.                                                                                       |
+| `weeklyLogFolderName` | Yes      | Directory containing generated weekly logs.                                                                                      |
+| `llm`                 | No       | The LLM provider you plan to use for summarization. See [supported providers](/summarization/providers/) for more information.   |
+| `llmModel`            | No       | The LLM model used for summarization. See [supported providers](/summarization/providers/) for more information.                 |
+| `linearUsername`      | No       | Exact Linear assignee name used by `swelog fetch linear`.                                                                        |
 
 ## Viewing the current configuration
 
@@ -31,9 +27,3 @@ Display the current configuration and its location:
 ```sh
 swelog config
 ```
-
-## Credentials
-
-Never store API keys or tokens in `swelog.json`. Swelog keeps every credential
-in your operating system's credential store — see
-[Authentication](/reference/authentication/).
