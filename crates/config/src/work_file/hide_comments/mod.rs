@@ -15,6 +15,7 @@ use miette::{
 use crate::errors::UnavailableCacheDirectory;
 
 const APP_NAME: &str = "swelog";
+
 const HIDE_COMMENTS_FLAG_FILE_NAME: &str = "hide-comments";
 
 pub fn set_hide_comments_flag() -> Result<()> {

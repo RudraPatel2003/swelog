@@ -85,7 +85,9 @@ async fn connect_to_linear_mcp() -> Result<RunningService<RoleClient, ()>> {
 
     loop {
         let authorization_manager = get_authorization_manager().await?;
+
         let authorized_client = AuthClient::new(Client::new(), authorization_manager);
+
         let transport = StreamableHttpClientTransport::with_client(
             authorized_client,
             StreamableHttpClientTransportConfig::with_uri(LINEAR_MCP_URL),
@@ -122,6 +124,7 @@ async fn fetch_all_issues(
     updated_after: Option<&str>,
 ) -> Result<Vec<LinearIssue>> {
     let mut issues = Vec::new();
+
     let mut cursor: Option<String> = None;
 
     loop {
@@ -171,8 +174,11 @@ fn list_issues_arguments(
     let issue_fields_argument = get_issue_fields_argument();
 
     arguments.insert("assignee".to_string(), Value::String(username.to_string()));
+
     arguments.insert("includeArchived".to_string(), Value::Bool(false));
+
     arguments.insert("limit".to_string(), Value::Number(PAGE_SIZE.into()));
+
     arguments.insert("fields".to_string(), issue_fields_argument);
 
     if let Some(cursor) = cursor {

@@ -25,6 +25,7 @@ use serde::{
 use crate::errors::UnavailableCacheDirectory;
 
 const APP_NAME: &str = "swelog";
+
 const VERSION_CACHE_FILE_NAME: &str = "version-check.json";
 
 const VERSION_CHECK_INTERVAL: TimeDelta = TimeDelta::days(1);

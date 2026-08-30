@@ -7,6 +7,7 @@ use crate::client::structs::{
 const UNTITLED_EVENT_TITLE: &str = "(No title)";
 
 const CANCELLED_STATUS: &str = "cancelled";
+
 const DECLINED_RESPONSE_STATUS: &str = "declined";
 
 pub fn collect_meetings(events: &[CalendarEvent]) -> Vec<Meeting> {
@@ -15,6 +16,7 @@ pub fn collect_meetings(events: &[CalendarEvent]) -> Vec<Meeting> {
 
 fn to_timed_meeting(event: &CalendarEvent) -> Option<Meeting> {
     let start = event.start.as_ref().and_then(|start| start.date_time)?;
+
     let end = event.end.as_ref().and_then(|end| end.date_time)?;
 
     Some(Meeting {
@@ -56,7 +58,6 @@ fn get_event_title_or_placeholder(event: &CalendarEvent) -> String {
 }
 
 fn collapse_whitespace(text: &str) -> String {
-    // If the title has line breaks, collapse them down
     text.split_whitespace().collect::<Vec<_>>().join(" ")
 }
 

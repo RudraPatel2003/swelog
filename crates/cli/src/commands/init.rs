@@ -1,9 +1,9 @@
 use clap::Args;
 use config::{
+    config_file::get_config_file_path,
     init::write_default_config,
     overwrite::Overwrite,
     swelog_config::SwelogConfig,
-    utils::get_config_file_path,
 };
 use miette::Result;
 use owo_colors::OwoColorize;

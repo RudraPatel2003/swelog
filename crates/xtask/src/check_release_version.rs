@@ -6,12 +6,16 @@ use miette::{
 };
 use serde_json::Value;
 
-use crate::utils::{
-    get_release_tag_from_args,
-    get_release_version_from_tag,
-    get_rust_cli_version,
-    read_docs_package_json,
-    read_npm_package_json,
+use crate::{
+    cargo_version::get_rust_cli_version,
+    package_json::{
+        read_docs_package_json,
+        read_npm_package_json,
+    },
+    release_tag::{
+        get_release_tag_from_args,
+        get_release_version_from_tag,
+    },
 };
 
 pub fn run_check_release_version(mut args: Args) -> Result<()> {

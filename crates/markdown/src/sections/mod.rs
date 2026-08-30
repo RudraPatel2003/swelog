@@ -49,6 +49,7 @@ pub fn find_section_bounds(markdown: &str, section_title: &str) -> Option<Range<
 #[must_use]
 pub fn replace_block(markdown: &str, range: Range<usize>, block: &str) -> String {
     let prefix = slice_up_to(markdown, range.start).trim_end_matches('\n');
+
     let suffix = slice_from(markdown, range.end).trim_start_matches('\n');
 
     match (prefix.is_empty(), suffix.is_empty()) {
@@ -62,6 +63,7 @@ pub fn replace_block(markdown: &str, range: Range<usize>, block: &str) -> String
 #[must_use]
 pub fn remove_block(markdown: &str, range: Range<usize>) -> String {
     let prefix = slice_up_to(markdown, range.start).trim_end_matches('\n');
+
     let suffix = slice_from(markdown, range.end).trim_start_matches('\n');
 
     match (prefix.is_empty(), suffix.is_empty()) {
@@ -74,6 +76,7 @@ pub fn remove_block(markdown: &str, range: Range<usize>) -> String {
 
 fn collect_headings(markdown: &str) -> Vec<Heading> {
     let mut headings = Vec::new();
+
     let mut current_heading: Option<Heading> = None;
 
     for (event, range) in Parser::new(markdown).into_offset_iter() {
@@ -81,17 +84,21 @@ fn collect_headings(markdown: &str) -> Vec<Heading> {
             Event::Start(Tag::Heading { level, .. }) => {
                 current_heading = Some(Heading { level, title: String::new(), range });
             }
+
             Event::Text(text) | Event::Code(text) => {
                 if let Some(heading) = &mut current_heading {
                     heading.title.push_str(&text);
                 }
             }
+
             Event::End(TagEnd::Heading(_)) => {
                 if let Some(mut heading) = current_heading.take() {
                     heading.range.end = range.end;
+
                     headings.push(heading);
                 }
             }
+
             _ => {}
         }
     }

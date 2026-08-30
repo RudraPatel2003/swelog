@@ -1,8 +1,8 @@
 use clap::Args;
 use config::{
+    config_file::read_config_file,
     overwrite::Overwrite,
     setup::setup_swelog_files_from_config,
-    utils::read_config_file,
 };
 use miette::Result;
 use owo_colors::OwoColorize;

@@ -5,7 +5,7 @@ use chrono::{
     NaiveDate,
 };
 use clap::Args;
-use config::utils::read_config_file;
+use config::config_file::read_config_file;
 use credentials::{
     credential::Credential,
     resolution::get_or_prompt_for_credential,

@@ -109,7 +109,9 @@ fn write_default_config_omits_optional_fields() {
         fs::read_to_string(&config_file_path).expect("config file should be readable");
 
     assert!(!file_contents.contains("llm"));
+
     assert!(!file_contents.contains("llmModel"));
+
     assert!(!file_contents.contains("linearUsername"));
 
     drop(temporary_directory);

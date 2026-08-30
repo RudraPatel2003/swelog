@@ -6,7 +6,7 @@ use config::{
         swelog_paths::SwelogPaths,
     },
     swelog_config::SwelogConfig,
-    utils::ensure_swelog_file_exists,
+    swelog_file_existence::ensure_swelog_file_exists,
     work_file::{
         create_or_reset_work_file,
         hide_comments::set_hide_comments_flag,

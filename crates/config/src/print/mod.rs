@@ -2,15 +2,26 @@ use miette::Result;
 use owo_colors::OwoColorize;
 
 use crate::{
+    config_file::get_config_file_path,
     swelog_config::{
         LanguageModelProvider,
         SwelogConfig,
     },
-    utils::get_config_file_path,
 };
 
 const LABEL_WIDTH: usize = 21;
+
 const NOT_CONFIGURED: &str = "Not configured";
+
+struct ConfigSection {
+    title: &'static str,
+    rows: Vec<ConfigRow>,
+}
+
+struct ConfigRow {
+    label: &'static str,
+    value: String,
+}
 
 pub fn print_config(config: &SwelogConfig) -> Result<()> {
     let config_file_path = get_config_file_path()?;
@@ -18,48 +29,81 @@ pub fn print_config(config: &SwelogConfig) -> Result<()> {
     let formatted_config = format_config(config);
 
     println!("Displaying config at {}:", config_file_path.display().cyan());
+
     println!();
+
     print!("{formatted_config}");
 
     Ok(())
 }
 
 fn format_config(config: &SwelogConfig) -> String {
-    let mut output = String::new();
+    let sections = collect_config_sections(config);
 
-    output.push_str("Vault\n");
-    output.push_str(&format_row(
-        "Obsidian vault path",
-        &config.obsidian_vault_path.display().to_string(),
-    ));
-    output.push_str(&format_row("Swelog folder name", &config.swelog_folder_name));
-    output.push('\n');
+    sections.iter().map(format_config_section).collect::<Vec<_>>().join("\n")
+}
 
-    output.push_str("Files\n");
-    output.push_str(&format_row("Work file", &config.work_file_name));
-    output.push('\n');
+fn collect_config_sections(config: &SwelogConfig) -> Vec<ConfigSection> {
+    vec![
+        ConfigSection {
+            title: "Vault",
+            rows: vec![
+                ConfigRow {
+                    label: "Obsidian vault path",
+                    value: config.obsidian_vault_path.display().to_string(),
+                },
+                ConfigRow { label: "Swelog folder name", value: config.swelog_folder_name.clone() },
+            ],
+        },
+        ConfigSection {
+            title: "Files",
+            rows: vec![ConfigRow { label: "Work file", value: config.work_file_name.clone() }],
+        },
+        ConfigSection {
+            title: "Logs",
+            rows: vec![
+                ConfigRow {
+                    label: "Daily log folder",
+                    value: config.daily_log_folder_name.clone(),
+                },
+                ConfigRow {
+                    label: "Weekly log folder",
+                    value: config.weekly_log_folder_name.clone(),
+                },
+            ],
+        },
+        ConfigSection {
+            title: "Summarization",
+            rows: vec![
+                ConfigRow {
+                    label: "Provider",
+                    value: format_language_model_provider(config.language_model_provider)
+                        .to_string(),
+                },
+                ConfigRow {
+                    label: "Model",
+                    value: config.language_model.as_deref().unwrap_or(NOT_CONFIGURED).to_string(),
+                },
+            ],
+        },
+        ConfigSection {
+            title: "Integrations",
+            rows: vec![ConfigRow {
+                label: "Linear username",
+                value: config.linear_username.as_deref().unwrap_or(NOT_CONFIGURED).to_string(),
+            }],
+        },
+    ]
+}
 
-    output.push_str("Logs\n");
-    output.push_str(&format_row("Daily log folder", &config.daily_log_folder_name));
-    output.push_str(&format_row("Weekly log folder", &config.weekly_log_folder_name));
-    output.push('\n');
+fn format_config_section(section: &ConfigSection) -> String {
+    let formatted_rows = section.rows.iter().map(format_config_row).collect::<String>();
 
-    output.push_str("Summarization\n");
-    output.push_str(&format_row(
-        "Provider",
-        format_language_model_provider(config.language_model_provider),
-    ));
-    output
-        .push_str(&format_row("Model", config.language_model.as_deref().unwrap_or(NOT_CONFIGURED)));
-    output.push('\n');
+    format!("{}\n{formatted_rows}", section.title)
+}
 
-    output.push_str("Integrations\n");
-    output.push_str(&format_row(
-        "Linear username",
-        config.linear_username.as_deref().unwrap_or(NOT_CONFIGURED),
-    ));
-
-    output
+fn format_config_row(row: &ConfigRow) -> String {
+    format!("  {:<LABEL_WIDTH$}{}\n", row.label, row.value)
 }
 
 const fn format_language_model_provider(
@@ -69,10 +113,6 @@ const fn format_language_model_provider(
         Some(language_model_provider) => language_model_provider.label(),
         None => NOT_CONFIGURED,
     }
-}
-
-fn format_row(label: &str, value: &str) -> String {
-    format!("  {label:<LABEL_WIDTH$}{value}\n")
 }
 
 #[cfg(test)]

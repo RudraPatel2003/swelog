@@ -42,8 +42,11 @@ pub async fn exchange_authorization_code(
     let mut form = get_client_form_fields(application);
 
     form.push(("grant_type", "authorization_code".to_string()));
+
     form.push(("code", authorization_code.to_string()));
+
     form.push(("code_verifier", pkce_verifier.secret().clone()));
+
     form.push(("redirect_uri", redirect_uri.to_string()));
 
     let TokenRequestOutcome::Succeeded(response_text) = post_token_request(&form).await? else {
@@ -70,6 +73,7 @@ pub async fn refresh_access_token(
     let mut form = get_client_form_fields(application);
 
     form.push(("grant_type", "refresh_token".to_string()));
+
     form.push(("refresh_token", refresh_token.to_string()));
 
     let TokenRequestOutcome::Succeeded(response_text) = post_token_request(&form).await? else {

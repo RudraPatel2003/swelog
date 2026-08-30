@@ -31,6 +31,7 @@ use crate::{
 };
 
 const MERGED_PRS_API_URL: &str = "https://api.github.com/search/issues";
+
 const OPENED_PRS_API_URL: &str = "https://api.github.com/search/issues";
 
 pub async fn get_merged_prs(
@@ -45,7 +46,9 @@ pub async fn get_merged_prs(
     let mut query_parameters = HashMap::new();
 
     query_parameters.insert("q", search_query);
+
     query_parameters.insert("sort", String::from("updated"));
+
     query_parameters.insert("order", String::from("desc"));
 
     let response = client
@@ -78,7 +81,9 @@ pub async fn get_opened_prs(
     let mut query_parameters = HashMap::new();
 
     query_parameters.insert("q", search_query);
+
     query_parameters.insert("sort", String::from("updated"));
+
     query_parameters.insert("order", String::from("desc"));
 
     let response = client

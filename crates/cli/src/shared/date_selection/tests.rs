@@ -7,6 +7,7 @@ fn get_mock_date(year: i32, month: u32, day: u32) -> NaiveDate {
 #[test]
 fn selected_date_is_the_supplied_date_when_a_date_is_given() {
     let supplied_date = get_mock_date(2026, 8, 17);
+
     let today = get_mock_date(2026, 8, 21);
 
     let selected_date = resolve_selected_date(DateSelection::On(supplied_date), today)
@@ -76,6 +77,7 @@ fn yesterday_resolves_to_a_leap_day() {
 #[test]
 fn monday_date_is_the_supplied_monday_when_one_is_given() {
     let supplied_monday = get_mock_date(2026, 8, 17);
+
     let today = get_mock_date(2026, 8, 21);
 
     let monday_date = resolve_monday_date(WeekSelection::WeekOf(supplied_monday), today)
@@ -154,7 +156,9 @@ fn date_flags_map_to_the_day_they_stand_for() {
     let date = get_mock_date(2026, 8, 17);
 
     assert_eq!(DateSelection::from_date_flags(None, false), DateSelection::Unspecified);
+
     assert_eq!(DateSelection::from_date_flags(None, true), DateSelection::Yesterday);
+
     assert_eq!(DateSelection::from_date_flags(Some(date), false), DateSelection::On(date));
 }
 
@@ -163,7 +167,9 @@ fn week_flags_map_to_the_week_they_stand_for() {
     let monday_date = get_mock_date(2026, 8, 17);
 
     assert_eq!(WeekSelection::from_week_flags(None, false), WeekSelection::Current);
+
     assert_eq!(WeekSelection::from_week_flags(None, true), WeekSelection::LastWeek);
+
     assert_eq!(
         WeekSelection::from_week_flags(Some(monday_date), false),
         WeekSelection::WeekOf(monday_date)

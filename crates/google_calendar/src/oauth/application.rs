@@ -3,6 +3,7 @@ use miette::Result;
 use crate::errors::GoogleOAuthApplicationMissing;
 
 const COMPILED_IN_CLIENT_ID: Option<&str> = option_env!("SWELOG_GOOGLE_CLIENT_ID");
+
 const COMPILED_IN_CLIENT_SECRET: Option<&str> = option_env!("SWELOG_GOOGLE_CLIENT_SECRET");
 
 // The secret is not a secret

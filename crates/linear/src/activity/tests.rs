@@ -191,6 +191,7 @@ fn is_issue_active_or_finished_today_keeps_an_unfinished_issue() {
 #[test]
 fn is_issue_active_or_finished_today_keeps_an_issue_completed_today() {
     let completed_at = get_mock_instant(2026, 8, 17, 16, 0);
+
     let timestamps = LinearIssueTimestamps {
         completed_at: Some(completed_at),
         ..LinearIssueTimestamps::default()
@@ -208,6 +209,7 @@ fn is_issue_active_or_finished_today_keeps_an_issue_completed_today() {
 #[test]
 fn is_issue_active_or_finished_today_keeps_an_issue_canceled_today() {
     let canceled_at = get_mock_instant(2026, 8, 17, 16, 0);
+
     let timestamps = LinearIssueTimestamps {
         canceled_at: Some(canceled_at),
         ..LinearIssueTimestamps::default()
@@ -225,6 +227,7 @@ fn is_issue_active_or_finished_today_keeps_an_issue_canceled_today() {
 #[test]
 fn is_issue_active_or_finished_today_ignores_an_issue_completed_on_an_earlier_day() {
     let completed_at = get_mock_instant(2026, 8, 10, 16, 0);
+
     let timestamps = LinearIssueTimestamps {
         completed_at: Some(completed_at),
         ..LinearIssueTimestamps::default()
@@ -275,6 +278,7 @@ fn is_issue_active_or_finished_today_ignores_a_finished_issue_without_timestamps
 #[test]
 fn is_issue_active_or_finished_today_reads_timestamps_in_the_supplied_time_zone() {
     let completed_at = get_mock_instant(2026, 8, 17, 23, 30);
+
     let timestamps = LinearIssueTimestamps {
         completed_at: Some(completed_at),
         ..LinearIssueTimestamps::default()

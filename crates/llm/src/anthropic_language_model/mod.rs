@@ -25,9 +25,13 @@ use structs::{
 use crate::language_model::LanguageModel;
 
 const ANTHROPIC_MESSAGES_URL: &str = "https://api.anthropic.com/v1/messages";
+
 const ANTHROPIC_VERSION_HEADER: &str = "anthropic-version";
+
 const ANTHROPIC_VERSION: &str = "2023-06-01";
+
 const ANTHROPIC_API_KEY_HEADER: &str = "x-api-key";
+
 const USER_ROLE: &str = "user";
 
 // The Messages API requires max_tokens on every request and has no default.

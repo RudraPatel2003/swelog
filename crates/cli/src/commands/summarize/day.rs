@@ -1,9 +1,9 @@
 use chrono::Local;
 use clap::Args;
 use config::{
+    config_file::read_config_file,
     context_file::get_context_file_content,
     setup::swelog_paths::SwelogPaths,
-    utils::read_config_file,
 };
 use daily_log::file::get_daily_log_file_name;
 use llm::{

@@ -51,6 +51,7 @@ const ISSUES_SHARING_A_STATUS: &str = r"### In Progress
 #[test]
 fn format_linear_issues_groups_issues_sharing_a_status() {
     let first_issue = get_mock_issue("ENG-1", "First", "In Progress", LinearStatusType::Started);
+
     let second_issue = get_mock_issue("ENG-2", "Second", "In Progress", LinearStatusType::Started);
 
     let issues = vec![first_issue, second_issue];

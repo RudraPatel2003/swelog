@@ -13,7 +13,7 @@ use config::{
         swelog_paths::SwelogPaths,
     },
     swelog_config::SwelogConfig,
-    utils::{
+    swelog_file_existence::{
         ensure_swelog_directory_exists,
         ensure_swelog_file_exists,
     },
@@ -46,7 +46,9 @@ pub async fn summarize_weekly_work_from_config(
     let swelog_paths = SwelogPaths::new(swelog_config);
 
     ensure_swelog_file_exists(&swelog_paths.work_file)?;
+
     ensure_swelog_directory_exists(&swelog_paths.daily_log_directory)?;
+
     ensure_swelog_directory_exists(&swelog_paths.weekly_log_directory)?;
 
     let weekly_log_file_name = get_weekly_log_file_name(monday_date);
@@ -106,7 +108,9 @@ fn collect_weekday_daily_logs(
         let daily_log_date = monday_date
             .checked_add_signed(Duration::days(day_offset))
             .ok_or(WeekdayDateOutOfRange { monday_date })?;
+
         let daily_log_file_name = get_daily_log_file_name(&daily_log_date);
+
         let daily_log_file = swelog_paths.daily_log_directory.join(daily_log_file_name);
 
         if !daily_log_file.exists() {

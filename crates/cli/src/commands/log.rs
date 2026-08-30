@@ -1,6 +1,6 @@
 use chrono::Local;
 use clap::Args;
-use config::utils::read_config_file;
+use config::config_file::read_config_file;
 use daily_log::{
     file::get_daily_log_file_name,
     write::write_daily_log_from_config,

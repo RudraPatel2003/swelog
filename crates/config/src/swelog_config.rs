@@ -6,9 +6,13 @@ use serde::{
 };
 
 const DEFAULT_OBSIDIAN_VAULT_PATH: &str = "";
+
 pub const DEFAULT_SWELOG_FOLDER_NAME: &str = "swelog";
+
 pub const DEFAULT_DAILY_LOG_FOLDER_NAME: &str = "Daily";
+
 pub const DEFAULT_WEEKLY_LOG_FOLDER_NAME: &str = "Weekly";
+
 pub const DEFAULT_WORK_FILE_NAME: &str = "WORK.md";
 
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq)]

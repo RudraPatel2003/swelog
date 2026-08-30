@@ -57,6 +57,7 @@ pub async fn get_primary_calendar_meetings_on_date(date: &NaiveDate) -> Result<V
 
 async fn fetch_all_events(day_window: &DayWindow) -> Result<Vec<CalendarEvent>> {
     let mut events = Vec::new();
+
     let mut page_token: Option<String> = None;
 
     loop {

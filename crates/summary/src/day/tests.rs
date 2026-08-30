@@ -128,8 +128,11 @@ async fn summarize_daily_work_writes_generated_daily_log() {
         fs::read_to_string(test_context.daily_log_file()).expect("daily log should be readable");
 
     assert!(daily_log_content.starts_with("generated from prompt:\n"));
+
     assert!(daily_log_content.contains(WORK_FILE_CONTENT));
+
     assert!(daily_log_content.contains(CONTEXT_FILE_CONTENT));
+
     assert!(
         daily_log_content.contains(&format!("## Original Notes\n\n{DEMOTED_WORK_FILE_CONTENT}\n"))
     );
@@ -160,6 +163,7 @@ async fn summarize_daily_work_prompts_without_context_when_none_is_given() {
         fs::read_to_string(test_context.daily_log_file()).expect("daily log should be readable");
 
     assert!(daily_log_content.contains("no context given"));
+
     assert!(!daily_log_content.contains(CONTEXT_FILE_CONTENT));
 
     drop(test_context.temporary_directory);
@@ -286,6 +290,7 @@ async fn summarize_daily_work_overwrites_existing_daily_log_with_force() {
         fs::read_to_string(test_context.daily_log_file()).expect("daily log should be readable");
 
     assert_ne!(daily_log_content, EXISTING_DAILY_LOG_CONTENT);
+
     assert!(daily_log_content.contains(WORK_FILE_CONTENT));
 
     drop(test_context.temporary_directory);
@@ -319,6 +324,7 @@ async fn summarize_daily_work_resets_work_file_by_default() {
         fs::read_to_string(test_context.daily_log_file()).expect("daily log should be readable");
 
     assert!(daily_log_content.contains("## Original Notes"));
+
     assert!(daily_log_content.contains(DEMOTED_WORK_FILE_CONTENT));
 
     drop(test_context.temporary_directory);

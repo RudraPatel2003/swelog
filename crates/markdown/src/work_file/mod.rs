@@ -6,7 +6,7 @@ use std::{
 use config::{
     setup::swelog_paths::SwelogPaths,
     swelog_config::SwelogConfig,
-    utils::ensure_swelog_file_exists,
+    swelog_file_existence::ensure_swelog_file_exists,
 };
 use miette::{
     IntoDiagnostic,
