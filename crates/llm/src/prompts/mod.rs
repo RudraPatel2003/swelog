@@ -1,13 +1,17 @@
 use chrono::NaiveDate;
 use dates::formatting::format_date;
 
+const NO_CONTEXT_GIVEN: &str = "no context given";
+
 #[must_use]
 pub fn get_daily_log_prompt(
     work_file_content: &str,
-    context_file_content: &str,
+    context_file_content: Option<&str>,
     log_date: &NaiveDate,
 ) -> String {
     let formatted_date = format_date(log_date);
+
+    let context_file_content = context_file_content.unwrap_or(NO_CONTEXT_GIVEN);
 
     format!(
         r#"
@@ -63,10 +67,12 @@ context file content:
 #[must_use]
 pub fn get_weekly_log_prompt(
     daily_logs: &[String],
-    context_file_content: &str,
+    context_file_content: Option<&str>,
     log_date: &NaiveDate,
 ) -> String {
     let formatted_date = format_date(log_date);
+
+    let context_file_content = context_file_content.unwrap_or(NO_CONTEXT_GIVEN);
 
     let combined_daily_logs = daily_logs.join("\n\n--- DAILY LOG ---\n\n");
 
@@ -118,3 +124,6 @@ context file content:
 "#
     )
 }
+
+#[cfg(test)]
+mod tests;

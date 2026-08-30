@@ -34,6 +34,7 @@
     "knip": "^6.32.2",
     "prettier": "^3.9.6",
     "prettier-plugin-astro": "^0.14.1",
+    "starlight-links-validator": "^0.25.3",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.67.0"
   }

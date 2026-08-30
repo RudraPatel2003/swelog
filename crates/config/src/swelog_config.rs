@@ -10,9 +10,8 @@ pub const DEFAULT_SWELOG_FOLDER_NAME: &str = "swelog";
 pub const DEFAULT_DAILY_LOG_FOLDER_NAME: &str = "Daily";
 pub const DEFAULT_WEEKLY_LOG_FOLDER_NAME: &str = "Weekly";
 pub const DEFAULT_WORK_FILE_NAME: &str = "WORK.md";
-pub const DEFAULT_CONTEXT_FILE_NAME: &str = "CONTEXT.md";
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub enum LanguageModelProvider {
     Anthropic,
@@ -21,13 +20,24 @@ pub enum LanguageModelProvider {
     OpenRouter,
 }
 
+impl LanguageModelProvider {
+    #[must_use]
+    pub const fn label(self) -> &'static str {
+        match self {
+            Self::Anthropic => "Anthropic",
+            Self::Ollama => "Ollama",
+            Self::OpenAi => "OpenAI",
+            Self::OpenRouter => "OpenRouter",
+        }
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct SwelogConfig {
     pub obsidian_vault_path: PathBuf,
     pub swelog_folder_name: String,
     pub work_file_name: String,
-    pub context_file_name: String,
     pub daily_log_folder_name: String,
     pub weekly_log_folder_name: String,
 
@@ -48,7 +58,6 @@ impl SwelogConfig {
             obsidian_vault_path: PathBuf::from(DEFAULT_OBSIDIAN_VAULT_PATH),
             swelog_folder_name: String::from(DEFAULT_SWELOG_FOLDER_NAME),
             work_file_name: String::from(DEFAULT_WORK_FILE_NAME),
-            context_file_name: String::from(DEFAULT_CONTEXT_FILE_NAME),
             daily_log_folder_name: String::from(DEFAULT_DAILY_LOG_FOLDER_NAME),
             weekly_log_folder_name: String::from(DEFAULT_WEEKLY_LOG_FOLDER_NAME),
             language_model_provider: None,

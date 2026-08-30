@@ -52,10 +52,6 @@ impl TestContext {
         SwelogPaths::new(&self.config)
     }
 
-    fn context_file(&self) -> PathBuf {
-        self.swelog_paths().context_file
-    }
-
     fn work_file(&self) -> PathBuf {
         self.swelog_paths().work_file
     }
@@ -86,9 +82,6 @@ impl TestContext {
 
         fs::create_dir_all(self.weekly_log_directory())
             .expect("weekly log directory should be created");
-
-        fs::write(self.context_file(), CONTEXT_FILE_CONTENT)
-            .expect("context file should be written");
 
         fs::write(self.work_file(), DEFAULT_WORK_FILE_CONTENT)
             .expect("work file should be written");
@@ -142,6 +135,7 @@ async fn summarize_weekly_work_writes_generated_weekly_log() {
         &test_context.config,
         &FakeLanguageModel,
         &test_monday_date(),
+        Some(CONTEXT_FILE_CONTENT),
         Overwrite::No,
     )
     .await
@@ -169,6 +163,7 @@ async fn summarize_weekly_work_skips_missing_weekday_logs() {
         &test_context.config,
         &FakeLanguageModel,
         &test_monday_date(),
+        Some(CONTEXT_FILE_CONTENT),
         Overwrite::No,
     )
     .await
@@ -194,6 +189,7 @@ async fn summarize_weekly_work_fails_when_no_daily_logs_exist() {
         &test_context.config,
         &FakeLanguageModel,
         &test_monday_date(),
+        Some(CONTEXT_FILE_CONTENT),
         Overwrite::No,
     )
     .await
@@ -207,27 +203,27 @@ async fn summarize_weekly_work_fails_when_no_daily_logs_exist() {
 }
 
 #[tokio::test]
-async fn summarize_weekly_work_fails_when_context_file_is_missing() {
+async fn summarize_weekly_work_prompts_without_context_when_none_is_given() {
     let test_context = get_test_context();
 
     test_context.write_swelog_files();
     test_context.write_daily_log(test_monday_date(), MONDAY_DAILY_LOG_CONTENT);
 
-    fs::remove_file(test_context.context_file()).expect("context file should be removed");
-
-    let error = summarize_weekly_work_from_config(
+    summarize_weekly_work_from_config(
         &test_context.config,
         &FakeLanguageModel,
         &test_monday_date(),
+        None,
         Overwrite::No,
     )
     .await
-    .expect_err("missing context file should fail");
+    .expect("weekly log should be written without context");
 
-    let error =
-        error.downcast_ref::<SwelogFileNotFound>().expect("error should be SwelogFileNotFound");
+    let weekly_log_content =
+        fs::read_to_string(test_context.weekly_log_file()).expect("weekly log should be readable");
 
-    assert_eq!(error.swelog_path, test_context.context_file());
+    assert!(weekly_log_content.contains("no context given"));
+    assert!(!weekly_log_content.contains(CONTEXT_FILE_CONTENT));
 
     drop(test_context.temporary_directory);
 }
@@ -245,6 +241,7 @@ async fn summarize_weekly_work_fails_when_work_file_is_missing() {
         &test_context.config,
         &FakeLanguageModel,
         &test_monday_date(),
+        Some(CONTEXT_FILE_CONTENT),
         Overwrite::No,
     )
     .await
@@ -271,6 +268,7 @@ async fn summarize_weekly_work_fails_when_daily_log_directory_is_missing() {
         &test_context.config,
         &FakeLanguageModel,
         &test_monday_date(),
+        Some(CONTEXT_FILE_CONTENT),
         Overwrite::No,
     )
     .await
@@ -298,6 +296,7 @@ async fn summarize_weekly_work_fails_when_weekly_log_directory_is_missing() {
         &test_context.config,
         &FakeLanguageModel,
         &test_monday_date(),
+        Some(CONTEXT_FILE_CONTENT),
         Overwrite::No,
     )
     .await
@@ -325,6 +324,7 @@ async fn summarize_weekly_work_fails_when_weekly_log_exists_without_force() {
         &test_context.config,
         &FakeLanguageModel,
         &test_monday_date(),
+        Some(CONTEXT_FILE_CONTENT),
         Overwrite::No,
     )
     .await
@@ -358,6 +358,7 @@ async fn summarize_weekly_work_overwrites_existing_weekly_log_with_force() {
         &test_context.config,
         &FakeLanguageModel,
         &test_monday_date(),
+        Some(CONTEXT_FILE_CONTENT),
         Overwrite::Yes,
     )
     .await
@@ -384,6 +385,7 @@ async fn summarize_weekly_work_fails_when_work_file_is_not_default() {
         &test_context.config,
         &FakeLanguageModel,
         &test_monday_date(),
+        Some(CONTEXT_FILE_CONTENT),
         Overwrite::No,
     )
     .await

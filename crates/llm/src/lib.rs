@@ -6,3 +6,4 @@ pub mod ollama_language_model;
 pub mod open_ai_language_model;
 pub mod open_router_language_model;
 pub mod prompts;
+pub mod summarization_settings;

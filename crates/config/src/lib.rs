@@ -1,3 +1,4 @@
+pub mod context_file;
 pub mod errors;
 pub mod init;
 pub mod overwrite;

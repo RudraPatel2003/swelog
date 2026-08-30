@@ -55,6 +55,8 @@ impl GithubArgs {
 
         let activity_date = resolve_selected_date(date_selection, today)?.unwrap_or(today);
 
+        println!("Fetching GitHub PRs...");
+
         let (opened_prs, merged_prs) = tokio::try_join!(
             get_opened_prs(&github_token, &github_username, &activity_date),
             get_merged_prs(&github_token, &github_username, &activity_date),

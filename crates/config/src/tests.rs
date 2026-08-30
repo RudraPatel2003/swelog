@@ -7,7 +7,6 @@ const CONFIG_WITHOUT_OPTIONAL_FIELDS: &str = r#"{
   "obsidianVaultPath": "/home/user/vault",
   "swelogFolderName": "swelog",
   "workFileName": "WORK.md",
-  "contextFileName": "CONTEXT.md",
   "dailyLogFolderName": "Daily",
   "weeklyLogFolderName": "Weekly"
 }"#;
@@ -28,7 +27,6 @@ fn swelog_config_deserializes_summarization_fields_when_present() {
   "obsidianVaultPath": "/home/user/vault",
   "swelogFolderName": "swelog",
   "workFileName": "WORK.md",
-  "contextFileName": "CONTEXT.md",
   "dailyLogFolderName": "Daily",
   "weeklyLogFolderName": "Weekly",
   "llm": "openRouter",

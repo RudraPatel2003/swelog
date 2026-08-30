@@ -40,11 +40,11 @@ pub async fn summarize_weekly_work_from_config(
     swelog_config: &SwelogConfig,
     language_model: &dyn LanguageModel,
     monday_date: &NaiveDate,
+    context_file_content: Option<&str>,
     overwrite: Overwrite,
 ) -> Result<()> {
     let swelog_paths = SwelogPaths::new(swelog_config);
 
-    ensure_swelog_file_exists(&swelog_paths.context_file)?;
     ensure_swelog_file_exists(&swelog_paths.work_file)?;
     ensure_swelog_directory_exists(&swelog_paths.daily_log_directory)?;
     ensure_swelog_directory_exists(&swelog_paths.weekly_log_directory)?;
@@ -58,11 +58,6 @@ pub async fn summarize_weekly_work_from_config(
 
         return Err(weekly_log_already_exists_error.into());
     }
-
-    let context_file_content =
-        fs::read_to_string(&swelog_paths.context_file).into_diagnostic().wrap_err_with(|| {
-            format!("failed to read context file at {}", swelog_paths.context_file.display())
-        })?;
 
     let work_file_content =
         fs::read_to_string(&swelog_paths.work_file).into_diagnostic().wrap_err_with(|| {
@@ -83,7 +78,7 @@ pub async fn summarize_weekly_work_from_config(
         return Err(no_daily_logs_found_error.into());
     }
 
-    let prompt = get_weekly_log_prompt(&daily_logs, &context_file_content, monday_date);
+    let prompt = get_weekly_log_prompt(&daily_logs, context_file_content, monday_date);
 
     let generated_weekly_log_content = language_model.generate_response(&prompt).await?;
 

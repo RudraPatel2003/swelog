@@ -1,6 +1,9 @@
 use std::path::PathBuf;
 
-use crate::swelog_config::SwelogConfig;
+use crate::{
+    context_file::CONTEXT_FILE_NAME,
+    swelog_config::SwelogConfig,
+};
 
 pub struct SwelogPaths {
     pub swelog_directory: PathBuf,
@@ -17,7 +20,7 @@ impl SwelogPaths {
             swelog_config.obsidian_vault_path.join(&swelog_config.swelog_folder_name);
 
         Self {
-            context_file: swelog_directory.join(&swelog_config.context_file_name),
+            context_file: swelog_directory.join(CONTEXT_FILE_NAME),
             work_file: swelog_directory.join(&swelog_config.work_file_name),
             daily_log_directory: swelog_directory.join(&swelog_config.daily_log_folder_name),
             weekly_log_directory: swelog_directory.join(&swelog_config.weekly_log_folder_name),
@@ -26,7 +29,10 @@ impl SwelogPaths {
     }
 
     #[must_use]
-    pub const fn all_paths(&self) -> [&PathBuf; 4] {
-        [&self.context_file, &self.work_file, &self.daily_log_directory, &self.weekly_log_directory]
+    pub const fn all_paths(&self) -> [&PathBuf; 3] {
+        [&self.work_file, &self.daily_log_directory, &self.weekly_log_directory]
     }
 }
+
+#[cfg(test)]
+mod tests;

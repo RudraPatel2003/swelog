@@ -54,8 +54,9 @@ Full documentation lives at
 ### Prerequisites
 
 - Rust
-- Just
-- cargo-nextest for running the test suite
+- Just (`cargo install just`)
+- Lychee (`cargo install lychee`)
+- Cargo Nextest (`cargo install cargo-nextest`)
 - Obsidian
 - Ollama when testing the optional summarization feature
 - Provider credentials when testing hosted models or integrations

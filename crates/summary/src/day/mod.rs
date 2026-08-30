@@ -5,10 +5,7 @@ use config::{
     overwrite::Overwrite,
     setup::swelog_paths::SwelogPaths,
     swelog_config::SwelogConfig,
-    utils::{
-        ensure_swelog_directory_exists,
-        ensure_swelog_file_exists,
-    },
+    utils::ensure_swelog_directory_exists,
 };
 use daily_log::{
     file::resolve_daily_log_file,
@@ -32,6 +29,7 @@ pub async fn summarize_daily_work_from_config(
     swelog_config: &SwelogConfig,
     language_model: &dyn LanguageModel,
     log_date: &NaiveDate,
+    context_file_content: Option<&str>,
     overwrite: Overwrite,
     keep_work_file: KeepWorkFile,
 ) -> Result<()> {
@@ -41,11 +39,9 @@ pub async fn summarize_daily_work_from_config(
 
     let daily_log_file = resolve_daily_log_file(&swelog_paths, log_date, overwrite)?;
 
-    let context_file_content = read_context_file(&swelog_paths)?;
-
     let work_file_content = read_work_file_notes(&swelog_paths)?;
 
-    let prompt = get_daily_log_prompt(&work_file_content, &context_file_content, log_date);
+    let prompt = get_daily_log_prompt(&work_file_content, context_file_content, log_date);
 
     let generated_daily_log_content = language_model.generate_response(&prompt).await?;
 
@@ -57,14 +53,6 @@ pub async fn summarize_daily_work_from_config(
     })?;
 
     finish_work_file(swelog_config, keep_work_file)
-}
-
-fn read_context_file(swelog_paths: &SwelogPaths) -> Result<String> {
-    ensure_swelog_file_exists(&swelog_paths.context_file)?;
-
-    fs::read_to_string(&swelog_paths.context_file).into_diagnostic().wrap_err_with(|| {
-        format!("failed to read context file at {}", swelog_paths.context_file.display())
-    })
 }
 
 fn build_summarized_daily_log_content(

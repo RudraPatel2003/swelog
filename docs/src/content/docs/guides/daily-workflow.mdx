@@ -3,9 +3,9 @@ title: Daily Workflow
 description: The day-to-day loop of capturing notes and filing them into a daily log.
 ---
 
-1. Write notes in `WORK.md` as the day goes under the `## Log` heading in Obsidian.
+1. Write your priority for the day under `## Priorities` and what you did under `## Log` in `WORK.md`.
 
-2. Optionally fetch activity from GitHub, Google Calendar, or Linear:
+2. Optionally fetch activity from external sources:
 
    ```sh
    swelog fetch github
@@ -13,26 +13,19 @@ description: The day-to-day loop of capturing notes and filing them into a daily
    swelog fetch linear
    ```
 
-3. Review and edit `WORK.md`. Integration sections are created only after the
-   corresponding integration is used.
+3. Review and edit `WORK.md`.
 
-4. File the day:
+4. Log the day:
 
    ```sh
    swelog log
    ```
 
-   This writes `Daily/MM-DD-YYYY.md` and resets `WORK.md`. Pass `--keep` to leave `WORK.md` alone.
+## Summarization
 
-## Want a written summary instead?
-
-`swelog summarize` does the same job, but sends your notes to a language model
-first and writes back a summary with your raw notes preserved underneath. It is
-opt-in and needs `llm` and `llmModel` in your config. See
-[Summarization](/summarization/).
-
-Weekly logs are summaries by nature, so they live there too:
-`swelog summarize week` rolls up the daily logs `swelog log` produced.
+`swelog summarize` also logs the day, but sends your notes to a language model
+first and writes back a summary with your raw notes preserved underneath.
+See [Summarization](/summarization/) for more information.
 
 ## Missed a day?
 

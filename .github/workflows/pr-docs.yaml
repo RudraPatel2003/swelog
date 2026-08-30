@@ -28,6 +28,11 @@ jobs:
       - name: Setup Just
         uses: extractions/setup-just@v4
 
+      - name: Setup lychee
+        uses: taiki-e/install-action@v2
+        with:
+          tool: lychee
+
       # Must come before setup-node so that `cache: "pnpm"` can find pnpm.
       # The version is read from the `packageManager` field in docs/package.json.
       - name: Setup pnpm
