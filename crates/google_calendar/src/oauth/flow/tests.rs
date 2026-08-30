@@ -25,7 +25,9 @@ fn build_authorization_url_targets_the_google_authorization_endpoint() {
     let authorization_url = build_test_authorization_url(&application);
 
     assert_eq!(authorization_url.scheme(), "https");
+
     assert_eq!(authorization_url.host_str(), Some("accounts.google.com"));
+
     assert_eq!(authorization_url.path(), "/o/oauth2/v2/auth");
 }
 
@@ -36,14 +38,17 @@ fn build_authorization_url_asks_for_an_authorization_code_with_pkce() {
     let authorization_url = build_test_authorization_url(&application);
 
     assert_eq!(find_query_parameter(&authorization_url, "response_type"), Some("code".to_string()));
+
     assert_eq!(
         find_query_parameter(&authorization_url, "code_challenge"),
         Some("test-challenge".to_string())
     );
+
     assert_eq!(
         find_query_parameter(&authorization_url, "code_challenge_method"),
         Some("S256".to_string())
     );
+
     assert_eq!(find_query_parameter(&authorization_url, "state"), Some("test-state".to_string()));
 }
 
@@ -57,6 +62,7 @@ fn build_authorization_url_asks_for_offline_access_so_a_refresh_token_is_returne
         find_query_parameter(&authorization_url, "access_type"),
         Some("offline".to_string())
     );
+
     assert_eq!(find_query_parameter(&authorization_url, "prompt"), Some("consent".to_string()));
 }
 
@@ -82,6 +88,7 @@ fn build_authorization_url_carries_the_loopback_redirect_uri() {
         find_query_parameter(&authorization_url, "redirect_uri"),
         Some(REDIRECT_URI.to_string())
     );
+
     assert_eq!(
         find_query_parameter(&authorization_url, "client_id"),
         Some("test-client-id".to_string())

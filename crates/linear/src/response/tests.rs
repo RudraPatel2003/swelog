@@ -4,7 +4,11 @@ use rmcp::model::{
 };
 
 use super::*;
-use crate::client::structs::LinearStatusType;
+use crate::client::structs::{
+    LinearIssue,
+    LinearIssueTimestamps,
+    LinearStatusType,
+};
 
 fn get_mock_structured_result(value: Value) -> CallToolResult {
     CallToolResult::structured(value)
@@ -29,25 +33,21 @@ fn parse_issue_page_reads_linear_mcp_issue_shape() {
 
     let issue = page.issues.first().expect("page should contain one issue");
 
-    assert_eq!(issue.identifier, "ISWF-3270");
+    let expected_issue = LinearIssue {
+        identifier: "ISWF-3270".to_string(),
+        title: "Remove organization:incidents flag".to_string(),
+        url: "https://linear.app/getsentry/issue/ISWF-3270/remove-organizationincidents-flag"
+            .to_string(),
+        status_name: "In Review".to_string(),
+        status_type: LinearStatusType::Started,
+        timestamps: LinearIssueTimestamps {
+            started_at: Some("2026-08-11T20:25:10.197Z".parse().expect("timestamp should parse")),
+            updated_at: Some("2026-08-13T18:22:28.096Z".parse().expect("timestamp should parse")),
+            ..LinearIssueTimestamps::default()
+        },
+    };
 
-    assert_eq!(issue.title, "Remove organization:incidents flag");
-
-    assert_eq!(issue.status_name, "In Review");
-
-    assert_eq!(issue.status_type, LinearStatusType::Started);
-
-    assert_eq!(
-        issue.timestamps.started_at,
-        Some("2026-08-11T20:25:10.197Z".parse().expect("timestamp should parse"))
-    );
-
-    assert_eq!(
-        issue.timestamps.updated_at,
-        Some("2026-08-13T18:22:28.096Z".parse().expect("timestamp should parse"))
-    );
-
-    assert_eq!(issue.timestamps.completed_at, None);
+    assert_eq!(*issue, expected_issue);
 }
 
 #[test]

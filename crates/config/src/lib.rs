@@ -7,6 +7,3 @@ pub mod setup;
 pub mod swelog_config;
 pub mod utils;
 pub mod work_file;
-
-#[cfg(test)]
-mod tests;

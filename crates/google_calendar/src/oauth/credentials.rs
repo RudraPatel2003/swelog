@@ -23,7 +23,7 @@ use crate::errors::GoogleAuthorizationFailed;
 // lapse between the expiry check and the request that uses it.
 const REFRESH_BUFFER_SECONDS: u64 = 30;
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct GoogleCredentials {
     pub access_token: String,

@@ -15,10 +15,15 @@ fn swelog_paths_nest_every_path_under_the_swelog_folder() {
 
     let swelog_paths = SwelogPaths::new(&config);
 
-    assert_eq!(swelog_paths.swelog_directory, Path::new("/home/user/vault/swelog"));
-    assert_eq!(swelog_paths.work_file, Path::new("/home/user/vault/swelog/WORK.md"));
-    assert_eq!(swelog_paths.daily_log_directory, Path::new("/home/user/vault/swelog/Daily"));
-    assert_eq!(swelog_paths.weekly_log_directory, Path::new("/home/user/vault/swelog/Weekly"));
+    let expected_swelog_paths = SwelogPaths {
+        swelog_directory: PathBuf::from("/home/user/vault/swelog"),
+        context_file: PathBuf::from("/home/user/vault/swelog/CONTEXT.md"),
+        work_file: PathBuf::from("/home/user/vault/swelog/WORK.md"),
+        daily_log_directory: PathBuf::from("/home/user/vault/swelog/Daily"),
+        weekly_log_directory: PathBuf::from("/home/user/vault/swelog/Weekly"),
+    };
+
+    assert_eq!(swelog_paths, expected_swelog_paths);
 }
 
 #[test]
@@ -44,16 +49,15 @@ fn swelog_paths_follow_the_configured_folder_and_file_names() {
 
     let swelog_paths = SwelogPaths::new(&config);
 
-    assert_eq!(swelog_paths.swelog_directory, Path::new("/home/user/vault/accomplishments"));
-    assert_eq!(swelog_paths.work_file, Path::new("/home/user/vault/accomplishments/daily-work.md"));
-    assert_eq!(
-        swelog_paths.daily_log_directory,
-        Path::new("/home/user/vault/accomplishments/days")
-    );
-    assert_eq!(
-        swelog_paths.weekly_log_directory,
-        Path::new("/home/user/vault/accomplishments/weeks")
-    );
+    let expected_swelog_paths = SwelogPaths {
+        swelog_directory: PathBuf::from("/home/user/vault/accomplishments"),
+        context_file: PathBuf::from("/home/user/vault/accomplishments/CONTEXT.md"),
+        work_file: PathBuf::from("/home/user/vault/accomplishments/daily-work.md"),
+        daily_log_directory: PathBuf::from("/home/user/vault/accomplishments/days"),
+        weekly_log_directory: PathBuf::from("/home/user/vault/accomplishments/weeks"),
+    };
+
+    assert_eq!(swelog_paths, expected_swelog_paths);
 }
 
 #[test]

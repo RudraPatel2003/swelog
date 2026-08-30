@@ -5,6 +5,7 @@ use crate::{
     swelog_config::SwelogConfig,
 };
 
+#[derive(Debug, PartialEq, Eq)]
 pub struct SwelogPaths {
     pub swelog_directory: PathBuf,
     pub context_file: PathBuf,
