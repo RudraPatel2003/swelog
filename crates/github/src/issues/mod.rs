@@ -15,9 +15,10 @@ use reqwest::{
         USER_AGENT,
     },
 };
-use structs::{
+use structs::SearchIssuesResponse;
+pub use structs::{
     Issue,
-    SearchIssuesResponse,
+    PullRequest,
 };
 
 use crate::{

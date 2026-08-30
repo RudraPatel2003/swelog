@@ -1,3 +1,5 @@
+mod formatting;
+
 use chrono::{
     Local,
     NaiveDate,
@@ -17,15 +19,17 @@ use github::{
         get_merged_prs,
         get_opened_prs,
     },
-    repository_name::get_repository_name_from_repository_url,
     users::get_github_username,
 };
 use markdown::work_file::upsert_work_file_section_from_config;
 use miette::Result;
 
-use crate::shared::date_selection::{
-    DateSelection,
-    resolve_selected_date,
+use crate::{
+    commands::fetch::github::formatting::format_github_activity,
+    shared::date_selection::{
+        DateSelection,
+        resolve_selected_date,
+    },
 };
 
 const GITHUB_SECTION_TITLE: &str = "GitHub";
@@ -68,58 +72,16 @@ impl GithubArgs {
             return Ok(());
         }
 
-        let mut github_activity_lines = Vec::new();
-
-        for opened_pr in opened_prs {
-            let github_activity_line = format_pull_request_activity(
-                "Opened",
-                &opened_pr.title,
-                opened_pr.number,
-                &opened_pr.pull_request.html_url,
-                &opened_pr.repository_url,
-            );
-
-            github_activity_lines.push(github_activity_line);
-        }
-
-        for merged_pr in merged_prs {
-            let github_activity_line = format_pull_request_activity(
-                "Merged",
-                &merged_pr.title,
-                merged_pr.number,
-                &merged_pr.pull_request.html_url,
-                &merged_pr.repository_url,
-            );
-
-            github_activity_lines.push(github_activity_line);
-        }
-
-        let github_activity = github_activity_lines.join("\n");
+        let pull_request_count = opened_prs.len().saturating_add(merged_prs.len());
 
         upsert_work_file_section_from_config(
             &swelog_config,
             GITHUB_SECTION_TITLE,
-            &github_activity,
+            &format_github_activity(&opened_prs, &merged_prs),
         )?;
 
-        println!("Recorded {} GitHub PRs in your work file.", github_activity_lines.len());
+        println!("Recorded {pull_request_count} GitHub PRs in your work file.");
 
         Ok(())
     }
-}
-
-fn format_pull_request_activity(
-    action: &str,
-    title: &str,
-    number: u64,
-    pull_request_url: &str,
-    repository_url: &str,
-) -> String {
-    let repository_name = get_repository_name_from_repository_url(repository_url);
-
-    let repository_html_url = format!("https://github.com/{repository_name}");
-
-    format!(
-        "- {action} \"{title}\" ([#{number}]({pull_request_url})) in [{repository_name}]({repository_html_url})"
-    )
 }
