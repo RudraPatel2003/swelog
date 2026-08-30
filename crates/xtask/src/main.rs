@@ -28,8 +28,11 @@ fn main() -> Result<()> {
 
     match command.as_str() {
         "check-release-version" => run_check_release_version(args),
+
         "update-release-version" => run_update_release_version(args),
+
         "list-version" => run_list_version(),
+
         _ => Err(get_usage_error()),
     }
 }
