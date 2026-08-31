@@ -3,12 +3,12 @@ title: Providers and Models
 description: Configure Ollama, OpenAI, OpenRouter, or Anthropic as your summarization provider.
 ---
 
-| Provider   | `llm`        | Example `llmModel`          | Setup                                                      | Authentication                 | Notes                                                                |
-| ---------- | ------------ | --------------------------- | ---------------------------------------------------------- | ------------------------------ | -------------------------------------------------------------------- |
-| Ollama     | `ollama`     | `llama3.2`                  | Install Ollama, pull the model, and run the local service. | None                           | Swelog connects to Ollama at `localhost:11434`.                      |
-| OpenAI     | `openAi`     | `gpt-5.4-mini`              | Select an OpenAI model supported by the Responses API.     | API key, prompted on first use | The model value is sent directly to OpenAI.                          |
-| OpenRouter | `openRouter` | `anthropic/claude-sonnet-5` | Pick any model from the OpenRouter catalog.                | API key, prompted on first use | Any model works. OpenRouter normalizes every response to one schema. |
-| Anthropic  | `anthropic`  | `claude-opus-5`             | Select a Claude model available on your Anthropic account. | API key, prompted on first use | The model value is sent directly to Anthropic.                       |
+| Provider   | `llm`        | Example `llmModel`          | Setup                                                      | Authentication                 | Notes                                                  |
+| ---------- | ------------ | --------------------------- | ---------------------------------------------------------- | ------------------------------ | ------------------------------------------------------ |
+| Ollama     | `ollama`     | `llama3.2`                  | Install Ollama, pull the model, and run the local service. | None                           | Swelog connects to Ollama at `localhost:11434`.        |
+| OpenAI     | `openAi`     | `gpt-5.4-mini`              | Select an OpenAI model supported by the Responses API.     | API key, prompted on first use | The model value is sent directly to OpenAI.            |
+| OpenRouter | `openRouter` | `anthropic/claude-sonnet-5` | Pick any model from the OpenRouter catalog.                | API key, prompted on first use | Any model provider that OpenRouter supports will work. |
+| Anthropic  | `anthropic`  | `claude-opus-5`             | Select a Claude model available on your Anthropic account. | API key, prompted on first use | The model value is sent directly to Anthropic.         |
 
 Model names are examples, not a fixed allowlist. Set `llmModel` to a model that
 is installed locally or available from the selected provider.
@@ -66,13 +66,6 @@ is installed locally or available from the selected provider.
    [OpenRouter API key](https://openrouter.ai/keys) and stores it in your
    operating system keyring.
 
-Every OpenRouter model works, whoever built it. Swelog calls OpenRouter's
-Responses endpoint, and OpenRouter
-[normalizes the schema across models and providers](https://openrouter.ai/docs/api-reference/overview),
-so the model identifier is the only thing that changes between them. Reasoning
-models return their reasoning as an extra item that swelog ignores, and the
-generated text arrives in the same place as for every other model.
-
 ## Anthropic
 
 1. Configure the provider and model:
@@ -83,9 +76,6 @@ generated text arrives in the same place as for every other model.
      "llmModel": "claude-opus-5"
    }
    ```
-
-   `claude-sonnet-5` and `claude-haiku-4-5` cost less per token if you summarize
-   often.
 
 2. Run `swelog summarize`. The first run asks for your
    [Anthropic API key](https://console.anthropic.com/settings/keys) and stores

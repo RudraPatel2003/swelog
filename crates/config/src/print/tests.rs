@@ -14,14 +14,21 @@ fn format_config_groups_fields_under_section_headings() {
     let output = format_config(&config);
 
     assert!(output.contains("Vault\n"));
+
     assert!(output.contains("Files\n"));
+
     assert!(output.contains("Logs\n"));
+
     assert!(output.contains("Summarization\n"));
+
     assert!(output.contains("Integrations\n"));
 
     assert!(output.contains("Obsidian vault path  /home/user/vault\n"));
+
     assert!(output.contains("Provider             Ollama\n"));
+
     assert!(output.contains("Model                llama3.2\n"));
+
     assert!(output.contains("Linear username      Not configured\n"));
 }
 
@@ -32,5 +39,6 @@ fn format_config_reports_summarization_as_not_configured_when_absent() {
     let output = format_config(&config);
 
     assert!(output.contains("Provider             Not configured\n"));
+
     assert!(output.contains("Model                Not configured\n"));
 }

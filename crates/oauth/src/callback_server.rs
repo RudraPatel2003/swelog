@@ -14,6 +14,7 @@ use tokio::{
 };
 
 const CALLBACK_PATH: &str = "/callback";
+
 const MAX_CALLBACK_REQUEST_SIZE: usize = 16 * 1024;
 
 /// A single-use loopback HTTP server that receives an OAuth redirect
@@ -50,6 +51,7 @@ impl CallbackServer {
             .map_err(|error| miette!("failed to accept the OAuth callback: {error}"))?;
 
         let request = read_request(&mut stream).await?;
+
         let request_target = parse_request_target(&request)?;
 
         let callback_origin = self
@@ -67,6 +69,7 @@ impl CallbackServer {
 
 async fn read_request(stream: &mut TcpStream) -> Result<String> {
     let mut request = Vec::new();
+
     let mut buffer = [0_u8; 1024];
 
     while request.len() < MAX_CALLBACK_REQUEST_SIZE {

@@ -4,10 +4,10 @@ use chrono::{
 };
 use clap::Args;
 use config::{
+    config_file::read_config_file,
     context_file::get_context_file_content,
     overwrite::Overwrite,
     setup::swelog_paths::SwelogPaths,
-    utils::read_config_file,
 };
 use dates::{
     date_format::DATE_VALUE_NAME,

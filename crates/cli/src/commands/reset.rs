@@ -1,7 +1,7 @@
 use clap::Args;
 use config::{
+    config_file::read_config_file,
     setup::swelog_paths::SwelogPaths,
-    utils::read_config_file,
     work_file::create_or_reset_work_file,
 };
 use miette::Result;

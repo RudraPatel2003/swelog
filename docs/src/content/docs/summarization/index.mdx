@@ -3,8 +3,7 @@ title: Summarization
 description: An optional language model pass that rewrites your notes into daily and weekly logs.
 ---
 
-Summarization is optional. Turn this on when you want your raw notes
-rewritten into something polished enough to reread months later.
+Generate AI summaries of your daily notes, as well as summarize weeks worth of content.
 
 ## Setup
 
@@ -17,24 +16,13 @@ Add two fields to `swelog.json`:
 }
 ```
 
-See [Providers and Models](/summarization/providers/) for what each provider
-expects and how its credential is stored. Until both fields are present,
-`swelog summarize` fails and tells you so.
+See [Providers and Models](/summarization/providers/) for supported providers and models.
 
 ## Giving the model more context
 
 If you want to give the model more to work with, add a `CONTEXT.md` file in the
 same folder as your work file — `<obsidianVaultPath>/<swelogFolderName>/`, next
-to `WORK.md`. Swelog picks it up automatically on every summary and tells you it
-did:
-
-```
-Summarizing day with provider Anthropic and model claude-sonnet-4-5...
-Incorporating CONTEXT.md...
-```
-
-The file is optional and nothing creates it for you. Without one, summaries are
-generated from your notes alone and the prompt simply says `no context given`.
+to `WORK.md`.
 
 Describe the long-term things your daily notes leave out — your role, the
 systems you own, what you are being measured on:
@@ -56,62 +44,25 @@ Improve billing reliability, reduce support escalations, and make deployments
 safer.
 ```
 
-Nothing else in swelog reads that file.
+## Daily summaries
 
-## `swelog log` and `swelog summarize day`
+Daily summarization read the current work file and generate an AI summary of your notes with the original notes appended at the bottom.
 
-Both take the same flags and both end the day the same way: a file in your daily
-log folder, and a reset `WORK.md`. They differ in what lands in the file.
+```sh
+swelog summarize
+```
 
-| Command                | Daily log contents                                                                    |
-| ---------------------- | ------------------------------------------------------------------------------------- |
-| `swelog log`           | Your notes verbatim, under a `# Daily Log - MM-DD-YYYY` heading.                      |
-| `swelog summarize day` | A generated summary, with your raw notes preserved underneath as `## Original Notes`. |
-
-## Commands
-
-| Command                                      | Behavior                                                           |
-| -------------------------------------------- | ------------------------------------------------------------------ |
-| `swelog summarize`                           | Generate today's daily log. Alias for `swelog summarize day`.      |
-| `swelog summarize day`                       | Generate today's daily log and reset `WORK.md`.                    |
-| `swelog summarize day --keep`                | Generate the daily log without resetting `WORK.md`.                |
-| `swelog summarize day --force`               | Replace an existing daily log for today.                           |
-| `swelog summarize day --date MM-DD-YYYY`     | Write the daily log for the supplied date instead of today.        |
-| `swelog summarize day --yesterday`           | Write the daily log for yesterday instead of today.                |
-| `swelog summarize week`                      | Summarize available Monday-Friday daily logs for the current week. |
-| `swelog summarize week --week-of MM-DD-YYYY` | Summarize the week beginning on the supplied Monday.               |
-| `swelog summarize week --last-week`          | Summarize the previous week instead of the current one.            |
-| `swelog summarize week --force`              | Replace an existing weekly log.                                    |
+`swelog summarize` is an alias for `swelog summarize day`.
 
 ## Weekly summaries
 
-`swelog summarize week` works off whatever daily logs exist, whether
-`swelog log` or `swelog summarize day` wrote them.
+`swelog summarize week` collects the summaries you generated on each day of the week and generates a weekly summary.
 
-Without `--week-of`, weekly summarization uses the Monday of the week containing
-today, including when today is that Monday. Some weeks you only work one day, and
-that day is still worth a weekly log. `--last-week` goes back one week from that
-Monday, so running it on a Monday summarizes the week that just finished. That is
-the flag to reach for when you left on Friday without summarizing the week.
+For example, if it the end of the day on Friday and you have 5 daily logs generated (Monday to Friday), the command will incorporate all of them into a weekly summary.
 
-The command skips missing weekday logs but fails when no daily logs exist for the
-selected week. On a Monday morning, before you have written that day's daily log,
-plain `swelog summarize week` is that case, and `--last-week` is what you want.
+If it is the following Monday and you forgot to generate the weekly summary, you can use the `--last-week` flag to generate it for the previous week. See [Backfilling a week](/guides/backfilling/#backfilling-a-week) for more details.
 
 :::note
 Weekly summarization requires `WORK.md` to be empty or at its default content,
 so unfinished daily notes are not accidentally excluded from a daily log.
-:::
-
-## Daily summaries
-
-Daily summarization always reads the current `WORK.md`. `--date` only chooses the
-file the summary is written to, so it is what you use to backfill a missed day.
-For the day before, `--yesterday` saves you working out the date.
-See [Backfilling a Missed Day](/guides/backfilling/).
-
-:::caution[Summarizing sends your notes to a provider]
-`swelog summarize` uploads the full contents of your work file, and your context
-file when you have one, to whichever provider you configured. It is the one place
-your own notes leave your computer. See the [Privacy Policy](/legal/privacy/).
 :::

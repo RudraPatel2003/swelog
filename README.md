@@ -55,7 +55,6 @@ Full documentation lives at
 
 - Rust
 - Just (`cargo install just`)
-- Lychee (`cargo install lychee`)
 - Cargo Nextest (`cargo install cargo-nextest`)
 - Obsidian
 - Ollama when testing the optional summarization feature

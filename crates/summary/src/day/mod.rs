@@ -5,7 +5,7 @@ use config::{
     overwrite::Overwrite,
     setup::swelog_paths::SwelogPaths,
     swelog_config::SwelogConfig,
-    utils::ensure_swelog_directory_exists,
+    swelog_file_existence::ensure_swelog_directory_exists,
 };
 use daily_log::{
     file::resolve_daily_log_file,

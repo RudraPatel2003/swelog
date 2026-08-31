@@ -15,9 +15,9 @@ const GITHUB_REPOS_API_URL: &str = "https://api.github.com/repos/";
 /// ```
 #[must_use]
 pub fn get_repository_name_from_repository_url(repository_url: &str) -> String {
-    let Some(repo) = repository_url.strip_prefix(GITHUB_REPOS_API_URL) else {
+    let Some(repository_name) = repository_url.strip_prefix(GITHUB_REPOS_API_URL) else {
         return String::from("Unknown repository");
     };
 
-    repo.to_string()
+    repository_name.to_string()
 }

@@ -7,9 +7,11 @@ use tempfile::{
 use super::*;
 
 const LATEST_VERSION: &str = "0.11.0";
+
 const NEWER_LATEST_VERSION: &str = "0.12.0";
 
 const ONE_HOUR_IN_SECONDS: i64 = 3_600;
+
 const TWO_DAYS_IN_SECONDS: i64 = 172_800;
 
 struct TestContext {

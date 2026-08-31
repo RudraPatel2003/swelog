@@ -59,25 +59,17 @@ The generated section groups issues by status:
 - [ENG-456](https://linear.app/...) Document the Linear integration
 ```
 
-## What `--date` can and cannot recover
+## Limitations of the `--date` flag
 
 The Linear MCP server does not expose issue history, so swelog can only match on
-the timestamps Linear stores on the issue itself: `updatedAt`, `completedAt`,
-`canceledAt`, `startedAt`, and `createdAt`. An issue is recorded for a date when
-any of those lands on it, read in your local time zone.
+the timestamps Linear stores on the issue itself, which are `updatedAt`, `completedAt`,
+`canceledAt`, `startedAt`, and `createdAt`. If the timestamp matches the date you pass in, it is recorded.
 
 `completedAt`, `canceledAt`, `startedAt`, and `createdAt` never change, so
 issues you started, finished, canceled, or filed on a date come back no matter
 how long you wait to backfill.
 
-`updatedAt` only holds the most recent change. An issue you touched on Monday
-and again on Tuesday counts as Tuesday only. So backfill soon after the fact for
-the best result, and treat what `--date` returns as a reminder for your own
-notes rather than a full record.
-
-Archived issues are the one thing `--date` cannot reach. Swelog asks Linear to
-leave them out, so an issue you finished on a date and archived afterwards will
-not come back.
+The `--date` flag will not fetch archived issues.
 
 ## Switching accounts or organizations
 

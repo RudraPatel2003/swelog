@@ -30,13 +30,13 @@ fn format_status_group(issues: &[&LinearIssue]) -> String {
 
 fn format_linear_issue(issue: &LinearIssue) -> String {
     let identifier = &issue.identifier;
+
     let title = escape_markdown_link_text(&collapse_whitespace(&issue.title));
 
     format!("- [{identifier}]({}) {title}", issue.url)
 }
 
 fn collapse_whitespace(text: &str) -> String {
-    // Issue titles could be multiple lines in the response so collapse them down
     text.split_whitespace().collect::<Vec<_>>().join(" ")
 }
 

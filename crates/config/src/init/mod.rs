@@ -1,6 +1,9 @@
 use std::{
     fs,
-    path::PathBuf,
+    path::{
+        Path,
+        PathBuf,
+    },
 };
 
 use miette::{
@@ -27,19 +30,26 @@ pub fn write_default_config(
         return Err(config_already_exists_error.into());
     }
 
-    // create the directory that will contain the config file
-    if let Some(parent) = config_file_path.parent() {
-        fs::create_dir_all(parent).into_diagnostic().wrap_err_with(|| {
-            format!("failed to create config directory at {}", parent.display())
-        })?;
-    }
+    create_config_directory(config_file_path)?;
 
-    let json = serde_json::to_string_pretty(config)
+    let serialized_config = serde_json::to_string_pretty(config)
         .into_diagnostic()
         .wrap_err("failed to serialize config")?;
 
-    fs::write(config_file_path, format!("{json}\n")).into_diagnostic().wrap_err_with(|| {
-        format!("failed to write config file at {}", config_file_path.display())
+    fs::write(config_file_path, format!("{serialized_config}\n")).into_diagnostic().wrap_err_with(
+        || format!("failed to write config file at {}", config_file_path.display()),
+    )?;
+
+    Ok(())
+}
+
+fn create_config_directory(config_file_path: &Path) -> Result<()> {
+    let Some(config_directory) = config_file_path.parent() else {
+        return Ok(());
+    };
+
+    fs::create_dir_all(config_directory).into_diagnostic().wrap_err_with(|| {
+        format!("failed to create config directory at {}", config_directory.display())
     })?;
 
     Ok(())

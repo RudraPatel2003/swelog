@@ -33,6 +33,7 @@ fn swelog_paths_put_the_context_file_beside_the_work_file() {
     let swelog_paths = SwelogPaths::new(&config);
 
     assert_eq!(swelog_paths.context_file, Path::new("/home/user/vault/swelog/CONTEXT.md"));
+
     assert_eq!(swelog_paths.context_file.parent(), swelog_paths.work_file.parent());
 }
 
@@ -89,5 +90,6 @@ fn all_paths_omits_the_context_file() {
             &swelog_paths.weekly_log_directory
         ]
     );
+
     assert!(!all_paths.contains(&&swelog_paths.context_file));
 }

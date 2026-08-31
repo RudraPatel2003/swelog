@@ -1,6 +1,7 @@
 use super::*;
 
 const CONTEXT_FILE_CONTENT: &str = "backend engineer on platform team";
+
 const WORK_FILE_CONTENT: &str = "- Reviewed auth PR";
 
 fn get_log_date() -> NaiveDate {
@@ -14,6 +15,7 @@ fn daily_log_prompt_includes_the_context_when_it_is_given() {
     let prompt = get_daily_log_prompt(WORK_FILE_CONTENT, Some(CONTEXT_FILE_CONTENT), &log_date);
 
     assert!(prompt.contains(CONTEXT_FILE_CONTENT));
+
     assert!(!prompt.contains(NO_CONTEXT_GIVEN));
 }
 
@@ -35,6 +37,7 @@ fn weekly_log_prompt_includes_the_context_when_it_is_given() {
     let prompt = get_weekly_log_prompt(&daily_logs, Some(CONTEXT_FILE_CONTENT), &log_date);
 
     assert!(prompt.contains(CONTEXT_FILE_CONTENT));
+
     assert!(!prompt.contains(NO_CONTEXT_GIVEN));
 }
 

@@ -17,6 +17,7 @@ impl StatusArgs {
         let _ = self;
 
         println!("Credentials stored in your operating system keyring:");
+
         println!();
 
         for credential in Credential::ALL_CREDENTIALS {
@@ -28,6 +29,7 @@ impl StatusArgs {
         }
 
         println!();
+
         println!("Run `swelog auth clear <credential>` to remove a stored credential.");
 
         Ok(())

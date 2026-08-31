@@ -1,9 +1,6 @@
 use std::{
     fs,
-    path::{
-        Path,
-        PathBuf,
-    },
+    path::PathBuf,
 };
 
 use miette::{
@@ -17,12 +14,12 @@ use crate::{
     errors::{
         ConfigNotFound,
         EmptyObsidianVaultPath,
-        SwelogFileNotFound,
     },
     swelog_config::SwelogConfig,
 };
 
 const APP_NAME: &str = "swelog";
+
 const CONFIG_FILE_NAME: &str = "swelog.json";
 
 pub fn get_config_file_path() -> Result<PathBuf> {
@@ -59,24 +56,4 @@ pub fn read_config_file() -> Result<SwelogConfig> {
     }
 
     Ok(config)
-}
-
-pub fn ensure_swelog_file_exists(swelog_path: &Path) -> Result<()> {
-    if swelog_path.is_file() {
-        return Ok(());
-    }
-
-    let swelog_file_not_found_error = SwelogFileNotFound { swelog_path: swelog_path.to_path_buf() };
-
-    Err(swelog_file_not_found_error.into())
-}
-
-pub fn ensure_swelog_directory_exists(swelog_path: &Path) -> Result<()> {
-    if swelog_path.is_dir() {
-        return Ok(());
-    }
-
-    let swelog_file_not_found_error = SwelogFileNotFound { swelog_path: swelog_path.to_path_buf() };
-
-    Err(swelog_file_not_found_error.into())
 }

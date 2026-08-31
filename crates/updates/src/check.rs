@@ -60,6 +60,7 @@ fn print_notice(update_notice: Option<String>) {
     };
 
     eprintln!();
+
     eprint!("{update_notice}");
 }
 

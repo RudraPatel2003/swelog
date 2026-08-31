@@ -11,7 +11,7 @@
 - Never `pub use` to shorten an import path. The path should name the module that defines the item.
 - No naked `bool` parameters, because `write_default_config(&path, &config, true)` does not say what `true` means. Use an enum such as `Overwrite::Yes`, and model mutually exclusive flags as one enum, the way `DateSelection` covers `--date` and `--yesterday`. clap fields stay `bool`; convert once in a constructor such as `Overwrite::from_force_flag`.
 - Keep comments out of function bodies; when a block needs one, extract a named function. Comment only what the code cannot say: how an external system behaves, why a workaround exists, a constraint with no local evidence.
-- Omit doc comments most of the time. If possible, just the function to be more descriptive.
+- Omit doc comments most of the time. If possible, just name the function to be more descriptive.
 
 ## Error Handling
 
@@ -21,8 +21,6 @@
 ## API Calls
 
 - If making external API calls, do the call in `mod.rs` and hold types in `structs.rs`.
-
-## Coding Style
 
 ## CLI
 

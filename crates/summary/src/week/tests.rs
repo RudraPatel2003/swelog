@@ -26,9 +26,13 @@ use tempfile::{
 use super::*;
 
 const CONTEXT_FILE_CONTENT: &str = "backend engineer on platform team";
+
 const MONDAY_DAILY_LOG_CONTENT: &str = "# Daily Log - 06-01-2026\n\nDebugged API timeout";
+
 const WEDNESDAY_DAILY_LOG_CONTENT: &str = "# Daily Log - 06-03-2026\n\nReviewed auth PR";
+
 const FRIDAY_DAILY_LOG_CONTENT: &str = "# Daily Log - 06-05-2026\n\nPlanned release";
+
 const EXISTING_WEEKLY_LOG_CONTENT: &str = "existing weekly log";
 
 struct TestContext {

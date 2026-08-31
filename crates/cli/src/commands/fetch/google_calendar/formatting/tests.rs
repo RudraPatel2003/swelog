@@ -59,6 +59,7 @@ const MEETINGS_ORDERED_BY_START_TIME: &str = "- 10:00 AM - 11:00 AM | Standup
 #[test]
 fn format_meetings_orders_meetings_by_start_time() {
     let design_review = get_mock_meeting("Design review", 13, 14, MeetingStatus::Scheduled);
+
     let standup = get_mock_meeting("Standup", 10, 11, MeetingStatus::Scheduled);
 
     let meetings = vec![design_review, standup];
@@ -73,6 +74,7 @@ const STRUCK_THROUGH_MEETING_IN_ITS_TIME_SLOT: &str = "- 10:00 AM - 11:00 AM | S
 #[test]
 fn format_meetings_keeps_a_struck_through_meeting_in_its_time_slot() {
     let design_review = get_mock_meeting("Design review", 13, 14, MeetingStatus::Scheduled);
+
     let eng_all_hands = get_mock_meeting("Eng all-hands", 11, 12, MeetingStatus::Declined);
 
     let standup = get_mock_meeting("Standup", 10, 11, MeetingStatus::Scheduled);

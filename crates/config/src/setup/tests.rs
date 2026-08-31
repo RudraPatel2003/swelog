@@ -15,6 +15,7 @@ use crate::{
 };
 
 const EXISTING_CONTEXT_FILE_CONTENT: &str = "existing context";
+
 const EXISTING_WORK_FILE_CONTENT: &str = "existing work";
 
 struct TestContext {
@@ -72,8 +73,11 @@ fn setup_creates_swelog_files_and_directories() {
         fs::read_to_string(test_context.work_file()).expect("work file should be readable");
 
     assert!(is_default_work_file_content(&work_file_contents));
+
     assert!(!test_context.context_file().exists());
+
     assert!(test_context.daily_log_directory().is_dir());
+
     assert!(test_context.weekly_log_directory().is_dir());
 
     drop(test_context.temporary_directory);
@@ -93,13 +97,16 @@ fn setup_uses_configured_path_names() {
     };
 
     let swelog_paths = SwelogPaths::new(&config);
+
     let overwrite_existing_files = Overwrite::No;
 
     setup_swelog_files_from_config(&config, overwrite_existing_files)
         .expect("swelog files should be created");
 
     assert!(swelog_paths.work_file.is_file());
+
     assert!(swelog_paths.daily_log_directory.is_dir());
+
     assert!(swelog_paths.weekly_log_directory.is_dir());
 
     drop(temporary_directory);
@@ -111,6 +118,7 @@ fn setup_fails_when_work_file_exists_without_force() {
 
     fs::create_dir_all(test_context.swelog_directory())
         .expect("swelog directory should be created");
+
     fs::write(test_context.work_file(), EXISTING_WORK_FILE_CONTENT)
         .expect("existing work file should be written");
 
@@ -199,7 +207,9 @@ fn setup_overwrites_existing_files_when_force_is_set() {
         fs::read_to_string(test_context.work_file()).expect("work file should be readable");
 
     assert!(is_default_work_file_content(&work_file_contents));
+
     assert!(test_context.daily_log_directory().is_dir());
+
     assert!(test_context.weekly_log_directory().is_dir());
 
     drop(test_context.temporary_directory);
@@ -221,7 +231,9 @@ fn setup_accepts_existing_log_directories_when_force_is_set() {
         .expect("existing log directories should be accepted");
 
     assert!(test_context.work_file().is_file());
+
     assert!(test_context.daily_log_directory().is_dir());
+
     assert!(test_context.weekly_log_directory().is_dir());
 
     drop(test_context.temporary_directory);

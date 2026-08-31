@@ -1,7 +1,7 @@
 use clap::Args;
 use config::{
+    config_file::read_config_file,
     print::print_config,
-    utils::read_config_file,
 };
 use miette::Result;
 

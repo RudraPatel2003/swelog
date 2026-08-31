@@ -3,9 +3,11 @@ title: Authentication
 description: How swelog stores, inspects, and clears your credentials.
 ---
 
-Swelog stores every credential in your operating system's credential store —
-Keychain on macOS, Credential Manager on Windows, and the Secret Service on
-Linux. Nothing is written to `swelog.json` or any other file in your vault.
+Swelog stores every credential in your operating system's credential store
+
+- Keychain on macOS
+- Credential Manager on Windows
+- Secret Service on Linux
 
 | Credential                    | Used by                                       | How it is obtained         |
 | ----------------------------- | --------------------------------------------- | -------------------------- |
@@ -18,7 +20,7 @@ Linux. Nothing is written to `swelog.json` or any other file in your vault.
 
 ## Inspecting stored credentials
 
-Review what is stored — values are never printed:
+Review what is stored. This does not print the values, only how the credential is resolved.
 
 ```sh
 swelog auth status
@@ -36,13 +38,6 @@ swelog auth clear --all
 
 `swelog auth clear` accepts `github`, `open-ai`, `open-router`, `anthropic`,
 `linear`, and `google-calendar`.
-
-:::note
-The values accepted by `swelog auth clear` are hyphenated (`open-ai`,
-`open-router`), which differs from the camelCase spelling used for the `llm`
-field in `swelog.json` (`openAi`, `openRouter`). `anthropic` is spelled the
-same in both places, because it is a single word.
-:::
 
 ## Environment variable overrides
 

@@ -6,7 +6,7 @@ use chrono::{
     NaiveDate,
 };
 use clap::Args;
-use config::utils::read_config_file;
+use config::config_file::read_config_file;
 use dates::{
     date_format::DATE_VALUE_NAME,
     formatting::format_date,
