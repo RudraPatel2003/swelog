@@ -6,101 +6,255 @@ description: The full swelog command tree, with flags and arguments.
 Run `swelog --help`, or `swelog <command> --help`, to see this information from
 the CLI itself.
 
-## Setup
+## `swelog`
 
-| Command                | Behavior                                                   |
-| ---------------------- | ---------------------------------------------------------- |
-| `swelog init`          | Create a default swelog config file.                       |
-| `swelog init --force`  | Overwrite an existing config file with defaults.           |
-| `swelog setup`         | Create the swelog files in your Obsidian vault.            |
-| `swelog setup --force` | Recreate and overwrite configured swelog files.            |
-| `swelog config`        | Display your current configuration and where it is stored. |
-
-## Capturing work
-
-Write the day's notes into `WORK.md` yourself, in Obsidian or any editor.
-
-| Command        | Behavior                                                    |
-| -------------- | ----------------------------------------------------------- |
-| `swelog reset` | Reset your work file to the default Focus-and-Log template. |
-
-## Filing the day
-
-| Command                        | Behavior                                                         |
-| ------------------------------ | ---------------------------------------------------------------- |
-| `swelog log`                   | Write your work file into the daily folder and reset it. No LLM. |
-| `swelog log --date MM-DD-YYYY` | Write the daily log for the supplied date. Defaults to today.    |
-| `swelog log --yesterday`       | Write the daily log for yesterday.                               |
-| `swelog log --force`           | Overwrite an existing daily log file.                            |
-| `swelog log --keep`            | Keep the current contents of the work file.                      |
-
-The daily log is your work file verbatim, with its heading replaced by
-`# Daily Log - MM-DD-YYYY`.
-
-## Summarizing (optional)
-
-Requires `llm` and `llmModel` in your config. See
-[Summarization](/summarization/).
-
-| Command                                      | Behavior                                                      |
-| -------------------------------------------- | ------------------------------------------------------------- |
-| `swelog summarize`                           | Alias for `swelog summarize day`.                             |
-| `swelog summarize day`                       | Summarize your work file into the daily folder and reset it.  |
-| `swelog summarize day --date MM-DD-YYYY`     | Write the daily log for the supplied date. Defaults to today. |
-| `swelog summarize day --yesterday`           | Write the daily log for yesterday.                            |
-| `swelog summarize day --force`               | Overwrite an existing daily log file.                         |
-| `swelog summarize day --keep`                | Keep the current contents of the work file.                   |
-| `swelog summarize week`                      | Summarize the current week of daily logs into a weekly log.   |
-| `swelog summarize week --week-of MM-DD-YYYY` | The Monday of the week you want to summarize.                 |
-| `swelog summarize week --last-week`          | Summarize the previous week instead of the current one.       |
-| `swelog summarize week --force`              | Overwrite an existing weekly log file.                        |
-
-See [Summarization](/summarization/) for the rules that govern each.
-
-## Fetching integration activity
-
-| Command                                          | Behavior                                       |
-| ------------------------------------------------ | ---------------------------------------------- |
-| `swelog fetch github`                            | Fetch the PRs you opened and merged on a date. |
-| `swelog fetch github --date MM-DD-YYYY`          | Date to fetch GitHub activity for.             |
-| `swelog fetch github --yesterday`                | Fetch yesterday's GitHub activity.             |
-| `swelog fetch google-calendar`                   | Fetch the meetings you had on a date.          |
-| `swelog fetch google-calendar --date MM-DD-YYYY` | Date to fetch meetings for.                    |
-| `swelog fetch google-calendar --yesterday`       | Fetch yesterday's meetings.                    |
-| `swelog fetch linear`                            | Fetch the issues assigned to your username.    |
-| `swelog fetch linear --date MM-DD-YYYY`          | Date to fetch Linear activity for.             |
-| `swelog fetch linear --yesterday`                | Fetch yesterday's Linear activity.             |
-
-See [GitHub](/integrations/github/),
-[Google Calendar](/integrations/google-calendar/), and
-[Linear](/integrations/linear/).
-
-## Managing credentials
-
-| Command                          | Behavior                                                          |
-| -------------------------------- | ----------------------------------------------------------------- |
-| `swelog auth status`             | Show which credentials are stored, without printing them.         |
-| `swelog auth clear <credential>` | Remove a stored credential so the next command asks for it again. |
-| `swelog auth clear --all`        | Remove every stored credential.                                   |
-
-`<credential>` is one of `github`, `open-ai`, `open-router`, `anthropic`,
-`linear`, or
-`google-calendar`. See [Authentication](/reference/authentication/).
-
-## Relative date flags
-
-`--yesterday` saves you working out yesterday's date. On 08-21-2026, these two
-do the same thing:
+A Rust CLI to track your daily accomplishments in Obsidian.
 
 ```sh
-swelog fetch github --yesterday
-swelog fetch github --date 08-20-2026
+swelog <COMMAND>
 ```
 
-`--last-week` works the same way for `swelog summarize week`. That command
-defaults to the Monday of the week containing today, so `--last-week` picks the
-Monday one week earlier. Run on a Monday, it summarizes the week that just
-ended.
+| Command     | Description                                                                                  |
+| ----------- | -------------------------------------------------------------------------------------------- |
+| `init`      | Create a default swelog config file                                                          |
+| `setup`     | Setup the swelog files in your Obsidian vault                                                |
+| `summarize` | Summarize your configured work file. By default, this is an alias for `swelog summarize day` |
+| `log`       | Write your work file into a dated daily log                                                  |
+| `reset`     | Reset your work file to the default content                                                  |
+| `fetch`     | Add data from external sources to your work file                                             |
+| `config`    | Display your current swelog configuration and where it is stored                             |
+| `auth`      | Manage the credentials swelog stores in your operating system keyring                        |
+| `help`      | Print this message or the help of the given subcommand(s)                                    |
 
-You cannot use both flags at once. `--date` with `--yesterday`, or `--week-of`
-with `--last-week`, gives an error.
+| Flag              | Description   |
+| ----------------- | ------------- |
+| `-h`, `--help`    | Print help    |
+| `-V`, `--version` | Print version |
+
+## `swelog init`
+
+Create a default swelog config file.
+
+```sh
+swelog init [OPTIONS]
+```
+
+| Flag           | Description                                     |
+| -------------- | ----------------------------------------------- |
+| `--force`      | Overwrite an existing config file with defaults |
+| `-h`, `--help` | Print help                                      |
+
+## `swelog setup`
+
+Setup the swelog files in your Obsidian vault.
+
+```sh
+swelog setup [OPTIONS]
+```
+
+| Flag           | Description                     |
+| -------------- | ------------------------------- |
+| `--force`      | Overwrite existing swelog files |
+| `-h`, `--help` | Print help                      |
+
+## `swelog summarize`
+
+Summarize your configured work file. By default, this is an alias for
+`swelog summarize day`.
+
+```sh
+swelog summarize [OPTIONS] [COMMAND]
+```
+
+| Command | Description                                                          |
+| ------- | -------------------------------------------------------------------- |
+| `day`   | Summarize your configured work file and log it into the daily folder |
+| `week`  | Summarize the past week of daily logs into a weekly log              |
+| `help`  | Print this message or the help of the given subcommand(s)            |
+
+| Flag                  | Description                                                                 |
+| --------------------- | --------------------------------------------------------------------------- |
+| `--date <MM-DD-YYYY>` | Date to write the daily log for in the format MM-DD-YYYY. Defaults to today |
+| `--yesterday`         | Write the daily log for yesterday instead of today                          |
+| `--force`             | Overwrite existing daily log file                                           |
+| `--keep`              | Keep the current contents of the configured work file                       |
+| `-h`, `--help`        | Print help                                                                  |
+
+### `swelog summarize day`
+
+Summarize your configured work file and log it into the daily folder.
+
+```sh
+swelog summarize day [OPTIONS]
+```
+
+| Flag                  | Description                                                                 |
+| --------------------- | --------------------------------------------------------------------------- |
+| `--date <MM-DD-YYYY>` | Date to write the daily log for in the format MM-DD-YYYY. Defaults to today |
+| `--yesterday`         | Write the daily log for yesterday instead of today                          |
+| `--force`             | Overwrite existing daily log file                                           |
+| `--keep`              | Keep the current contents of the configured work file                       |
+| `-h`, `--help`        | Print help                                                                  |
+
+### `swelog summarize week`
+
+Summarize the past week of daily logs into a weekly log.
+
+```sh
+swelog summarize week [OPTIONS]
+```
+
+| Flag                     | Description                                                           |
+| ------------------------ | --------------------------------------------------------------------- |
+| `--week-of <MM-DD-YYYY>` | The Monday of the week you want to summarize in the format MM-DD-YYYY |
+| `--last-week`            | Summarize the previous week instead of the week containing today      |
+| `--force`                | Overwrite existing weekly log file                                    |
+| `-h`, `--help`           | Print help                                                            |
+
+## `swelog log`
+
+Write your work file into a dated daily log.
+
+```sh
+swelog log [OPTIONS]
+```
+
+| Flag                  | Description                                                                 |
+| --------------------- | --------------------------------------------------------------------------- |
+| `--date <MM-DD-YYYY>` | Date to write the daily log for in the format MM-DD-YYYY. Defaults to today |
+| `--yesterday`         | Write the daily log for yesterday instead of today                          |
+| `--force`             | Overwrite existing daily log file                                           |
+| `--keep`              | Keep the current contents of the configured work file                       |
+| `-h`, `--help`        | Print help                                                                  |
+
+## `swelog reset`
+
+Reset your work file to the default content.
+
+```sh
+swelog reset
+```
+
+| Flag           | Description |
+| -------------- | ----------- |
+| `-h`, `--help` | Print help  |
+
+## `swelog fetch`
+
+Add data from external sources to your work file.
+
+```sh
+swelog fetch <COMMAND>
+```
+
+| Command           | Description                                                         |
+| ----------------- | ------------------------------------------------------------------- |
+| `github`          | Fetch the PRs you opened and merged on a date in GitHub             |
+| `linear`          | Fetch the Linear issues assigned to your configured Linear username |
+| `google-calendar` | Fetch the meetings on your Google Calendar for a date               |
+| `help`            | Print this message or the help of the given subcommand(s)           |
+
+| Flag           | Description |
+| -------------- | ----------- |
+| `-h`, `--help` | Print help  |
+
+### `swelog fetch github`
+
+Fetch the PRs you opened and merged on a date in GitHub.
+
+```sh
+swelog fetch github [OPTIONS]
+```
+
+| Flag                  | Description                                                |
+| --------------------- | ---------------------------------------------------------- |
+| `--date <MM-DD-YYYY>` | Date to fetch GitHub activity for in the format MM-DD-YYYY |
+| `--yesterday`         | Fetch GitHub activity for yesterday instead of today       |
+| `-h`, `--help`        | Print help                                                 |
+
+### `swelog fetch linear`
+
+Fetch the Linear issues assigned to your configured Linear username.
+
+```sh
+swelog fetch linear [OPTIONS]
+```
+
+| Flag                  | Description                                                |
+| --------------------- | ---------------------------------------------------------- |
+| `--date <MM-DD-YYYY>` | Date to fetch Linear activity for in the format MM-DD-YYYY |
+| `--yesterday`         | Fetch the Linear issues you worked on yesterday            |
+| `-h`, `--help`        | Print help                                                 |
+
+### `swelog fetch google-calendar`
+
+Fetch the meetings on your Google Calendar for a date.
+
+```sh
+swelog fetch google-calendar [OPTIONS]
+```
+
+| Flag                  | Description                                                         |
+| --------------------- | ------------------------------------------------------------------- |
+| `--date <MM-DD-YYYY>` | Date to fetch Google Calendar meetings for in the format MM-DD-YYYY |
+| `--yesterday`         | Fetch the meetings you had yesterday                                |
+| `-h`, `--help`        | Print help                                                          |
+
+## `swelog config`
+
+Display your current swelog configuration and where it is stored.
+
+```sh
+swelog config
+```
+
+| Flag           | Description |
+| -------------- | ----------- |
+| `-h`, `--help` | Print help  |
+
+## `swelog auth`
+
+Manage the credentials swelog stores in your operating system keyring.
+
+```sh
+swelog auth <COMMAND>
+```
+
+| Command  | Description                                                               |
+| -------- | ------------------------------------------------------------------------- |
+| `status` | Show which credentials swelog has stored in your operating system keyring |
+| `clear`  | Remove a stored credential so the next command asks for it again          |
+| `help`   | Print this message or the help of the given subcommand(s)                 |
+
+| Flag           | Description |
+| -------------- | ----------- |
+| `-h`, `--help` | Print help  |
+
+### `swelog auth status`
+
+Show which credentials swelog has stored in your operating system keyring.
+
+```sh
+swelog auth status
+```
+
+| Flag           | Description |
+| -------------- | ----------- |
+| `-h`, `--help` | Print help  |
+
+### `swelog auth clear`
+
+Remove a stored credential so the next command asks for it again.
+
+```sh
+swelog auth clear [OPTIONS] [CREDENTIAL]
+```
+
+| Argument       | Description                                                                                                                                            |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `[CREDENTIAL]` | Credential to remove from your operating system keyring. Possible values: `github`, `open-ai`, `open-router`, `anthropic`, `linear`, `google-calendar` |
+
+| Flag           | Description                               |
+| -------------- | ----------------------------------------- |
+| `--all`        | Remove every credential swelog has stored |
+| `-h`, `--help` | Print help                                |

@@ -10,12 +10,12 @@ swelog init
 ```
 
 This creates `swelog/swelog.json` inside your operating system's configuration
-directory. Run `swelog config` at any time to display the exact path.
+directory.
 
 ## 2. Configure your Obsidian vault
 
 Open `swelog.json` and set `obsidianVaultPath` to the absolute path of your
-vault. That is the only field you have to fill in unless you want to change the default storage location.
+vault. That is the only field you have to fill in unless you want to change the names of the files and folders that swelog creates.
 
 ```json
 {
@@ -26,6 +26,8 @@ vault. That is the only field you have to fill in unless you want to change the 
   "weeklyLogFolderName": "Weekly"
 }
 ```
+
+See [Configuration](/getting-started/configuration/) for more details.
 
 ## 3. Create the vault files
 
@@ -38,19 +40,46 @@ Swelog creates the work file plus the daily and weekly log directories under
 
 ## 4. Write today's notes
 
-Open `WORK.md` in Obsidian and write down your priorities for the day under `## Priorities` and what you did under `## Log`.
+Open the work file in Obsidian. Write down your priorities for the day under `## Priorities` and what you did under `## Log`.
 
-## 5. Log the day
+## 5. Fetch activity from external sources
+
+Fetch GitHub activity, Linear tickets, Google Calendar events, etc.
+
+```sh
+swelog fetch github
+swelog fetch linear
+swelog fetch google-calendar
+```
+
+See [Integrations](/integrations/) for more details.
+
+## 6. Log the day
+
+### Option 1: Log your notes verbatim
 
 ```sh
 swelog log
 ```
 
-This stores your notes into the daily log and resets your work file. Use the `--keep` flag if you want to leave your work file alone.
+This stores your notes into the daily log and resets your work file.
 
-## Next steps
+### Option 2: Summarize your notes
 
-- Learn the [Daily Workflow](/guides/daily-workflow/).
-- Pull in activity from [external sources](/integrations/).
-- Opt into [Summarization](/summarization/) if you want a language model to write
-  the log for you.
+```sh
+swelog summarize
+```
+
+This stores an AI-generated summary of your notes, with your original notes appended at the bottom so they are not lost.
+
+See [Summarization](/summarization/) for more details.
+
+## 7. Summarize your week (Optional)
+
+Once it is Friday and you have a weeks worth of notes, you can summarize your week with
+
+```sh
+swelog summarize week
+```
+
+See [Summarization](/summarization/) for more details.

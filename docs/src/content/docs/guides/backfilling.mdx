@@ -13,7 +13,7 @@ Reconstruct a day you missed using the `--date`, `--yesterday`, `--week-of`, and
 # reset your work file to its default content
 swelog reset
 
-# write yesterday's notes into WORK.md
+# write yesterday's notes into the work file
 ...
 
 # fetch activity from external sources
@@ -21,19 +21,35 @@ swelog fetch github --yesterday
 swelog fetch google-calendar --yesterday
 swelog fetch linear --yesterday
 
-# log the day
+# option 1: log the day
 swelog log --yesterday
+
+# option 2: summarize the day
+swelog summarize --yesterday
 ```
 
 For any other day, use `--date` as below.
 
-## Backfill flags
+### Backfill flags
 
-| Command                        | Backfill flag          | Shortcut      |
-| ------------------------------ | ---------------------- | ------------- |
-| `swelog log`                   | `--date MM-DD-YYYY`    | `--yesterday` |
-| `swelog fetch github`          | `--date MM-DD-YYYY`    | `--yesterday` |
-| `swelog fetch google-calendar` | `--date MM-DD-YYYY`    | `--yesterday` |
-| `swelog fetch linear`          | `--date MM-DD-YYYY`    | `--yesterday` |
-| `swelog summarize day`         | `--date MM-DD-YYYY`    | `--yesterday` |
-| `swelog summarize week`        | `--week-of MM-DD-YYYY` | `--last-week` |
+| Command                        | Backfill flag       | Shortcut      |
+| ------------------------------ | ------------------- | ------------- |
+| `swelog log`                   | `--date MM-DD-YYYY` | `--yesterday` |
+| `swelog fetch github`          | `--date MM-DD-YYYY` | `--yesterday` |
+| `swelog fetch google-calendar` | `--date MM-DD-YYYY` | `--yesterday` |
+| `swelog fetch linear`          | `--date MM-DD-YYYY` | `--yesterday` |
+| `swelog summarize day`         | `--date MM-DD-YYYY` | `--yesterday` |
+
+## Backfilling a week
+
+If it is Monday and you forgot to summarize last week's notes, use the `--last-week` flag as below
+
+```sh
+swelog summarize week --last-week
+```
+
+To target a different week, use `--week-of` as below.
+
+```sh
+swelog summarize week --week-of MM-DD-YYYY
+```

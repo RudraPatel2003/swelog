@@ -34,7 +34,6 @@ export default defineConfig({
         {
           label: "Guides",
           items: [
-            { label: "Daily Workflow", slug: "guides/daily-workflow" },
             { label: "Backfilling a Missed Day", slug: "guides/backfilling" },
           ],
         },
