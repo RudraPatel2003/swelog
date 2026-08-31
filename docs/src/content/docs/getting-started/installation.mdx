@@ -5,6 +5,11 @@ description:
   date.
 ---
 
+## Requirements
+
+- **Obsidian** — swelog writes all of its files into an Obsidian vault.
+- **Node.js 22 or newer** — required by the npm package installer.
+
 Install the CLI with npm:
 
 ```sh
@@ -16,17 +21,5 @@ Confirm the installation:
 ```sh
 swelog --help
 ```
-
-## Requirements
-
-- **Obsidian** — swelog writes all of its files into an Obsidian vault.
-- **Node.js 22 or newer** — required by the npm package installer.
-
-## Optional
-
-- **A summarization provider** — [Ollama](/summarization/providers/) running
-  locally, or an API key for OpenAI, OpenRouter, or Anthropic. see [`swelog summarize`](/summarization/) for more information.
-- **Integration credentials** — a GitHub token, or a Linear or Google Calendar
-  authorization. see [`swelog fetch`](/integrations/) for more information.
 
 Once installed, continue to the [Quick Start](/getting-started/quick-start/).

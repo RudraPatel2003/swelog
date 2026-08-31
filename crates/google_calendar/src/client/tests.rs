@@ -30,9 +30,13 @@ fn get_event_page_query_parameters_bounds_the_request_to_the_day_window() {
     let query_parameters = get_event_page_query_parameters(&day_window, None);
 
     assert!(query_parameters.contains(&("timeMin", "2026-08-17T00:00:00-05:00".to_string())));
+
     assert!(query_parameters.contains(&("timeMax", "2026-08-18T00:00:00-05:00".to_string())));
+
     assert!(query_parameters.contains(&("singleEvents", "true".to_string())));
+
     assert!(query_parameters.contains(&("showDeleted", "true".to_string())));
+
     assert!(query_parameters.iter().all(|(name, _)| *name != "pageToken"));
 }
 

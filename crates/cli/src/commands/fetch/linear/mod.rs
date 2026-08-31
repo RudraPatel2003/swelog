@@ -63,6 +63,8 @@ impl LinearArgs {
 
         let activity_date = resolve_selected_date(date_selection, today)?;
 
+        println!("Fetching Linear issues...");
+
         let issues = match activity_date {
             Some(activity_date) => {
                 get_assigned_issues_on_date(linear_username, &activity_date).await?

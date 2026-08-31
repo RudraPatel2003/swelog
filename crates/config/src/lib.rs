@@ -1,3 +1,4 @@
+pub mod context_file;
 pub mod errors;
 pub mod init;
 pub mod overwrite;
@@ -6,6 +7,3 @@ pub mod setup;
 pub mod swelog_config;
 pub mod utils;
 pub mod work_file;
-
-#[cfg(test)]
-mod tests;

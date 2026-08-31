@@ -1,0 +1,2 @@
+root_dir = "docs/src/content/docs"
+fallback_extensions = ["mdx", "md"]

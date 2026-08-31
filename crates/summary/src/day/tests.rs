@@ -28,11 +28,23 @@ use super::*;
 
 const CONTEXT_FILE_CONTENT: &str = "backend engineer on platform team";
 
-const WORK_FILE_CONTENT: &str =
-    "# Today's Work\n\n## Focus\n- Debug API timeout\n\n## Log\n- Reviewed auth PR\n";
+const WORK_FILE_CONTENT: &str = r"# Today's Work
 
-const DEMOTED_WORK_FILE_CONTENT: &str =
-    "### Today's Work\n\n#### Focus\n- Debug API timeout\n\n#### Log\n- Reviewed auth PR";
+## Focus
+- Debug API timeout
+
+## Log
+- Reviewed auth PR
+";
+
+const DEMOTED_WORK_FILE_CONTENT: &str = r"### Today's Work
+
+#### Focus
+- Debug API timeout
+
+#### Log
+- Reviewed auth PR";
+
 const EXISTING_DAILY_LOG_CONTENT: &str = "existing daily log";
 
 struct TestContext {
@@ -54,10 +66,6 @@ impl TestContext {
         SwelogPaths::new(&self.config)
     }
 
-    fn context_file(&self) -> PathBuf {
-        self.swelog_paths().context_file
-    }
-
     fn work_file(&self) -> PathBuf {
         self.swelog_paths().work_file
     }
@@ -67,9 +75,9 @@ impl TestContext {
     }
 
     fn daily_log_file(&self) -> PathBuf {
-        let date = test_log_date();
+        let log_date = test_log_date();
 
-        let daily_log_file_name = get_daily_log_file_name(&date);
+        let daily_log_file_name = get_daily_log_file_name(&log_date);
 
         self.daily_log_directory().join(daily_log_file_name)
     }
@@ -77,9 +85,6 @@ impl TestContext {
     fn write_swelog_files(&self) {
         fs::create_dir_all(self.daily_log_directory())
             .expect("daily log directory should be created");
-
-        fs::write(self.context_file(), CONTEXT_FILE_CONTENT)
-            .expect("context file should be written");
 
         fs::write(self.work_file(), WORK_FILE_CONTENT).expect("work file should be written");
     }
@@ -104,12 +109,15 @@ fn test_log_date() -> NaiveDate {
 async fn summarize_daily_work_writes_generated_daily_log() {
     let test_context = get_test_context();
 
+    let log_date = test_log_date();
+
     test_context.write_swelog_files();
 
     summarize_daily_work_from_config(
         &test_context.config,
         &FakeLanguageModel,
-        &test_log_date(),
+        &log_date,
+        Some(CONTEXT_FILE_CONTENT),
         Overwrite::No,
         KeepWorkFile::No,
     )
@@ -130,27 +138,29 @@ async fn summarize_daily_work_writes_generated_daily_log() {
 }
 
 #[tokio::test]
-async fn summarize_daily_work_fails_when_context_file_is_missing() {
+async fn summarize_daily_work_prompts_without_context_when_none_is_given() {
     let test_context = get_test_context();
+
+    let log_date = test_log_date();
 
     test_context.write_swelog_files();
 
-    fs::remove_file(test_context.context_file()).expect("context file should be removed");
-
-    let error = summarize_daily_work_from_config(
+    summarize_daily_work_from_config(
         &test_context.config,
         &FakeLanguageModel,
-        &test_log_date(),
+        &log_date,
+        None,
         Overwrite::No,
         KeepWorkFile::No,
     )
     .await
-    .expect_err("missing context file should fail");
+    .expect("daily log should be written without context");
 
-    let error =
-        error.downcast_ref::<SwelogFileNotFound>().expect("error should be SwelogFileNotFound");
+    let daily_log_content =
+        fs::read_to_string(test_context.daily_log_file()).expect("daily log should be readable");
 
-    assert_eq!(error.swelog_path, test_context.context_file());
+    assert!(daily_log_content.contains("no context given"));
+    assert!(!daily_log_content.contains(CONTEXT_FILE_CONTENT));
 
     drop(test_context.temporary_directory);
 }
@@ -159,6 +169,8 @@ async fn summarize_daily_work_fails_when_context_file_is_missing() {
 async fn summarize_daily_work_fails_when_work_file_is_missing() {
     let test_context = get_test_context();
 
+    let log_date = test_log_date();
+
     test_context.write_swelog_files();
 
     fs::remove_file(test_context.work_file()).expect("work file should be removed");
@@ -166,7 +178,8 @@ async fn summarize_daily_work_fails_when_work_file_is_missing() {
     let error = summarize_daily_work_from_config(
         &test_context.config,
         &FakeLanguageModel,
-        &test_log_date(),
+        &log_date,
+        Some(CONTEXT_FILE_CONTENT),
         Overwrite::No,
         KeepWorkFile::No,
     )
@@ -185,6 +198,8 @@ async fn summarize_daily_work_fails_when_work_file_is_missing() {
 async fn summarize_daily_work_fails_when_daily_log_directory_is_missing() {
     let test_context = get_test_context();
 
+    let log_date = test_log_date();
+
     test_context.write_swelog_files();
 
     fs::remove_dir_all(test_context.daily_log_directory())
@@ -193,7 +208,8 @@ async fn summarize_daily_work_fails_when_daily_log_directory_is_missing() {
     let error = summarize_daily_work_from_config(
         &test_context.config,
         &FakeLanguageModel,
-        &test_log_date(),
+        &log_date,
+        Some(CONTEXT_FILE_CONTENT),
         Overwrite::No,
         KeepWorkFile::No,
     )
@@ -212,6 +228,8 @@ async fn summarize_daily_work_fails_when_daily_log_directory_is_missing() {
 async fn summarize_daily_work_fails_when_daily_log_exists_without_force() {
     let test_context = get_test_context();
 
+    let log_date = test_log_date();
+
     test_context.write_swelog_files();
 
     fs::write(test_context.daily_log_file(), EXISTING_DAILY_LOG_CONTENT)
@@ -220,7 +238,8 @@ async fn summarize_daily_work_fails_when_daily_log_exists_without_force() {
     let error = summarize_daily_work_from_config(
         &test_context.config,
         &FakeLanguageModel,
-        &test_log_date(),
+        &log_date,
+        Some(CONTEXT_FILE_CONTENT),
         Overwrite::No,
         KeepWorkFile::No,
     )
@@ -245,6 +264,8 @@ async fn summarize_daily_work_fails_when_daily_log_exists_without_force() {
 async fn summarize_daily_work_overwrites_existing_daily_log_with_force() {
     let test_context = get_test_context();
 
+    let log_date = test_log_date();
+
     test_context.write_swelog_files();
 
     fs::write(test_context.daily_log_file(), EXISTING_DAILY_LOG_CONTENT)
@@ -253,7 +274,8 @@ async fn summarize_daily_work_overwrites_existing_daily_log_with_force() {
     summarize_daily_work_from_config(
         &test_context.config,
         &FakeLanguageModel,
-        &test_log_date(),
+        &log_date,
+        Some(CONTEXT_FILE_CONTENT),
         Overwrite::Yes,
         KeepWorkFile::No,
     )
@@ -273,12 +295,15 @@ async fn summarize_daily_work_overwrites_existing_daily_log_with_force() {
 async fn summarize_daily_work_resets_work_file_by_default() {
     let test_context = get_test_context();
 
+    let log_date = test_log_date();
+
     test_context.write_swelog_files();
 
     summarize_daily_work_from_config(
         &test_context.config,
         &FakeLanguageModel,
-        &test_log_date(),
+        &log_date,
+        Some(CONTEXT_FILE_CONTENT),
         Overwrite::No,
         KeepWorkFile::No,
     )
@@ -303,12 +328,15 @@ async fn summarize_daily_work_resets_work_file_by_default() {
 async fn summarize_daily_work_keeps_work_file_when_keep_is_set() {
     let test_context = get_test_context();
 
+    let log_date = test_log_date();
+
     test_context.write_swelog_files();
 
     summarize_daily_work_from_config(
         &test_context.config,
         &FakeLanguageModel,
-        &test_log_date(),
+        &log_date,
+        Some(CONTEXT_FILE_CONTENT),
         Overwrite::No,
         KeepWorkFile::Yes,
     )
@@ -325,9 +353,21 @@ async fn summarize_daily_work_keeps_work_file_when_keep_is_set() {
 
 #[test]
 fn demote_markdown_headings_demotes_headings_by_two_levels() {
-    let markdown = "# Today\n\n## Focus\n### Details\n- Reviewed auth PR\n";
+    let markdown = r"# Today
+
+## Focus
+### Details
+- Reviewed auth PR
+";
 
     let demoted_markdown = demote_markdown_headings(markdown);
 
-    assert_eq!(demoted_markdown, "### Today\n\n#### Focus\n##### Details\n- Reviewed auth PR\n");
+    let expected_markdown = r"### Today
+
+#### Focus
+##### Details
+- Reviewed auth PR
+";
+
+    assert_eq!(demoted_markdown, expected_markdown);
 }

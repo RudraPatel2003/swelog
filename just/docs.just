@@ -25,4 +25,7 @@ docs-check-format:
 docs-knip:
     cd docs && pnpm knip
 
-docs-pr: docs-lint docs-check-format docs-build docs-knip
+docs-lychee:
+    lychee docs
+
+docs-pr: docs-lint docs-check-format docs-build docs-knip docs-lychee

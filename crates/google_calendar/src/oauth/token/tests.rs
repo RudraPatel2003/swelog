@@ -16,13 +16,14 @@ fn parse_token_response_reads_an_authorization_code_exchange() {
 
     let google_credentials = token_response.into_credentials("1//refresh".to_string(), RECEIVED_AT);
 
-    assert_eq!(google_credentials.access_token, "ya29.access");
-    assert_eq!(google_credentials.refresh_token, "1//refresh");
-    assert_eq!(google_credentials.expires_at, 1_003_599);
-    assert_eq!(
-        google_credentials.scopes,
-        vec!["https://www.googleapis.com/auth/calendar.events.readonly".to_string()]
-    );
+    let expected_google_credentials = GoogleCredentials {
+        access_token: "ya29.access".to_string(),
+        refresh_token: "1//refresh".to_string(),
+        expires_at: 1_003_599,
+        scopes: vec!["https://www.googleapis.com/auth/calendar.events.readonly".to_string()],
+    };
+
+    assert_eq!(google_credentials, expected_google_credentials);
 }
 
 #[test]

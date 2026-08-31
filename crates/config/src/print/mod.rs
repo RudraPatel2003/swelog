@@ -37,7 +37,6 @@ fn format_config(config: &SwelogConfig) -> String {
 
     output.push_str("Files\n");
     output.push_str(&format_row("Work file", &config.work_file_name));
-    output.push_str(&format_row("Context file", &config.context_file_name));
     output.push('\n');
 
     output.push_str("Logs\n");
@@ -48,7 +47,7 @@ fn format_config(config: &SwelogConfig) -> String {
     output.push_str("Summarization\n");
     output.push_str(&format_row(
         "Provider",
-        format_language_model_provider(config.language_model_provider.as_ref()),
+        format_language_model_provider(config.language_model_provider),
     ));
     output
         .push_str(&format_row("Model", config.language_model.as_deref().unwrap_or(NOT_CONFIGURED)));
@@ -64,13 +63,10 @@ fn format_config(config: &SwelogConfig) -> String {
 }
 
 const fn format_language_model_provider(
-    language_model_provider: Option<&LanguageModelProvider>,
+    language_model_provider: Option<LanguageModelProvider>,
 ) -> &'static str {
     match language_model_provider {
-        Some(LanguageModelProvider::Anthropic) => "Anthropic",
-        Some(LanguageModelProvider::Ollama) => "Ollama",
-        Some(LanguageModelProvider::OpenAi) => "OpenAI",
-        Some(LanguageModelProvider::OpenRouter) => "OpenRouter",
+        Some(language_model_provider) => language_model_provider.label(),
         None => NOT_CONFIGURED,
     }
 }

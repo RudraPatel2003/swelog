@@ -1,7 +1,4 @@
-use config::swelog_config::{
-    LanguageModelProvider,
-    SwelogConfig,
-};
+use config::swelog_config::LanguageModelProvider;
 use credentials::{
     credential::Credential,
     resolution::get_or_prompt_for_credential,
@@ -10,36 +7,17 @@ use miette::Result;
 
 use crate::{
     anthropic_language_model::AnthropicLanguageModel,
-    errors::SummarizationNotConfigured,
     language_model::LanguageModel,
     ollama_language_model::OllamaLanguageModel,
     open_ai_language_model::OpenAiLanguageModel,
     open_router_language_model::OpenRouterLanguageModel,
+    summarization_settings::SummarizationSettings,
 };
 
-struct SummarizationSettings<'a> {
-    language_model_provider: &'a LanguageModelProvider,
-    language_model: String,
-}
-
-impl<'a> SummarizationSettings<'a> {
-    fn from_config(swelog_config: &'a SwelogConfig) -> Result<Self> {
-        let language_model_provider =
-            swelog_config.language_model_provider.as_ref().ok_or(SummarizationNotConfigured)?;
-
-        let language_model =
-            swelog_config.language_model.clone().ok_or(SummarizationNotConfigured)?;
-
-        Ok(Self { language_model_provider, language_model })
-    }
-}
-
-pub fn get_language_model_from_config(
-    swelog_config: &SwelogConfig,
+pub fn get_language_model(
+    summarization_settings: &SummarizationSettings,
 ) -> Result<Box<dyn LanguageModel>> {
-    let summarization_settings = SummarizationSettings::from_config(swelog_config)?;
-
-    let language_model = summarization_settings.language_model;
+    let language_model = summarization_settings.language_model.clone();
 
     match summarization_settings.language_model_provider {
         LanguageModelProvider::Anthropic => {

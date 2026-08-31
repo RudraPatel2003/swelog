@@ -5,6 +5,10 @@ use super::{
     get_opened_prs_search_query,
     parse_search_issues_response_text,
 };
+use crate::issues::{
+    Issue,
+    PullRequest,
+};
 
 fn test_activity_date() -> NaiveDate {
     NaiveDate::from_ymd_opt(2026, 7, 4).expect("test date should be valid")
@@ -12,14 +16,18 @@ fn test_activity_date() -> NaiveDate {
 
 #[test]
 fn opened_prs_search_query_filters_to_activity_date() {
-    let search_query = get_opened_prs_search_query("octocat", test_activity_date());
+    let activity_date = test_activity_date();
+
+    let search_query = get_opened_prs_search_query("octocat", activity_date);
 
     assert_eq!(search_query, "author:octocat is:pr created:2026-07-04");
 }
 
 #[test]
 fn merged_prs_search_query_filters_to_activity_date() {
-    let search_query = get_merged_prs_search_query("octocat", test_activity_date());
+    let activity_date = test_activity_date();
+
+    let search_query = get_merged_prs_search_query("octocat", activity_date);
 
     assert_eq!(search_query, "author:octocat is:pr merged:2026-07-04");
 }
@@ -55,14 +63,32 @@ fn parse_search_issues_response_text_extracts_issues() {
         .expect("GitHub search issues response should parse");
 
     assert_eq!(issues.len(), 2);
-    assert_eq!(issues[0].title, "Add daily summary command");
-    assert_eq!(issues[0].number, 42);
-    assert_eq!(issues[0].repository_url, "https://api.github.com/repos/example/swelog");
-    assert_eq!(issues[0].pull_request.html_url, "https://github.com/example/swelog/pull/42");
-    assert_eq!(issues[1].title, "Fix work log formatting");
-    assert_eq!(issues[1].number, 43);
-    assert_eq!(issues[1].repository_url, "https://api.github.com/repos/example/swelog");
-    assert_eq!(issues[1].pull_request.html_url, "https://github.com/example/swelog/pull/43");
+
+    let first_issue = &issues[0];
+
+    let second_issue = &issues[1];
+
+    let expected_first_issue = Issue {
+        title: "Add daily summary command".to_string(),
+        number: 42,
+        repository_url: "https://api.github.com/repos/example/swelog".to_string(),
+        pull_request: PullRequest {
+            html_url: "https://github.com/example/swelog/pull/42".to_string(),
+        },
+    };
+
+    let expected_second_issue = Issue {
+        title: "Fix work log formatting".to_string(),
+        number: 43,
+        repository_url: "https://api.github.com/repos/example/swelog".to_string(),
+        pull_request: PullRequest {
+            html_url: "https://github.com/example/swelog/pull/43".to_string(),
+        },
+    };
+
+    assert_eq!(*first_issue, expected_first_issue);
+
+    assert_eq!(*second_issue, expected_second_issue);
 }
 
 #[test]
@@ -78,7 +104,7 @@ fn parse_search_issues_response_text_extracts_empty_issues() {
     let issues = parse_search_issues_response_text(response_body)
         .expect("empty GitHub search issues response should parse");
 
-    assert!(issues.is_empty());
+    assert_eq!(issues.len(), 0);
 }
 
 #[test]

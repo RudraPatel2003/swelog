@@ -21,8 +21,42 @@ See [Providers and Models](/summarization/providers/) for what each provider
 expects and how its credential is stored. Until both fields are present,
 `swelog summarize` fails and tells you so.
 
-Summaries also read `CONTEXT.md`, which is where you describe your role, team,
-systems, and priorities. Nothing else in swelog uses that file.
+## Giving the model more context
+
+If you want to give the model more to work with, add a `CONTEXT.md` file in the
+same folder as your work file — `<obsidianVaultPath>/<swelogFolderName>/`, next
+to `WORK.md`. Swelog picks it up automatically on every summary and tells you it
+did:
+
+```
+Summarizing day with provider Anthropic and model claude-sonnet-4-5...
+Incorporating CONTEXT.md...
+```
+
+The file is optional and nothing creates it for you. Without one, summaries are
+generated from your notes alone and the prompt simply says `no context given`.
+
+Describe the long-term things your daily notes leave out — your role, the
+systems you own, what you are being measured on:
+
+```markdown
+# Engineer Context
+
+## Role and Team
+
+Senior backend engineer on the Payments Platform team.
+
+## Systems Owned
+
+Checkout APIs, billing event pipeline, payout reconciliation jobs.
+
+## Current Priorities
+
+Improve billing reliability, reduce support escalations, and make deployments
+safer.
+```
+
+Nothing else in swelog reads that file.
 
 ## `swelog log` and `swelog summarize day`
 
@@ -77,7 +111,7 @@ For the day before, `--yesterday` saves you working out the date.
 See [Backfilling a Missed Day](/guides/backfilling/).
 
 :::caution[Summarizing sends your notes to a provider]
-`swelog summarize` uploads the full contents of your work file and your context
-file to whichever provider you configured. It is the one place your own notes
-leave your computer. See the [Privacy Policy](/legal/privacy/).
+`swelog summarize` uploads the full contents of your work file, and your context
+file when you have one, to whichever provider you configured. It is the one place
+your own notes leave your computer. See the [Privacy Policy](/legal/privacy/).
 :::

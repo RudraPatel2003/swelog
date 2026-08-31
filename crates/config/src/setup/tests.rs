@@ -68,14 +68,11 @@ fn setup_creates_swelog_files_and_directories() {
     setup_swelog_files_from_config(&test_context.config, overwrite_existing_files)
         .expect("swelog files should be created");
 
-    let context_file_contents =
-        fs::read_to_string(test_context.context_file()).expect("context file should be readable");
-
     let work_file_contents =
         fs::read_to_string(test_context.work_file()).expect("work file should be readable");
 
-    assert_eq!(context_file_contents, DEFAULT_CONTEXT_FILE_CONTENT);
     assert!(is_default_work_file_content(&work_file_contents));
+    assert!(!test_context.context_file().exists());
     assert!(test_context.daily_log_directory().is_dir());
     assert!(test_context.weekly_log_directory().is_dir());
 
@@ -89,7 +86,6 @@ fn setup_uses_configured_path_names() {
     let config = SwelogConfig {
         obsidian_vault_path: temporary_directory.path().to_path_buf(),
         swelog_folder_name: String::from("accomplishments"),
-        context_file_name: String::from("team-context.md"),
         work_file_name: String::from("daily-work.md"),
         daily_log_folder_name: String::from("days"),
         weekly_log_folder_name: String::from("weeks"),
@@ -102,42 +98,11 @@ fn setup_uses_configured_path_names() {
     setup_swelog_files_from_config(&config, overwrite_existing_files)
         .expect("swelog files should be created");
 
-    assert!(swelog_paths.context_file.is_file());
     assert!(swelog_paths.work_file.is_file());
     assert!(swelog_paths.daily_log_directory.is_dir());
     assert!(swelog_paths.weekly_log_directory.is_dir());
 
     drop(temporary_directory);
-}
-
-#[test]
-fn setup_fails_when_context_file_exists_without_force() {
-    let test_context = get_test_context();
-
-    fs::create_dir_all(test_context.swelog_directory())
-        .expect("swelog directory should be created");
-
-    fs::write(test_context.context_file(), EXISTING_CONTEXT_FILE_CONTENT)
-        .expect("existing context file should be written");
-
-    let overwrite_existing_files = Overwrite::No;
-
-    let result = setup_swelog_files_from_config(&test_context.config, overwrite_existing_files);
-
-    let error = result.expect_err("existing context file should not be overwritten without force");
-
-    let error = error
-        .downcast_ref::<SwelogFilesAlreadyExist>()
-        .expect("error should be SetupFilesAlreadyExist");
-
-    assert_eq!(error.swelog_path, test_context.context_file());
-
-    let context_file_contents =
-        fs::read_to_string(test_context.context_file()).expect("context file should be readable");
-
-    assert_eq!(context_file_contents, EXISTING_CONTEXT_FILE_CONTENT);
-
-    drop(test_context.temporary_directory);
 }
 
 #[test]
@@ -222,9 +187,6 @@ fn setup_overwrites_existing_files_when_force_is_set() {
     fs::create_dir_all(test_context.swelog_directory())
         .expect("swelog directory should be created");
 
-    fs::write(test_context.context_file(), EXISTING_CONTEXT_FILE_CONTENT)
-        .expect("existing context file should be written");
-
     fs::write(test_context.work_file(), EXISTING_WORK_FILE_CONTENT)
         .expect("existing work file should be written");
 
@@ -233,13 +195,9 @@ fn setup_overwrites_existing_files_when_force_is_set() {
     setup_swelog_files_from_config(&test_context.config, overwrite_existing_files)
         .expect("swelog files should be overwritten");
 
-    let context_file_contents =
-        fs::read_to_string(test_context.context_file()).expect("context file should be readable");
-
     let work_file_contents =
         fs::read_to_string(test_context.work_file()).expect("work file should be readable");
 
-    assert_eq!(context_file_contents, DEFAULT_CONTEXT_FILE_CONTENT);
     assert!(is_default_work_file_content(&work_file_contents));
     assert!(test_context.daily_log_directory().is_dir());
     assert!(test_context.weekly_log_directory().is_dir());
@@ -262,10 +220,32 @@ fn setup_accepts_existing_log_directories_when_force_is_set() {
     setup_swelog_files_from_config(&test_context.config, overwrite_existing_files)
         .expect("existing log directories should be accepted");
 
-    assert!(test_context.context_file().is_file());
     assert!(test_context.work_file().is_file());
     assert!(test_context.daily_log_directory().is_dir());
     assert!(test_context.weekly_log_directory().is_dir());
+
+    drop(test_context.temporary_directory);
+}
+
+#[test]
+fn setup_leaves_an_existing_context_file_alone() {
+    let test_context = get_test_context();
+
+    fs::create_dir_all(test_context.swelog_directory())
+        .expect("swelog directory should be created");
+
+    fs::write(test_context.context_file(), EXISTING_CONTEXT_FILE_CONTENT)
+        .expect("existing context file should be written");
+
+    let overwrite_existing_files = Overwrite::No;
+
+    setup_swelog_files_from_config(&test_context.config, overwrite_existing_files)
+        .expect("an existing context file should not block setup");
+
+    let context_file_contents =
+        fs::read_to_string(test_context.context_file()).expect("context file should be readable");
+
+    assert_eq!(context_file_contents, EXISTING_CONTEXT_FILE_CONTENT);
 
     drop(test_context.temporary_directory);
 }

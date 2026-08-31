@@ -3,32 +3,46 @@ title: GitHub
 description: Record the pull requests you opened and merged into your work file.
 ---
 
-GitHub fetching records the pull requests you opened or merged.
+Record the pull requests you opened and merged into your work file.
 
-## Setup
+## Usage
 
-1. Fetch today's activity:
+```sh
+swelog fetch github
+```
 
-   ```sh
-   swelog fetch github
-   ```
+The first run asks for a
+[GitHub personal access token](https://github.com/settings/tokens) with the
+`repo` scope and stores it in your operating system keyring.
 
-   The first run asks for a
-   [GitHub personal access token](https://github.com/settings/tokens) with the
-   `repo` scope and stores it in your operating system keyring.
+## Backfilling
 
-2. To fetch a previous date, provide `MM-DD-YYYY`:
+To fetch a previous date, provide `MM-DD-YYYY`:
 
-   ```sh
-   swelog fetch github --date 08-17-2026
-   ```
+```sh
+swelog fetch github --date 08-17-2026
+```
 
-   For the previous day, use `--yesterday` instead of working out the date:
+For the previous day, use `--yesterday` instead of working out the date:
 
-   ```sh
-   swelog fetch github --yesterday
-   ```
+```sh
+swelog fetch github --yesterday
+```
 
 ## Output
 
 The command creates or updates the `## GitHub` section before `## Log`.
+
+```markdown
+## GitHub
+
+Opened
+
+- [swelog-cli/swelog-cli#123](https://github.com/swelog-cli/swelog-cli/pull/123)
+- [swelog-cli/swelog-cli#456](https://github.com/swelog-cli/swelog-cli/pull/456)
+
+Merged:
+
+- [swelog-cli/swelog-cli#789](https://github.com/swelog-cli/swelog-cli/pull/789)
+- [swelog-cli/swelog-cli#1011](https://github.com/swelog-cli/swelog-cli/pull/1011)
+```

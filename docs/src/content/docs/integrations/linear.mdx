@@ -3,46 +3,45 @@ title: Linear
 description: Record the Linear issues assigned to you, grouped by status.
 ---
 
-Linear fetching records the issues assigned to a configured workspace user.
-By default, it gets the issues assigned to you today, plus the ones you just moved to canceled or completed.
+Record the Linear issues assigned to you into your work file.
 
 ## Setup
 
-1. Set the exact Linear assignee name in `swelog.json`:
+Set the exact Linear assignee name in `swelog.json`. See [Configuration](/getting-started/configuration/) for more information.
 
-   ```json
-   {
-     "linearUsername": "rudrapatel"
-   }
-   ```
+```json
+{
+  "linearUsername": "rudrapatel"
+}
+```
 
-2. Run the fetch command:
+## Usage
 
-   ```sh
-   swelog fetch linear
-   ```
+Run the fetch command:
 
-3. On first use, swelog prints a Linear authorization URL and attempts to open
-   it in your browser. If the browser does not open, use the printed URL.
+```sh
+swelog fetch linear
+```
 
-4. Complete authorization. Swelog stores the resulting OAuth credentials in your
-   operating system keyring and reuses or refreshes them on later runs.
+On first use, swelog prints a Linear authorization URL and attempts to open
+it in your browser. If the browser does not open, use the printed URL.
 
-5. To backfill a previous date, provide `MM-DD-YYYY`:
+## Backfilling
 
-   ```sh
-   swelog fetch linear --date 08-17-2026
-   ```
+To backfill a previous date, provide `MM-DD-YYYY`:
 
-   This records the issues Linear shows activity on for that date, including the
-   ones you completed or canceled, because finishing an issue is exactly what a
-   past day's log should capture.
+```sh
+swelog fetch linear --date 08-17-2026
+```
 
-   `--yesterday` does the same for the day before:
+This records the issues that Linear shows activity on for that date, including the
+ones you completed or canceled
 
-   ```sh
-   swelog fetch linear --yesterday
-   ```
+`--yesterday` does the same for the day before:
+
+```sh
+swelog fetch linear --yesterday
+```
 
 ## Output
 

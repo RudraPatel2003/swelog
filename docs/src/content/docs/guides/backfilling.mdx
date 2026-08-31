@@ -5,22 +5,23 @@ description:
   --last-week flags.
 ---
 
-Every command that is tied to a day accepts `--date MM-DD-YYYY`, so a day you
-missed can be reconstructed later. `WORK.md` is always the scratch pad the daily
-log is built from; the date flags only decide which day is fetched and which file
-the log is written to.
+Reconstruct a day you missed using the `--date`, `--yesterday`, `--week-of`, and `--last-week` flags.
 
 ## Backfilling yesterday
 
-Yesterday is the day people miss most, so it has its own flag. `--yesterday`
-picks the same date `--date` would, without you having to work it out:
-
 ```sh
+# reset your work file to its default content
 swelog reset
+
 # write yesterday's notes into WORK.md
+...
+
+# fetch activity from external sources
 swelog fetch github --yesterday
 swelog fetch google-calendar --yesterday
 swelog fetch linear --yesterday
+
+# log the day
 swelog log --yesterday
 ```
 
@@ -36,8 +37,3 @@ For any other day, use `--date` as below.
 | `swelog fetch linear`          | `--date MM-DD-YYYY`    | `--yesterday` |
 | `swelog summarize day`         | `--date MM-DD-YYYY`    | `--yesterday` |
 | `swelog summarize week`        | `--week-of MM-DD-YYYY` | `--last-week` |
-
-`--last-week` goes back one week from the Monday `swelog summarize week` would
-pick on its own, which is always the Monday of the week containing today. Run it
-on a Monday and you get the week that just ended, which is what you want when you
-left on Friday without filing the week.

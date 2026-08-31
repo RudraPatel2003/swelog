@@ -25,7 +25,9 @@ fn collect_meetings_keeps_a_timed_event() {
         ]
     }"#;
 
-    assert_eq!(only_meeting(response_text).title, "Standup");
+    let meeting = only_meeting(response_text);
+
+    assert_eq!(meeting.title, "Standup");
 }
 
 #[test]
@@ -41,7 +43,9 @@ fn collect_meetings_drops_all_day_events() {
         ]
     }"#;
 
-    assert_eq!(parse_meetings(response_text), Vec::new());
+    let meetings = parse_meetings(response_text);
+
+    assert_eq!(meetings, Vec::new());
 }
 
 #[test]
@@ -57,7 +61,9 @@ fn collect_meetings_marks_cancelled_events_as_cancelled() {
         ]
     }"#;
 
-    assert_eq!(only_meeting(response_text).status, MeetingStatus::Cancelled);
+    let meeting = only_meeting(response_text);
+
+    assert_eq!(meeting.status, MeetingStatus::Cancelled);
 }
 
 #[test]
@@ -77,7 +83,9 @@ fn collect_meetings_marks_events_the_authorized_account_declined_as_declined() {
         ]
     }"#;
 
-    assert_eq!(only_meeting(response_text).status, MeetingStatus::Declined);
+    let meeting = only_meeting(response_text);
+
+    assert_eq!(meeting.status, MeetingStatus::Declined);
 }
 
 #[test]
@@ -97,7 +105,9 @@ fn collect_meetings_leaves_events_only_another_attendee_declined_as_scheduled() 
         ]
     }"#;
 
-    assert_eq!(only_meeting(response_text).status, MeetingStatus::Scheduled);
+    let meeting = only_meeting(response_text);
+
+    assert_eq!(meeting.status, MeetingStatus::Scheduled);
 }
 
 #[test]
@@ -113,7 +123,9 @@ fn collect_meetings_leaves_solo_events_as_scheduled() {
         ]
     }"#;
 
-    assert_eq!(only_meeting(response_text).status, MeetingStatus::Scheduled);
+    let meeting = only_meeting(response_text);
+
+    assert_eq!(meeting.status, MeetingStatus::Scheduled);
 }
 
 #[test]
@@ -128,7 +140,9 @@ fn collect_meetings_names_an_untitled_event() {
         ]
     }"#;
 
-    assert_eq!(only_meeting(response_text).title, "(No title)");
+    let meeting = only_meeting(response_text);
+
+    assert_eq!(meeting.title, "(No title)");
 }
 
 #[test]
@@ -144,5 +158,7 @@ fn collect_meetings_collapses_multiple_line_titles() {
         ]
     }"#;
 
-    assert_eq!(only_meeting(response_text).title, "Design review sync");
+    let meeting = only_meeting(response_text);
+
+    assert_eq!(meeting.title, "Design review sync");
 }

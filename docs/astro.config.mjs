@@ -1,6 +1,7 @@
 // @ts-check
 import starlight from "@astrojs/starlight";
 import { defineConfig } from "astro/config";
+import starlightLinksValidator from "starlight-links-validator";
 import starlightThemeNext from "starlight-theme-next";
 
 // https://astro.build/config
@@ -8,7 +9,10 @@ export default defineConfig({
   site: "https://swelog.rudrapatel.net",
   integrations: [
     starlight({
-      plugins: [starlightThemeNext()],
+      plugins: [
+        starlightThemeNext(),
+        starlightLinksValidator({ sameSitePolicy: "validate" }),
+      ],
       title: "swelog",
       description: "A Rust CLI for tracking daily accomplishments in Obsidian.",
       social: [

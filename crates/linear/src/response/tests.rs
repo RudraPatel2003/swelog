@@ -4,15 +4,19 @@ use rmcp::model::{
 };
 
 use super::*;
-use crate::client::structs::LinearStatusType;
+use crate::client::structs::{
+    LinearIssue,
+    LinearIssueTimestamps,
+    LinearStatusType,
+};
 
-fn structured_result(value: Value) -> CallToolResult {
+fn get_mock_structured_result(value: Value) -> CallToolResult {
     CallToolResult::structured(value)
 }
 
 #[test]
 fn parse_issue_page_reads_linear_mcp_issue_shape() {
-    let result = structured_result(serde_json::json!({
+    let result = get_mock_structured_result(serde_json::json!({
         "issues": [{
             "id": "ISWF-3270",
             "title": "Remove organization:incidents flag",
@@ -26,26 +30,29 @@ fn parse_issue_page_reads_linear_mcp_issue_shape() {
     }));
 
     let page = parse_issue_page(result).expect("Linear MCP issue page should parse");
+
     let issue = page.issues.first().expect("page should contain one issue");
 
-    assert_eq!(issue.identifier, "ISWF-3270");
-    assert_eq!(issue.title, "Remove organization:incidents flag");
-    assert_eq!(issue.status_name, "In Review");
-    assert_eq!(issue.status_type, LinearStatusType::Started);
-    assert_eq!(
-        issue.timestamps.started_at,
-        Some("2026-08-11T20:25:10.197Z".parse().expect("timestamp should parse"))
-    );
-    assert_eq!(
-        issue.timestamps.updated_at,
-        Some("2026-08-13T18:22:28.096Z".parse().expect("timestamp should parse"))
-    );
-    assert_eq!(issue.timestamps.completed_at, None);
+    let expected_issue = LinearIssue {
+        identifier: "ISWF-3270".to_string(),
+        title: "Remove organization:incidents flag".to_string(),
+        url: "https://linear.app/getsentry/issue/ISWF-3270/remove-organizationincidents-flag"
+            .to_string(),
+        status_name: "In Review".to_string(),
+        status_type: LinearStatusType::Started,
+        timestamps: LinearIssueTimestamps {
+            started_at: Some("2026-08-11T20:25:10.197Z".parse().expect("timestamp should parse")),
+            updated_at: Some("2026-08-13T18:22:28.096Z".parse().expect("timestamp should parse")),
+            ..LinearIssueTimestamps::default()
+        },
+    };
+
+    assert_eq!(*issue, expected_issue);
 }
 
 #[test]
 fn parse_issue_page_reads_unrecognized_status_type_as_other() {
-    let result = structured_result(serde_json::json!({
+    let result = get_mock_structured_result(serde_json::json!({
         "issues": [{
             "id": "ENG-1",
             "title": "Investigate the outage",
@@ -56,6 +63,7 @@ fn parse_issue_page_reads_unrecognized_status_type_as_other() {
     }));
 
     let page = parse_issue_page(result).expect("unknown status types should parse");
+
     let issue = page.issues.first().expect("page should contain one issue");
 
     assert_eq!(issue.status_type, LinearStatusType::Other);
@@ -63,7 +71,7 @@ fn parse_issue_page_reads_unrecognized_status_type_as_other() {
 
 #[test]
 fn take_next_cursor_returns_cursor_when_more_pages_remain() {
-    let result = structured_result(serde_json::json!({
+    let result = get_mock_structured_result(serde_json::json!({
         "issues": [],
         "hasNextPage": true,
         "nextCursor": "next-page"
@@ -76,7 +84,7 @@ fn take_next_cursor_returns_cursor_when_more_pages_remain() {
 
 #[test]
 fn take_next_cursor_reads_the_cursor_the_linear_mcp_server_returns() {
-    let result = structured_result(serde_json::json!({
+    let result = get_mock_structured_result(serde_json::json!({
         "issues": [],
         "hasNextPage": true,
         "cursor": "next-page"
@@ -89,7 +97,7 @@ fn take_next_cursor_reads_the_cursor_the_linear_mcp_server_returns() {
 
 #[test]
 fn take_next_cursor_stops_on_the_last_page() {
-    let result = structured_result(serde_json::json!({
+    let result = get_mock_structured_result(serde_json::json!({
         "issues": [],
         "hasNextPage": false,
         "nextCursor": "stale-cursor"

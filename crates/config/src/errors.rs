@@ -38,7 +38,7 @@ pub struct ConfigNotFound {
 #[diagnostic(
     code(swelog::config::swelog_files_already_exist),
     help(
-        "use `swelog setup --force` to overwrite existing swelog files. This will overwrite the existing context and work files but keep the contents of the daily and weekly log directories."
+        "use `swelog setup --force` to overwrite existing swelog files. This will overwrite the existing work file but keep the contents of the daily and weekly log directories."
     )
 )]
 pub struct SwelogFilesAlreadyExist {

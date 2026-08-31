@@ -3,7 +3,6 @@ pub mod swelog_paths;
 
 use std::fs;
 
-use default_files::DEFAULT_CONTEXT_FILE_CONTENT;
 use miette::{
     IntoDiagnostic,
     Result,
@@ -31,12 +30,6 @@ pub fn setup_swelog_files_from_config(
     fs::create_dir_all(&swelog_paths.swelog_directory).into_diagnostic().wrap_err_with(|| {
         format!("failed to create swelog directory at {}", swelog_paths.swelog_directory.display())
     })?;
-
-    fs::write(&swelog_paths.context_file, DEFAULT_CONTEXT_FILE_CONTENT)
-        .into_diagnostic()
-        .wrap_err_with(|| {
-            format!("failed to write context file at {}", swelog_paths.context_file.display())
-        })?;
 
     create_or_reset_work_file(swelog_config)?;
 

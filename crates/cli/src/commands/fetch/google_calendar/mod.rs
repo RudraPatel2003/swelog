@@ -49,6 +49,8 @@ impl GoogleCalendarArgs {
 
         let meeting_date = resolve_selected_date(date_selection, today)?.unwrap_or(today);
 
+        println!("Fetching Google Calendar events...");
+
         let meetings = get_primary_calendar_meetings_on_date(&meeting_date).await?;
 
         if meetings.is_empty() {
