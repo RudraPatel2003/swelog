@@ -4,8 +4,6 @@
 
 The documentation website for `swelog-cli`, built with
 [Astro](https://astro.build) and [Starlight](https://starlight.astro.build).
-Content lives as Markdown and MDX in `src/content/docs/`, where each file is
-exposed as a route based on its file name.
 
 ## Recommended VSCode Extensions
 
@@ -74,5 +72,4 @@ example `just docs-dev` and `just docs-build`.
 
 ## Deployment
 
-The site is hosted on Vercel with the project **Root Directory** set to `docs`,
-which keeps the Rust workspace out of the docs build entirely.
+The site is hosted on Vercel with the project root directory set to `docs`.
