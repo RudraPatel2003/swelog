@@ -1,8 +1,8 @@
-list-release-version:
-    cargo run -p xtask -- list-version
+list-release-tag:
+    cargo run -p xtask -- list-release-tag
 
-check-release-version *args:
-    cargo run -p xtask -- check-release-version "$@"
+check-release-version:
+    cargo run -p xtask -- check-release-version
 
 update-release-version *args:
     cargo run -p xtask -- update-release-version "$@"

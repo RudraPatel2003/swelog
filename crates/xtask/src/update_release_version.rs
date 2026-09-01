@@ -1,40 +1,29 @@
-use std::{
-    env::Args,
-    fs,
-    path::Path,
-};
+use std::env::Args;
 
 use miette::{
-    IntoDiagnostic,
     Result,
-    WrapErr,
     miette,
 };
-use serde_json::Value;
 
 use crate::{
+    crate_versions::{
+        list_crate_manifest_paths,
+        write_crate_version,
+    },
     package_json::{
         DOCS_PACKAGE_JSON_PATH,
         NPM_PACKAGE_JSON_PATH,
-        read_docs_package_json,
-        read_npm_package_json,
+        write_package_json_version,
     },
-    release_tag::{
-        get_release_tag_from_args,
-        get_release_version_from_tag,
-    },
+    release_tag::get_release_version_from_tag,
 };
 
-const CRATES_DIRECTORY: &str = "./crates";
-
 pub fn run_update_release_version(mut args: Args) -> Result<()> {
-    let release_tag = get_release_tag_from_args(&mut args, "update-release-version")?;
+    let release_tag = get_release_tag_from_args(&mut args)?;
 
     let release_version = get_release_version_from_tag(&release_tag)?;
 
-    update_npm_version(release_version)?;
-
-    update_docs_version(release_version)?;
+    update_package_json_versions(release_version)?;
 
     update_crate_versions(release_version)?;
 
@@ -43,91 +32,32 @@ pub fn run_update_release_version(mut args: Args) -> Result<()> {
     Ok(())
 }
 
-fn update_docs_version(release_version: &str) -> Result<()> {
-    let mut package_json = read_docs_package_json()?;
+fn get_release_tag_from_args(args: &mut Args) -> Result<String> {
+    let Some(release_tag) = args.next() else {
+        return Err(miette!("usage: cargo run -p xtask -- update-release-version <release-tag>"));
+    };
 
-    let package_json_object = package_json
-        .as_object_mut()
-        .ok_or_else(|| miette!("docs/package.json is not a JSON object"))?;
+    if let Some(extra_arg) = args.next() {
+        return Err(miette!("unexpected argument: {extra_arg}"));
+    }
 
-    package_json_object.insert(String::from("version"), Value::String(release_version.to_string()));
-
-    let mut serialized = serde_json::to_string_pretty(&package_json)
-        .into_diagnostic()
-        .wrap_err("failed to serialize docs/package.json")?;
-
-    serialized.push('\n');
-
-    fs::write(DOCS_PACKAGE_JSON_PATH, serialized)
-        .into_diagnostic()
-        .wrap_err("failed to write docs/package.json")?;
-
-    Ok(())
+    Ok(release_tag)
 }
 
-fn update_npm_version(release_version: &str) -> Result<()> {
-    let mut package_json = read_npm_package_json()?;
-
-    let package_json_object = package_json
-        .as_object_mut()
-        .ok_or_else(|| miette!("npm/package.json is not a JSON object"))?;
-
-    package_json_object.insert(String::from("version"), Value::String(release_version.to_string()));
-
-    let mut serialized = serde_json::to_string_pretty(&package_json)
-        .into_diagnostic()
-        .wrap_err("failed to serialize npm/package.json")?;
-
-    serialized.push('\n');
-
-    fs::write(NPM_PACKAGE_JSON_PATH, serialized)
-        .into_diagnostic()
-        .wrap_err("failed to write npm/package.json")?;
-
-    Ok(())
-}
-
-fn update_crate_versions(release_version: &str) -> Result<()> {
-    let entries = fs::read_dir(CRATES_DIRECTORY)
-        .into_diagnostic()
-        .wrap_err("failed to read crates directory")?;
-
-    for entry in entries {
-        let entry = entry.into_diagnostic().wrap_err("failed to read crates directory entry")?;
-
-        let cargo_toml_path = entry.path().join("Cargo.toml");
-
-        if !cargo_toml_path.is_file() {
-            continue;
-        }
-
-        update_cargo_toml_version(&cargo_toml_path, release_version)?;
+fn update_package_json_versions(release_version: &str) -> Result<()> {
+    for package_json_path in [NPM_PACKAGE_JSON_PATH, DOCS_PACKAGE_JSON_PATH] {
+        write_package_json_version(package_json_path, release_version)?;
     }
 
     Ok(())
 }
 
-fn update_cargo_toml_version(cargo_toml_path: &Path, release_version: &str) -> Result<()> {
-    let cargo_toml = fs::read_to_string(cargo_toml_path)
-        .into_diagnostic()
-        .wrap_err_with(|| format!("failed to read {}", cargo_toml_path.display()))?;
+fn update_crate_versions(release_version: &str) -> Result<()> {
+    let crate_manifest_paths = list_crate_manifest_paths()?;
 
-    let mut lines: Vec<String> = cargo_toml.lines().map(str::to_string).collect();
-
-    let version_line = lines
-        .iter_mut()
-        .find(|line| line.trim_start().starts_with("version ="))
-        .ok_or_else(|| miette!("no version line found in {}", cargo_toml_path.display()))?;
-
-    *version_line = format!("version = \"{release_version}\"");
-
-    let mut updated = lines.join("\n");
-
-    updated.push('\n');
-
-    fs::write(cargo_toml_path, updated)
-        .into_diagnostic()
-        .wrap_err_with(|| format!("failed to write {}", cargo_toml_path.display()))?;
+    for manifest_path in crate_manifest_paths {
+        write_crate_version(&manifest_path, release_version)?;
+    }
 
     Ok(())
 }

@@ -1,20 +1,16 @@
-use std::env::Args;
-
 use miette::{
     Result,
     miette,
 };
 
-pub fn get_release_tag_from_args(args: &mut Args, command: &str) -> Result<String> {
-    let Some(release_tag) = args.next() else {
-        return Err(miette!("usage: cargo run -p xtask -- {command} <release-tag>"));
-    };
+use crate::crate_versions::read_cli_version;
 
-    if let Some(extra_arg) = args.next() {
-        return Err(miette!("unexpected argument: {extra_arg}"));
-    }
+pub fn run_list_release_tag() -> Result<()> {
+    let cli_version = read_cli_version()?;
 
-    Ok(release_tag)
+    println!("v{cli_version}");
+
+    Ok(())
 }
 
 pub fn get_release_version_from_tag(release_tag: &str) -> Result<&str> {

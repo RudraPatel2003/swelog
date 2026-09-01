@@ -48,16 +48,10 @@ Run the full pull request check:
 just pr
 ```
 
-Check the current version of the CLI when preparing for a release:
+Check that every crate and package version is aligned:
 
 ```sh
-just list-release-version
-```
-
-Update the version of the CLI when preparing for a release:
-
-```sh
-just update-release-version <release-tag>
+just check-release-version
 ```
 
 ## Google Calendar OAuth Client
@@ -85,6 +79,10 @@ just run fetch google-calendar
 ## Documentation Site
 
 See [docs/README.md](./docs/README.md)
+
+## Release Process
+
+Releases are cut from `main`. To publish a new version, run `just update-release-version <release-tag>` in your branch.
 
 ## Pull Request Process
 
