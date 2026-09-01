@@ -149,14 +149,30 @@ swelog fetch <COMMAND>
 
 | Command           | Description                                                         |
 | ----------------- | ------------------------------------------------------------------- |
+| `all`             | Run every fetch command you have configured a credential for        |
 | `github`          | Fetch the PRs you opened and merged on a date in GitHub             |
 | `linear`          | Fetch the Linear issues assigned to your configured Linear username |
 | `google-calendar` | Fetch the meetings on your Google Calendar for a date               |
+| `status`          | Show which fetch commands `swelog fetch all` will run               |
 | `help`            | Print this message or the help of the given subcommand(s)           |
 
 | Flag           | Description |
 | -------------- | ----------- |
 | `-h`, `--help` | Print help  |
+
+### `swelog fetch all`
+
+Run every fetch command you have configured a credential for.
+
+```sh
+swelog fetch all [OPTIONS]
+```
+
+| Flag                  | Description                                         |
+| --------------------- | --------------------------------------------------- |
+| `--date <MM-DD-YYYY>` | Date to fetch activity for in the format MM-DD-YYYY |
+| `--yesterday`         | Fetch activity for yesterday instead of today       |
+| `-h`, `--help`        | Print help                                          |
 
 ### `swelog fetch github`
 
@@ -199,6 +215,18 @@ swelog fetch google-calendar [OPTIONS]
 | `--date <MM-DD-YYYY>` | Date to fetch Google Calendar meetings for in the format MM-DD-YYYY |
 | `--yesterday`         | Fetch the meetings you had yesterday                                |
 | `-h`, `--help`        | Print help                                                          |
+
+### `swelog fetch status`
+
+Show which fetch commands `swelog fetch all` will run.
+
+```sh
+swelog fetch status
+```
+
+| Flag           | Description |
+| -------------- | ----------- |
+| `-h`, `--help` | Print help  |
 
 ## `swelog config`
 

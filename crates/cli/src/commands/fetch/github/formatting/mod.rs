@@ -27,7 +27,12 @@ fn format_pull_request_section(action: &str, pull_requests: &[Issue]) -> String 
 fn format_pull_request_line(pull_request: &Issue) -> String {
     let repository_name = get_repository_name_from_repository_url(&pull_request.repository_url);
 
-    format!("- [{repository_name}#{}]({})", pull_request.number, pull_request.pull_request.html_url)
+    let repository_link = format!("[{repository_name}](https://github.com/{repository_name})");
+
+    let pull_request_link =
+        format!("[#{}]({})", pull_request.number, pull_request.pull_request.html_url);
+
+    format!(r#"- "{}" ({pull_request_link}) in {repository_link}"#, pull_request.title)
 }
 
 #[cfg(test)]
