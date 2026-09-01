@@ -1,3 +1,5 @@
+mod parsing;
+
 use std::{
     fs,
     path::{
@@ -10,7 +12,11 @@ use miette::{
     IntoDiagnostic,
     Result,
     WrapErr,
-    miette,
+};
+
+use crate::crate_versions::parsing::{
+    parse_crate_version,
+    replace_crate_version,
 };
 
 const CRATES_DIRECTORY: &str = "./crates";
@@ -48,14 +54,8 @@ pub fn list_crate_manifest_paths() -> Result<Vec<PathBuf>> {
 pub fn read_crate_version(manifest_path: &Path) -> Result<String> {
     let manifest = read_manifest(manifest_path)?;
 
-    let version_line = manifest
-        .lines()
-        .find(|line| is_version_line(line))
-        .ok_or_else(|| miette!("no version line found in {}", manifest_path.display()))?;
-
-    let version = version_line.split('"').nth(1).ok_or_else(|| {
-        miette!("could not parse version from {}: {version_line}", manifest_path.display())
-    })?;
+    let version = parse_crate_version(&manifest)
+        .wrap_err_with(|| format!("failed to read the version in {}", manifest_path.display()))?;
 
     Ok(version.to_string())
 }
@@ -63,20 +63,10 @@ pub fn read_crate_version(manifest_path: &Path) -> Result<String> {
 pub fn write_crate_version(manifest_path: &Path, release_version: &str) -> Result<()> {
     let manifest = read_manifest(manifest_path)?;
 
-    let mut lines: Vec<String> = manifest.lines().map(str::to_string).collect();
+    let updated_manifest = replace_crate_version(&manifest, release_version)
+        .wrap_err_with(|| format!("failed to update the version in {}", manifest_path.display()))?;
 
-    let version_line = lines
-        .iter_mut()
-        .find(|line| is_version_line(line))
-        .ok_or_else(|| miette!("no version line found in {}", manifest_path.display()))?;
-
-    *version_line = format!("version = \"{release_version}\"");
-
-    let mut updated = lines.join("\n");
-
-    updated.push('\n');
-
-    fs::write(manifest_path, updated)
+    fs::write(manifest_path, updated_manifest)
         .into_diagnostic()
         .wrap_err_with(|| format!("failed to write {}", manifest_path.display()))
 }
@@ -85,8 +75,4 @@ fn read_manifest(manifest_path: &Path) -> Result<String> {
     fs::read_to_string(manifest_path)
         .into_diagnostic()
         .wrap_err_with(|| format!("failed to read {}", manifest_path.display()))
-}
-
-fn is_version_line(line: &str) -> bool {
-    line.trim_start().starts_with("version =")
 }
