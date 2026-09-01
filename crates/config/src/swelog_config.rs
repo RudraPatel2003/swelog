@@ -69,4 +69,12 @@ impl SwelogConfig {
             linear_username: None,
         }
     }
+
+    #[must_use]
+    pub fn get_linear_username(&self) -> Option<&str> {
+        self.linear_username
+            .as_deref()
+            .map(str::trim)
+            .filter(|linear_username| !linear_username.is_empty())
+    }
 }

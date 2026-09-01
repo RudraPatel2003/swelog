@@ -1,0 +1,122 @@
+use config::swelog_config::SwelogConfig;
+use credentials::{
+    credential::Credential,
+    resolution::read_credential_from_environment,
+    store::read_credential,
+};
+use miette::Result;
+
+use crate::commands::fetch::linear::describe_missing_linear_configuration;
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum FetchSource {
+    Github,
+    Linear,
+    GoogleCalendar,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum AuthorizationPresence {
+    Present,
+    Missing,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum FetchSourceAvailability {
+    Included,
+    MissingAuthorization,
+    MissingConfiguration { reason: &'static str },
+}
+
+impl FetchSource {
+    pub const ALL_FETCH_SOURCES: [Self; 3] = [Self::Github, Self::Linear, Self::GoogleCalendar];
+
+    #[must_use]
+    pub const fn label(self) -> &'static str {
+        match self {
+            Self::Github => "GitHub",
+            Self::Linear => "Linear",
+            Self::GoogleCalendar => "Google Calendar",
+        }
+    }
+
+    #[must_use]
+    pub const fn credential(self) -> Credential {
+        match self {
+            Self::Github => Credential::Github,
+            Self::Linear => Credential::Linear,
+            Self::GoogleCalendar => Credential::GoogleCalendar,
+        }
+    }
+
+    fn describe_missing_configuration(self, swelog_config: &SwelogConfig) -> Option<&'static str> {
+        match self {
+            Self::Linear => describe_missing_linear_configuration(swelog_config),
+
+            Self::Github | Self::GoogleCalendar => None,
+        }
+    }
+}
+
+pub fn collect_fetch_source_availabilities(
+    swelog_config: &SwelogConfig,
+) -> Result<Vec<(FetchSource, FetchSourceAvailability)>> {
+    FetchSource::ALL_FETCH_SOURCES
+        .into_iter()
+        .map(|fetch_source| {
+            let availability = resolve_fetch_source_availability(fetch_source, swelog_config)?;
+
+            Ok((fetch_source, availability))
+        })
+        .collect()
+}
+
+pub fn collect_included_fetch_sources(swelog_config: &SwelogConfig) -> Result<Vec<FetchSource>> {
+    let included_fetch_sources = collect_fetch_source_availabilities(swelog_config)?
+        .into_iter()
+        .filter(|(_, availability)| matches!(availability, FetchSourceAvailability::Included))
+        .map(|(fetch_source, _)| fetch_source)
+        .collect();
+
+    Ok(included_fetch_sources)
+}
+
+fn resolve_fetch_source_availability(
+    fetch_source: FetchSource,
+    swelog_config: &SwelogConfig,
+) -> Result<FetchSourceAvailability> {
+    let authorization = read_authorization_presence(fetch_source.credential())?;
+
+    Ok(get_fetch_source_availability(fetch_source, swelog_config, authorization))
+}
+
+fn read_authorization_presence(credential: Credential) -> Result<AuthorizationPresence> {
+    if read_credential_from_environment(credential).is_some() {
+        return Ok(AuthorizationPresence::Present);
+    }
+
+    if read_credential(credential)?.is_some() {
+        return Ok(AuthorizationPresence::Present);
+    }
+
+    Ok(AuthorizationPresence::Missing)
+}
+
+fn get_fetch_source_availability(
+    fetch_source: FetchSource,
+    swelog_config: &SwelogConfig,
+    authorization: AuthorizationPresence,
+) -> FetchSourceAvailability {
+    if authorization == AuthorizationPresence::Missing {
+        return FetchSourceAvailability::MissingAuthorization;
+    }
+
+    if let Some(reason) = fetch_source.describe_missing_configuration(swelog_config) {
+        return FetchSourceAvailability::MissingConfiguration { reason };
+    }
+
+    FetchSourceAvailability::Included
+}
+
+#[cfg(test)]
+mod tests;

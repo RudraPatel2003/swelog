@@ -6,7 +6,10 @@ use chrono::{
     NaiveDate,
 };
 use clap::Args;
-use config::config_file::read_config_file;
+use config::{
+    config_file::read_config_file,
+    swelog_config::SwelogConfig,
+};
 use dates::{
     date_format::DATE_VALUE_NAME,
     formatting::format_date,
@@ -48,49 +51,54 @@ pub struct LinearArgs {
 
 impl LinearArgs {
     pub async fn run(self) -> Result<()> {
-        let swelog_config = read_config_file()?;
-
-        let linear_username = swelog_config
-            .linear_username
-            .as_deref()
-            .map(str::trim)
-            .filter(|linear_username| !linear_username.is_empty())
-            .ok_or(MissingLinearUsername)?;
-
         let date_selection = DateSelection::from_date_flags(self.date, self.use_yesterday);
 
-        let today = Local::now().date_naive();
-
-        let activity_date = resolve_selected_date(date_selection, today)?;
-
-        println!("Fetching Linear issues...");
-
-        let issues = match activity_date {
-            Some(activity_date) => {
-                get_assigned_issues_on_date(linear_username, &activity_date).await?
-            }
-
-            None => get_current_active_assigned_issues(linear_username, &today).await?,
-        };
-
-        if issues.is_empty() {
-            remove_work_file_section_from_config(&swelog_config, LINEAR_SECTION_TITLE)?;
-
-            println!("{}", format_empty_message(activity_date.as_ref()));
-
-            return Ok(());
-        }
-
-        upsert_work_file_section_from_config(
-            &swelog_config,
-            LINEAR_SECTION_TITLE,
-            &format_linear_issues(&issues),
-        )?;
-
-        println!("{}", format_recorded_message(issues.len(), activity_date.as_ref()));
-
-        Ok(())
+        fetch_linear_issues(date_selection).await
     }
+}
+
+pub fn describe_missing_linear_configuration(swelog_config: &SwelogConfig) -> Option<&'static str> {
+    if swelog_config.get_linear_username().is_some() {
+        return None;
+    }
+
+    Some("linearUsername is not configured")
+}
+
+pub async fn fetch_linear_issues(date_selection: DateSelection) -> Result<()> {
+    let swelog_config = read_config_file()?;
+
+    let linear_username = swelog_config.get_linear_username().ok_or(MissingLinearUsername)?;
+
+    let today = Local::now().date_naive();
+
+    let activity_date = resolve_selected_date(date_selection, today)?;
+
+    println!("Fetching Linear issues...");
+
+    let issues = match activity_date {
+        Some(activity_date) => get_assigned_issues_on_date(linear_username, &activity_date).await?,
+
+        None => get_current_active_assigned_issues(linear_username, &today).await?,
+    };
+
+    if issues.is_empty() {
+        remove_work_file_section_from_config(&swelog_config, LINEAR_SECTION_TITLE)?;
+
+        println!("{}", format_empty_message(activity_date.as_ref()));
+
+        return Ok(());
+    }
+
+    upsert_work_file_section_from_config(
+        &swelog_config,
+        LINEAR_SECTION_TITLE,
+        &format_linear_issues(&issues),
+    )?;
+
+    println!("{}", format_recorded_message(issues.len(), activity_date.as_ref()));
+
+    Ok(())
 }
 
 fn format_empty_message(activity_date: Option<&NaiveDate>) -> String {

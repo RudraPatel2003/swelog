@@ -1,0 +1,63 @@
+use clap::Args;
+use config::config_file::read_config_file;
+use miette::Result;
+use owo_colors::OwoColorize;
+
+use crate::commands::fetch::sources::{
+    FetchSource,
+    FetchSourceAvailability,
+    collect_fetch_source_availabilities,
+};
+
+const LABEL_WIDTH: usize = 20;
+
+#[derive(Debug, Args)]
+pub struct StatusArgs {}
+
+impl StatusArgs {
+    pub fn run(self) -> Result<()> {
+        let _ = self;
+
+        let swelog_config = read_config_file()?;
+
+        println!("Fetch commands included in `swelog fetch all`:");
+
+        println!();
+
+        for (fetch_source, availability) in collect_fetch_source_availabilities(&swelog_config)? {
+            println!(
+                "{:LABEL_WIDTH$}{}",
+                fetch_source.label(),
+                describe_fetch_source_availability(fetch_source, availability)
+            );
+        }
+
+        println!();
+
+        println!("Run `swelog auth status` to see every credential swelog has stored.");
+
+        Ok(())
+    }
+}
+
+fn describe_fetch_source_availability(
+    fetch_source: FetchSource,
+    availability: FetchSourceAvailability,
+) -> String {
+    match availability {
+        FetchSourceAvailability::Included => format!("{}", "included".green()),
+
+        FetchSourceAvailability::MissingAuthorization => {
+            let description =
+                format!("not included, {} is not stored", fetch_source.credential().label());
+
+            format!("{}", description.dimmed())
+        }
+
+        FetchSourceAvailability::MissingConfiguration { reason } => {
+            let description = format!("not included, {reason}");
+
+            format!("{}", description.dimmed())
+        }
+    }
+}
