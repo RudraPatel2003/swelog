@@ -1,6 +1,5 @@
-mod cargo_version;
 mod check_release_version;
-mod list_version;
+mod crate_versions;
 mod package_json;
 mod release_tag;
 mod update_release_version;
@@ -15,7 +14,7 @@ use miette::{
 
 use crate::{
     check_release_version::run_check_release_version,
-    list_version::run_list_version,
+    release_tag::run_list_release_tag,
     update_release_version::run_update_release_version,
 };
 
@@ -25,17 +24,23 @@ fn main() -> Result<()> {
     let _ = args.next();
 
     let Some(command) = args.next() else {
-        return Err(get_usage_error());
+        let usage_error = get_usage_error();
+
+        return Err(usage_error);
     };
 
     match command.as_str() {
-        "check-release-version" => run_check_release_version(args),
+        "check-release-version" => run_check_release_version(),
 
         "update-release-version" => run_update_release_version(args),
 
-        "list-version" => run_list_version(),
+        "list-release-tag" => run_list_release_tag(),
 
-        _ => Err(get_usage_error()),
+        _ => {
+            let usage_error = get_usage_error();
+
+            Err(usage_error)
+        }
     }
 }
 

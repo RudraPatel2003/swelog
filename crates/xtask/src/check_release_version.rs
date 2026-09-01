@@ -1,73 +1,72 @@
-use std::env::Args;
-
 use miette::{
     Result,
     miette,
 };
-use serde_json::Value;
 
 use crate::{
-    cargo_version::get_rust_cli_version,
-    package_json::{
-        read_docs_package_json,
-        read_npm_package_json,
+    crate_versions::{
+        list_crate_manifest_paths,
+        read_cli_version,
+        read_crate_version,
     },
-    release_tag::{
-        get_release_tag_from_args,
-        get_release_version_from_tag,
+    package_json::{
+        DOCS_PACKAGE_JSON_PATH,
+        NPM_PACKAGE_JSON_PATH,
+        read_package_json_version,
     },
 };
 
-pub fn run_check_release_version(mut args: Args) -> Result<()> {
-    let release_tag = get_release_tag_from_args(&mut args, "check-release-version")?;
+struct VersionedFile {
+    path: String,
+    version: String,
+}
 
-    let release_version = get_release_version_from_tag(&release_tag)?;
+pub fn run_check_release_version() -> Result<()> {
+    let release_version = read_cli_version()?;
 
-    let rust_cli_version = get_rust_cli_version()?;
+    let versioned_files = read_versioned_files()?;
 
-    let npm_cli_version = get_npm_cli_version()?;
+    let mismatches = describe_version_mismatches(&release_version, &versioned_files);
 
-    let docs_version = get_docs_version()?;
-
-    if rust_cli_version != release_version {
+    if !mismatches.is_empty() {
         return Err(miette!(
-            "cli crate version {rust_cli_version} does not match release tag {release_tag}"
+            "expected every version to be {release_version}, but found:\n{}",
+            mismatches.join("\n")
         ));
     }
 
-    if npm_cli_version != release_version {
-        return Err(miette!(
-            "npm package version {npm_cli_version} does not match release tag {release_tag}"
-        ));
-    }
-
-    if docs_version != release_version {
-        return Err(miette!(
-            "docs package version {docs_version} does not match release tag {release_tag}"
-        ));
-    }
-
-    println!("Release tag {release_tag} matches CLI and npm package versions");
+    println!("All crate and package versions match {release_version}");
 
     Ok(())
 }
 
-fn get_npm_cli_version() -> Result<String> {
-    let package_json = read_npm_package_json()?;
+fn read_versioned_files() -> Result<Vec<VersionedFile>> {
+    let mut versioned_files = Vec::new();
 
-    let Some(version) = package_json.get("version").and_then(Value::as_str) else {
-        return Err(miette!("npm/package.json is missing a version"));
-    };
+    for manifest_path in list_crate_manifest_paths()? {
+        versioned_files.push(VersionedFile {
+            path: manifest_path.display().to_string(),
+            version: read_crate_version(&manifest_path)?,
+        });
+    }
 
-    Ok(version.to_string())
+    for package_json_path in [NPM_PACKAGE_JSON_PATH, DOCS_PACKAGE_JSON_PATH] {
+        versioned_files.push(VersionedFile {
+            path: package_json_path.to_string(),
+            version: read_package_json_version(package_json_path)?,
+        });
+    }
+
+    Ok(versioned_files)
 }
 
-fn get_docs_version() -> Result<String> {
-    let package_json = read_docs_package_json()?;
-
-    let Some(version) = package_json.get("version").and_then(Value::as_str) else {
-        return Err(miette!("docs/package.json is missing a version"));
-    };
-
-    Ok(version.to_string())
+fn describe_version_mismatches(
+    release_version: &str,
+    versioned_files: &[VersionedFile],
+) -> Vec<String> {
+    versioned_files
+        .iter()
+        .filter(|file| file.version != release_version)
+        .map(|file| format!("  {} is {}", file.path, file.version))
+        .collect()
 }
