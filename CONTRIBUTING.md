@@ -82,7 +82,7 @@ See [docs/README.md](./docs/README.md)
 
 ## Release Process
 
-Releases are cut from `main`. To publish a new version, run `just update-release-version <release-tag>` in your branch.
+Releases are cut from `main`. To publish a new version, run `just update-release-version <release-version>` in your branch, for example `just update-release-version 1.2.3`.
 
 ## Pull Request Process
 

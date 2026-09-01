@@ -1,5 +1,5 @@
 [package]
-name = "linear"
+name = "undo"
 version = "0.19.0"
 publish = false
 authors = { workspace = true }
@@ -16,16 +16,12 @@ license = { workspace = true }
 workspace = true
 
 [dependencies]
-async-trait = { workspace = true }
-chrono = { workspace = true }
-credentials = { path = "../credentials" }
-dates = { path = "../dates" }
+config = { path = "../config" }
+dirs = { workspace = true }
 miette = { workspace = true }
-oauth = { path = "../oauth" }
-reqwest = { workspace = true }
-rmcp = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 thiserror = { workspace = true }
-tokio = { workspace = true }
-webbrowser = { workspace = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }

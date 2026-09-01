@@ -18,7 +18,16 @@ use crate::{
         swelog_paths::SwelogPaths,
     },
     swelog_config::SwelogConfig,
+    swelog_file_existence::ensure_swelog_file_exists,
 };
+
+pub fn read_work_file(swelog_paths: &SwelogPaths) -> Result<String> {
+    ensure_swelog_file_exists(&swelog_paths.work_file)?;
+
+    fs::read_to_string(&swelog_paths.work_file).into_diagnostic().wrap_err_with(|| {
+        format!("failed to read work file at {}", swelog_paths.work_file.display())
+    })
+}
 
 pub fn create_or_reset_work_file(swelog_config: &SwelogConfig) -> Result<()> {
     let swelog_paths = SwelogPaths::new(swelog_config);
@@ -37,3 +46,6 @@ fn get_default_work_file_content() -> &'static str {
         DEFAULT_WORK_FILE_CONTENT
     }
 }
+
+#[cfg(test)]
+mod tests;

@@ -1,0 +1,47 @@
+use clap::Args;
+use config::{
+    config_file::read_config_file,
+    setup::swelog_paths::SwelogPaths,
+};
+use miette::Result;
+use owo_colors::OwoColorize;
+use undo::{
+    restore::restore_undo_snapshot,
+    snapshot::{
+        UndoSnapshot,
+        get_undo_snapshot_file_path,
+        read_undo_snapshot,
+        remove_undo_snapshot,
+    },
+};
+
+#[derive(Debug, Args)]
+pub struct UndoArgs {}
+
+impl UndoArgs {
+    pub fn run(self) -> Result<()> {
+        let _ = self;
+
+        let swelog_config = read_config_file()?;
+
+        let undo_snapshot_file = get_undo_snapshot_file_path()?;
+
+        let undo_snapshot = read_undo_snapshot(&undo_snapshot_file)?;
+
+        restore_undo_snapshot(&swelog_config, &undo_snapshot)?;
+
+        remove_undo_snapshot(&undo_snapshot_file)?;
+
+        print_undone_changes(&SwelogPaths::new(&swelog_config), &undo_snapshot);
+
+        Ok(())
+    }
+}
+
+fn print_undone_changes(swelog_paths: &SwelogPaths, undo_snapshot: &UndoSnapshot) {
+    println!("Restored your work file at {}", swelog_paths.work_file.display().cyan());
+
+    if let Some(created_file) = &undo_snapshot.created_file {
+        println!("Deleted {}", created_file.display().cyan());
+    }
+}

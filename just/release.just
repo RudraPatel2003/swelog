@@ -4,8 +4,8 @@ list-release-tag:
 check-release-version:
     cargo run -p xtask -- check-release-version
 
-update-release-version *args:
-    cargo run -p xtask -- update-release-version "$@"
+update-release-version release-version:
+    cargo run -p xtask -- update-release-version "$1"
 
 npm-pack-dry-run:
     npm pack ./npm --dry-run

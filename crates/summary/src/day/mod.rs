@@ -1,4 +1,7 @@
-use std::fs;
+use std::{
+    fs,
+    path::Path,
+};
 
 use chrono::NaiveDate;
 use config::{
@@ -24,9 +27,14 @@ use miette::{
     Result,
     WrapErr,
 };
+use undo::snapshot::{
+    UndoSnapshot,
+    write_undo_snapshot,
+};
 
 pub async fn summarize_daily_work_from_config(
     swelog_config: &SwelogConfig,
+    undo_snapshot_file: &Path,
     language_model: &dyn LanguageModel,
     log_date: &NaiveDate,
     context_file_content: Option<&str>,
@@ -51,6 +59,10 @@ pub async fn summarize_daily_work_from_config(
     fs::write(&daily_log_file, daily_log_content).into_diagnostic().wrap_err_with(|| {
         format!("failed to write daily log file at {}", daily_log_file.display())
     })?;
+
+    let undo_snapshot = UndoSnapshot { created_file: Some(daily_log_file), work_file_content };
+
+    write_undo_snapshot(undo_snapshot_file, &undo_snapshot)?;
 
     finish_work_file(swelog_config, keep_work_file)
 }

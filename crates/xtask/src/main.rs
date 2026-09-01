@@ -1,7 +1,8 @@
 mod check_release_version;
 mod crate_versions;
+mod list_release_tag;
 mod package_json;
-mod release_tag;
+mod release_version;
 mod update_release_version;
 
 use std::env;
@@ -14,7 +15,7 @@ use miette::{
 
 use crate::{
     check_release_version::run_check_release_version,
-    release_tag::run_list_release_tag,
+    list_release_tag::run_list_release_tag,
     update_release_version::run_update_release_version,
 };
 

@@ -21,6 +21,7 @@ swelog <COMMAND>
 | `summarize` | Summarize your configured work file. By default, this is an alias for `swelog summarize day` |
 | `log`       | Write your work file into a dated daily log                                                  |
 | `reset`     | Reset your work file to the default content                                                  |
+| `undo`      | Undo your last swelog log, swelog summarize day, or swelog reset                             |
 | `fetch`     | Add data from external sources to your work file                                             |
 | `config`    | Display your current swelog configuration and where it is stored                             |
 | `auth`      | Manage the credentials swelog stores in your operating system keyring                        |
@@ -133,6 +134,18 @@ Reset your work file to the default content.
 
 ```sh
 swelog reset
+```
+
+| Flag           | Description |
+| -------------- | ----------- |
+| `-h`, `--help` | Print help  |
+
+## `swelog undo`
+
+Undo your last `swelog log`, `swelog summarize day`, or `swelog reset`.
+
+```sh
+swelog undo
 ```
 
 | Flag           | Description |

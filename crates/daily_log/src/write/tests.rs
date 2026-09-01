@@ -11,6 +11,7 @@ use tempfile::{
     TempDir,
     tempdir,
 };
+use undo::snapshot::read_undo_snapshot;
 
 use super::*;
 use crate::{
@@ -41,6 +42,8 @@ const EXPECTED_DAILY_LOG_CONTENT: &str = r"# Daily Log - 05-23-2026
 
 const EXISTING_DAILY_LOG_CONTENT: &str = "existing daily log";
 
+const UNDO_SNAPSHOT_FILE_NAME: &str = "undo.json";
+
 struct TestContext {
     temporary_directory: TempDir,
     config: SwelogConfig,
@@ -65,6 +68,10 @@ impl TestContext {
         let daily_log_file_name = get_daily_log_file_name(&log_date);
 
         self.daily_log_directory().join(daily_log_file_name)
+    }
+
+    fn undo_snapshot_file(&self) -> PathBuf {
+        self.temporary_directory.path().join(UNDO_SNAPSHOT_FILE_NAME)
     }
 
     fn write_swelog_files(&self) {
@@ -98,8 +105,14 @@ fn write_daily_log_writes_the_work_file_into_the_daily_log_directory() {
 
     let log_date = test_log_date();
 
-    write_daily_log_from_config(&test_context.config, &log_date, Overwrite::No, KeepWorkFile::No)
-        .expect("daily log should be written");
+    write_daily_log_from_config(
+        &test_context.config,
+        &test_context.undo_snapshot_file(),
+        &log_date,
+        Overwrite::No,
+        KeepWorkFile::No,
+    )
+    .expect("daily log should be written");
 
     let daily_log_content =
         fs::read_to_string(test_context.daily_log_file()).expect("daily log should be readable");
@@ -119,8 +132,14 @@ fn write_daily_log_does_not_require_a_context_file() {
 
     let log_date = test_log_date();
 
-    write_daily_log_from_config(&test_context.config, &log_date, Overwrite::No, KeepWorkFile::No)
-        .expect("daily log should be written without a context file");
+    write_daily_log_from_config(
+        &test_context.config,
+        &test_context.undo_snapshot_file(),
+        &log_date,
+        Overwrite::No,
+        KeepWorkFile::No,
+    )
+    .expect("daily log should be written without a context file");
 
     drop(test_context.temporary_directory);
 }
@@ -138,6 +157,7 @@ fn write_daily_log_fails_when_work_file_is_not_updated() {
 
     let error = write_daily_log_from_config(
         &test_context.config,
+        &test_context.undo_snapshot_file(),
         &log_date,
         Overwrite::No,
         KeepWorkFile::No,
@@ -163,6 +183,7 @@ fn write_daily_log_fails_when_work_file_is_missing() {
 
     let error = write_daily_log_from_config(
         &test_context.config,
+        &test_context.undo_snapshot_file(),
         &log_date,
         Overwrite::No,
         KeepWorkFile::No,
@@ -190,6 +211,7 @@ fn write_daily_log_fails_when_daily_log_directory_is_missing() {
 
     let error = write_daily_log_from_config(
         &test_context.config,
+        &test_context.undo_snapshot_file(),
         &log_date,
         Overwrite::No,
         KeepWorkFile::No,
@@ -217,6 +239,7 @@ fn write_daily_log_fails_when_daily_log_exists_without_force() {
 
     let error = write_daily_log_from_config(
         &test_context.config,
+        &test_context.undo_snapshot_file(),
         &log_date,
         Overwrite::No,
         KeepWorkFile::No,
@@ -248,8 +271,14 @@ fn write_daily_log_overwrites_existing_daily_log_with_force() {
     fs::write(test_context.daily_log_file(), EXISTING_DAILY_LOG_CONTENT)
         .expect("existing daily log should be written");
 
-    write_daily_log_from_config(&test_context.config, &log_date, Overwrite::Yes, KeepWorkFile::No)
-        .expect("existing daily log should be overwritten with force");
+    write_daily_log_from_config(
+        &test_context.config,
+        &test_context.undo_snapshot_file(),
+        &log_date,
+        Overwrite::Yes,
+        KeepWorkFile::No,
+    )
+    .expect("existing daily log should be overwritten with force");
 
     let daily_log_content =
         fs::read_to_string(test_context.daily_log_file()).expect("daily log should be readable");
@@ -267,8 +296,14 @@ fn write_daily_log_resets_work_file_by_default() {
 
     test_context.write_swelog_files();
 
-    write_daily_log_from_config(&test_context.config, &log_date, Overwrite::No, KeepWorkFile::No)
-        .expect("daily log should be written");
+    write_daily_log_from_config(
+        &test_context.config,
+        &test_context.undo_snapshot_file(),
+        &log_date,
+        Overwrite::No,
+        KeepWorkFile::No,
+    )
+    .expect("daily log should be written");
 
     let work_file_content =
         fs::read_to_string(test_context.work_file()).expect("work file should be readable");
@@ -286,13 +321,96 @@ fn write_daily_log_keeps_work_file_when_keep_is_set() {
 
     let log_date = test_log_date();
 
-    write_daily_log_from_config(&test_context.config, &log_date, Overwrite::No, KeepWorkFile::Yes)
-        .expect("daily log should be written");
+    write_daily_log_from_config(
+        &test_context.config,
+        &test_context.undo_snapshot_file(),
+        &log_date,
+        Overwrite::No,
+        KeepWorkFile::Yes,
+    )
+    .expect("daily log should be written");
 
     let work_file_content =
         fs::read_to_string(test_context.work_file()).expect("work file should be readable");
 
     assert_eq!(work_file_content, WORK_FILE_CONTENT);
+
+    drop(test_context.temporary_directory);
+}
+
+#[test]
+fn write_daily_log_saves_an_undo_snapshot_of_the_work_file() {
+    let test_context = get_test_context();
+
+    test_context.write_swelog_files();
+
+    let log_date = test_log_date();
+
+    write_daily_log_from_config(
+        &test_context.config,
+        &test_context.undo_snapshot_file(),
+        &log_date,
+        Overwrite::No,
+        KeepWorkFile::No,
+    )
+    .expect("daily log should be written");
+
+    let undo_snapshot = read_undo_snapshot(&test_context.undo_snapshot_file())
+        .expect("undo snapshot should be read");
+
+    assert_eq!(undo_snapshot.created_file, Some(test_context.daily_log_file()));
+
+    assert_eq!(undo_snapshot.work_file_content, WORK_FILE_CONTENT);
+
+    drop(test_context.temporary_directory);
+}
+
+#[test]
+fn write_daily_log_saves_an_undo_snapshot_when_the_work_file_is_kept() {
+    let test_context = get_test_context();
+
+    test_context.write_swelog_files();
+
+    let log_date = test_log_date();
+
+    write_daily_log_from_config(
+        &test_context.config,
+        &test_context.undo_snapshot_file(),
+        &log_date,
+        Overwrite::No,
+        KeepWorkFile::Yes,
+    )
+    .expect("daily log should be written");
+
+    let undo_snapshot = read_undo_snapshot(&test_context.undo_snapshot_file())
+        .expect("undo snapshot should be read");
+
+    assert_eq!(undo_snapshot.created_file, Some(test_context.daily_log_file()));
+
+    drop(test_context.temporary_directory);
+}
+
+#[test]
+fn write_daily_log_does_not_save_an_undo_snapshot_when_the_work_file_is_not_updated() {
+    let test_context = get_test_context();
+
+    test_context.write_swelog_files();
+
+    fs::write(test_context.work_file(), DEFAULT_WORK_FILE_CONTENT)
+        .expect("default work file should be written");
+
+    let log_date = test_log_date();
+
+    write_daily_log_from_config(
+        &test_context.config,
+        &test_context.undo_snapshot_file(),
+        &log_date,
+        Overwrite::No,
+        KeepWorkFile::No,
+    )
+    .expect_err("default work file should fail");
+
+    assert!(!test_context.undo_snapshot_file().exists());
 
     drop(test_context.temporary_directory);
 }

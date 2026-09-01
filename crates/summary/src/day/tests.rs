@@ -23,6 +23,7 @@ use tempfile::{
     TempDir,
     tempdir,
 };
+use undo::snapshot::read_undo_snapshot;
 
 use super::*;
 
@@ -46,6 +47,8 @@ const DEMOTED_WORK_FILE_CONTENT: &str = r"### Today's Work
 - Reviewed auth PR";
 
 const EXISTING_DAILY_LOG_CONTENT: &str = "existing daily log";
+
+const UNDO_SNAPSHOT_FILE_NAME: &str = "undo.json";
 
 struct TestContext {
     temporary_directory: TempDir,
@@ -82,6 +85,10 @@ impl TestContext {
         self.daily_log_directory().join(daily_log_file_name)
     }
 
+    fn undo_snapshot_file(&self) -> PathBuf {
+        self.temporary_directory.path().join(UNDO_SNAPSHOT_FILE_NAME)
+    }
+
     fn write_swelog_files(&self) {
         fs::create_dir_all(self.daily_log_directory())
             .expect("daily log directory should be created");
@@ -115,6 +122,7 @@ async fn summarize_daily_work_writes_generated_daily_log() {
 
     summarize_daily_work_from_config(
         &test_context.config,
+        &test_context.undo_snapshot_file(),
         &FakeLanguageModel,
         &log_date,
         Some(CONTEXT_FILE_CONTENT),
@@ -150,6 +158,7 @@ async fn summarize_daily_work_prompts_without_context_when_none_is_given() {
 
     summarize_daily_work_from_config(
         &test_context.config,
+        &test_context.undo_snapshot_file(),
         &FakeLanguageModel,
         &log_date,
         None,
@@ -181,6 +190,7 @@ async fn summarize_daily_work_fails_when_work_file_is_missing() {
 
     let error = summarize_daily_work_from_config(
         &test_context.config,
+        &test_context.undo_snapshot_file(),
         &FakeLanguageModel,
         &log_date,
         Some(CONTEXT_FILE_CONTENT),
@@ -211,6 +221,7 @@ async fn summarize_daily_work_fails_when_daily_log_directory_is_missing() {
 
     let error = summarize_daily_work_from_config(
         &test_context.config,
+        &test_context.undo_snapshot_file(),
         &FakeLanguageModel,
         &log_date,
         Some(CONTEXT_FILE_CONTENT),
@@ -241,6 +252,7 @@ async fn summarize_daily_work_fails_when_daily_log_exists_without_force() {
 
     let error = summarize_daily_work_from_config(
         &test_context.config,
+        &test_context.undo_snapshot_file(),
         &FakeLanguageModel,
         &log_date,
         Some(CONTEXT_FILE_CONTENT),
@@ -277,6 +289,7 @@ async fn summarize_daily_work_overwrites_existing_daily_log_with_force() {
 
     summarize_daily_work_from_config(
         &test_context.config,
+        &test_context.undo_snapshot_file(),
         &FakeLanguageModel,
         &log_date,
         Some(CONTEXT_FILE_CONTENT),
@@ -306,6 +319,7 @@ async fn summarize_daily_work_resets_work_file_by_default() {
 
     summarize_daily_work_from_config(
         &test_context.config,
+        &test_context.undo_snapshot_file(),
         &FakeLanguageModel,
         &log_date,
         Some(CONTEXT_FILE_CONTENT),
@@ -340,6 +354,7 @@ async fn summarize_daily_work_keeps_work_file_when_keep_is_set() {
 
     summarize_daily_work_from_config(
         &test_context.config,
+        &test_context.undo_snapshot_file(),
         &FakeLanguageModel,
         &log_date,
         Some(CONTEXT_FILE_CONTENT),
@@ -376,4 +391,34 @@ fn demote_markdown_headings_demotes_headings_by_two_levels() {
 ";
 
     assert_eq!(demoted_markdown, expected_markdown);
+}
+
+#[tokio::test]
+async fn summarize_daily_work_saves_an_undo_snapshot_of_the_original_work_file() {
+    let test_context = get_test_context();
+
+    let log_date = test_log_date();
+
+    test_context.write_swelog_files();
+
+    summarize_daily_work_from_config(
+        &test_context.config,
+        &test_context.undo_snapshot_file(),
+        &FakeLanguageModel,
+        &log_date,
+        Some(CONTEXT_FILE_CONTENT),
+        Overwrite::No,
+        KeepWorkFile::No,
+    )
+    .await
+    .expect("daily log should be written");
+
+    let undo_snapshot = read_undo_snapshot(&test_context.undo_snapshot_file())
+        .expect("undo snapshot should be read");
+
+    assert_eq!(undo_snapshot.created_file, Some(test_context.daily_log_file()));
+
+    assert_eq!(undo_snapshot.work_file_content, WORK_FILE_CONTENT);
+
+    drop(test_context.temporary_directory);
 }

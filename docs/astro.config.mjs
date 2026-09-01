@@ -35,6 +35,7 @@ export default defineConfig({
           label: "Guides",
           items: [
             { label: "Backfilling a Missed Day", slug: "guides/backfilling" },
+            { label: "Undoing a Command", slug: "guides/undo" },
           ],
         },
         {
