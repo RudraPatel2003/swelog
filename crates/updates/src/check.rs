@@ -21,7 +21,7 @@ use crate::{
     registry::fetch_latest_version,
 };
 
-const REFRESH_GRACE_PERIOD: Duration = Duration::from_millis(400);
+const REFRESH_GRACE_PERIOD: Duration = Duration::from_secs(1);
 
 pub struct PendingUpdateNotice {
     update_notice: Option<String>,
