@@ -1,5 +1,5 @@
 [package]
-name = "summary"
+name = "undo"
 version = "0.19.0"
 publish = false
 authors = { workspace = true }
@@ -16,16 +16,12 @@ license = { workspace = true }
 workspace = true
 
 [dependencies]
-async-trait = { workspace = true }
-chrono = { workspace = true }
 config = { path = "../config" }
-daily_log = { path = "../daily_log" }
-dates = { path = "../dates" }
+dirs = { workspace = true }
 miette = { workspace = true }
-llm = { path = "../llm" }
+serde = { workspace = true }
+serde_json = { workspace = true }
 thiserror = { workspace = true }
-undo = { path = "../undo" }
 
 [dev-dependencies]
 tempfile = { workspace = true }
-tokio = { workspace = true }

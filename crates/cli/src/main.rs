@@ -39,6 +39,8 @@ async fn run_command(command: Commands) -> Result<()> {
 
         Commands::Reset(reset_args) => reset_args.run(),
 
+        Commands::Undo(undo_args) => undo_args.run(),
+
         Commands::Fetch(fetch_args) => fetch_args.run().await,
 
         Commands::Config(config_args) => config_args.run(),

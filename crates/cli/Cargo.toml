@@ -36,4 +36,5 @@ summary = { path = "../summary" }
 thiserror = { workspace = true }
 time = { path = "../time" }
 tokio = { workspace = true }
+undo = { path = "../undo" }
 updates = { path = "../updates" }

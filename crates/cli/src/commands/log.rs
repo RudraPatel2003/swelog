@@ -7,6 +7,7 @@ use daily_log::{
 };
 use miette::Result;
 use owo_colors::OwoColorize;
+use undo::snapshot::get_undo_snapshot_file_path;
 
 use crate::shared::daily_log_args::DailyLogArgs;
 
@@ -24,8 +25,11 @@ impl LogArgs {
 
         let log_date = self.daily_log_args.resolve_log_date(today)?;
 
+        let undo_snapshot_file = get_undo_snapshot_file_path()?;
+
         write_daily_log_from_config(
             &swelog_config,
+            &undo_snapshot_file,
             &log_date,
             self.daily_log_args.overwrite(),
             self.daily_log_args.keep_work_file(),

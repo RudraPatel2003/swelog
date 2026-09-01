@@ -21,6 +21,7 @@ config = { path = "../config" }
 dates = { path = "../dates" }
 miette = { workspace = true }
 thiserror = { workspace = true }
+undo = { path = "../undo" }
 
 [dev-dependencies]
 tempfile = { workspace = true }
