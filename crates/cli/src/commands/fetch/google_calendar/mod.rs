@@ -11,15 +11,22 @@ use dates::{
     formatting::format_date,
     parsing::parse_date,
 };
-use google_calendar::client::get_primary_calendar_meetings_on_date;
-use markdown::work_file::{
-    remove_work_file_section_from_config,
-    upsert_work_file_section_from_config,
+use google_calendar::client::{
+    get_primary_calendar_meetings_on_date,
+    structs::Meeting,
 };
 use miette::Result;
 
 use crate::{
-    commands::fetch::google_calendar::formatting::format_meetings,
+    commands::fetch::{
+        google_calendar::formatting::format_meetings,
+        outcome::{
+            FetchOutcome,
+            WorkFileChange,
+            record_fetch_outcome,
+        },
+        sources::FetchSource,
+    },
     shared::date_selection::{
         DateSelection,
         resolve_selected_date,
@@ -50,33 +57,49 @@ impl GoogleCalendarArgs {
 pub async fn fetch_google_calendar_meetings(date_selection: DateSelection) -> Result<()> {
     let swelog_config = read_config_file()?;
 
+    FetchSource::GoogleCalendar.print_fetching_notice();
+
+    let fetch_outcome = collect_google_calendar_meetings(date_selection).await?;
+
+    record_fetch_outcome(&swelog_config, fetch_outcome)
+}
+
+pub async fn collect_google_calendar_meetings(
+    date_selection: DateSelection,
+) -> Result<FetchOutcome> {
     let today = Local::now().date_naive();
 
     let meeting_date = resolve_selected_date(date_selection, today)?.unwrap_or(today);
 
-    println!("Fetching Google Calendar events...");
-
     let meetings = get_primary_calendar_meetings_on_date(&meeting_date).await?;
 
+    let google_calendar_fetch_outcome = get_google_calendar_fetch_outcome(&meetings, meeting_date);
+
+    Ok(google_calendar_fetch_outcome)
+}
+
+fn get_google_calendar_fetch_outcome(
+    meetings: &[Meeting],
+    meeting_date: NaiveDate,
+) -> FetchOutcome {
     if meetings.is_empty() {
-        remove_work_file_section_from_config(&swelog_config, GOOGLE_CALENDAR_SECTION_TITLE)?;
-
-        println!("No meetings found for {}.", format_date(&meeting_date));
-
-        return Ok(());
+        return FetchOutcome {
+            work_file_change: WorkFileChange::RemoveSection {
+                section_title: GOOGLE_CALENDAR_SECTION_TITLE,
+            },
+            summary: format!("No meetings found for {}.", format_date(&meeting_date)),
+        };
     }
 
-    upsert_work_file_section_from_config(
-        &swelog_config,
-        GOOGLE_CALENDAR_SECTION_TITLE,
-        &format_meetings(&meetings),
-    )?;
-
-    println!(
-        "Added {} meetings from {} to your work file.",
-        meetings.len(),
-        format_date(&meeting_date)
-    );
-
-    Ok(())
+    FetchOutcome {
+        work_file_change: WorkFileChange::UpsertSection {
+            section_title: GOOGLE_CALENDAR_SECTION_TITLE,
+            content: format_meetings(meetings),
+        },
+        summary: format!(
+            "Added {} meetings from {} to your work file.",
+            meetings.len(),
+            format_date(&meeting_date)
+        ),
+    }
 }

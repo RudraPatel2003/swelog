@@ -18,17 +18,22 @@ use dates::{
 use linear::client::{
     get_assigned_issues_on_date,
     get_current_active_assigned_issues,
-};
-use markdown::work_file::{
-    remove_work_file_section_from_config,
-    upsert_work_file_section_from_config,
+    structs::LinearIssue,
 };
 use miette::Result;
 
 use crate::{
-    commands::fetch::linear::{
-        errors::MissingLinearUsername,
-        formatting::format_linear_issues,
+    commands::fetch::{
+        linear::{
+            errors::MissingLinearUsername,
+            formatting::format_linear_issues,
+        },
+        outcome::{
+            FetchOutcome,
+            WorkFileChange,
+            record_fetch_outcome,
+        },
+        sources::FetchSource,
     },
     shared::date_selection::{
         DateSelection,
@@ -68,13 +73,22 @@ pub fn describe_missing_linear_configuration(swelog_config: &SwelogConfig) -> Op
 pub async fn fetch_linear_issues(date_selection: DateSelection) -> Result<()> {
     let swelog_config = read_config_file()?;
 
+    FetchSource::Linear.print_fetching_notice();
+
+    let fetch_outcome = collect_linear_issues(&swelog_config, date_selection).await?;
+
+    record_fetch_outcome(&swelog_config, fetch_outcome)
+}
+
+pub async fn collect_linear_issues(
+    swelog_config: &SwelogConfig,
+    date_selection: DateSelection,
+) -> Result<FetchOutcome> {
     let linear_username = swelog_config.get_linear_username().ok_or(MissingLinearUsername)?;
 
     let today = Local::now().date_naive();
 
     let activity_date = resolve_selected_date(date_selection, today)?;
-
-    println!("Fetching Linear issues...");
 
     let issues = match activity_date {
         Some(activity_date) => get_assigned_issues_on_date(linear_username, &activity_date).await?,
@@ -82,23 +96,29 @@ pub async fn fetch_linear_issues(date_selection: DateSelection) -> Result<()> {
         None => get_current_active_assigned_issues(linear_username, &today).await?,
     };
 
+    let linear_fetch_outcome = get_linear_fetch_outcome(&issues, activity_date.as_ref());
+
+    Ok(linear_fetch_outcome)
+}
+
+fn get_linear_fetch_outcome(
+    issues: &[LinearIssue],
+    activity_date: Option<&NaiveDate>,
+) -> FetchOutcome {
     if issues.is_empty() {
-        remove_work_file_section_from_config(&swelog_config, LINEAR_SECTION_TITLE)?;
-
-        println!("{}", format_empty_message(activity_date.as_ref()));
-
-        return Ok(());
+        return FetchOutcome {
+            work_file_change: WorkFileChange::RemoveSection { section_title: LINEAR_SECTION_TITLE },
+            summary: format_empty_message(activity_date),
+        };
     }
 
-    upsert_work_file_section_from_config(
-        &swelog_config,
-        LINEAR_SECTION_TITLE,
-        &format_linear_issues(&issues),
-    )?;
-
-    println!("{}", format_recorded_message(issues.len(), activity_date.as_ref()));
-
-    Ok(())
+    FetchOutcome {
+        work_file_change: WorkFileChange::UpsertSection {
+            section_title: LINEAR_SECTION_TITLE,
+            content: format_linear_issues(issues),
+        },
+        summary: format_recorded_message(issues.len(), activity_date),
+    }
 }
 
 fn format_empty_message(activity_date: Option<&NaiveDate>) -> String {

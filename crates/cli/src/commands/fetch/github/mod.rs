@@ -16,16 +16,24 @@ use dates::{
 };
 use github::{
     issues::{
+        Issue,
         get_merged_prs,
         get_opened_prs,
     },
     users::get_github_username,
 };
-use markdown::work_file::upsert_work_file_section_from_config;
 use miette::Result;
 
 use crate::{
-    commands::fetch::github::formatting::format_github_activity,
+    commands::fetch::{
+        github::formatting::format_github_activity,
+        outcome::{
+            FetchOutcome,
+            WorkFileChange,
+            record_fetch_outcome,
+        },
+        sources::FetchSource,
+    },
     shared::date_selection::{
         DateSelection,
         resolve_selected_date,
@@ -56,6 +64,14 @@ impl GithubArgs {
 pub async fn fetch_github_activity(date_selection: DateSelection) -> Result<()> {
     let swelog_config = read_config_file()?;
 
+    FetchSource::Github.print_fetching_notice();
+
+    let fetch_outcome = collect_github_activity(date_selection).await?;
+
+    record_fetch_outcome(&swelog_config, fetch_outcome)
+}
+
+pub async fn collect_github_activity(date_selection: DateSelection) -> Result<FetchOutcome> {
     let github_token = get_or_prompt_for_credential(Credential::Github)?;
 
     let github_username = get_github_username(&github_token).await?;
@@ -64,28 +80,32 @@ pub async fn fetch_github_activity(date_selection: DateSelection) -> Result<()> 
 
     let activity_date = resolve_selected_date(date_selection, today)?.unwrap_or(today);
 
-    println!("Fetching GitHub PRs...");
+    let get_opened_prs_future = get_opened_prs(&github_token, &github_username, &activity_date);
 
-    let (opened_prs, merged_prs) = tokio::try_join!(
-        get_opened_prs(&github_token, &github_username, &activity_date),
-        get_merged_prs(&github_token, &github_username, &activity_date),
-    )?;
+    let get_merged_prs_future = get_merged_prs(&github_token, &github_username, &activity_date);
 
+    let (opened_prs, merged_prs) = tokio::try_join!(get_opened_prs_future, get_merged_prs_future)?;
+
+    let github_fetch_outcome = get_github_fetch_outcome(&opened_prs, &merged_prs);
+
+    Ok(github_fetch_outcome)
+}
+
+fn get_github_fetch_outcome(opened_prs: &[Issue], merged_prs: &[Issue]) -> FetchOutcome {
     if opened_prs.is_empty() && merged_prs.is_empty() {
-        println!("No GitHub activity found.");
-
-        return Ok(());
+        return FetchOutcome {
+            work_file_change: WorkFileChange::RemoveSection { section_title: GITHUB_SECTION_TITLE },
+            summary: "No GitHub activity found.".to_string(),
+        };
     }
 
     let pull_request_count = opened_prs.len().saturating_add(merged_prs.len());
 
-    upsert_work_file_section_from_config(
-        &swelog_config,
-        GITHUB_SECTION_TITLE,
-        &format_github_activity(&opened_prs, &merged_prs),
-    )?;
-
-    println!("Recorded {pull_request_count} GitHub PRs in your work file.");
-
-    Ok(())
+    FetchOutcome {
+        work_file_change: WorkFileChange::UpsertSection {
+            section_title: GITHUB_SECTION_TITLE,
+            content: format_github_activity(opened_prs, merged_prs),
+        },
+        summary: format!("Recorded {pull_request_count} GitHub PRs in your work file."),
+    }
 }

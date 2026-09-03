@@ -1,6 +1,6 @@
 [package]
 name = "cli"
-version = "0.19.0"
+version = "0.20.0"
 authors = { workspace = true }
 edition = { workspace = true }
 description = { workspace = true }
@@ -25,6 +25,7 @@ config = { path = "../config" }
 credentials = { path = "../credentials" }
 daily_log = { path = "../daily_log" }
 dates = { path = "../dates" }
+futures = { workspace = true }
 github = { path = "../github" }
 google_calendar = { path = "../google_calendar" }
 llm = { path = "../llm" }

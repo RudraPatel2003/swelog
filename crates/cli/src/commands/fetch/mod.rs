@@ -2,6 +2,7 @@ mod all;
 mod github;
 mod google_calendar;
 mod linear;
+mod outcome;
 mod sources;
 mod status;
 
