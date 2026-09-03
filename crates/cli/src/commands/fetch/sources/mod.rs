@@ -40,6 +40,14 @@ impl FetchSource {
         }
     }
 
+    const fn fetching_notice(self) -> &'static str {
+        match self {
+            Self::Github => "Fetching GitHub PRs...",
+            Self::Linear => "Fetching Linear issues...",
+            Self::GoogleCalendar => "Fetching Google Calendar events...",
+        }
+    }
+
     #[must_use]
     pub const fn credential(self) -> Credential {
         match self {
@@ -55,6 +63,10 @@ impl FetchSource {
 
             Self::Github | Self::GoogleCalendar => None,
         }
+    }
+
+    pub fn print_fetching_notice(self) {
+        println!("{}", self.fetching_notice());
     }
 }
 

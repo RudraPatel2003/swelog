@@ -175,7 +175,7 @@ swelog fetch <COMMAND>
 
 ### `swelog fetch all`
 
-Run every fetch command you have configured a credential for.
+Run every fetch command you have configured a credential for. The sources are fetched concurrently, then recorded in your work file one at a time in the order listed.
 
 ```sh
 swelog fetch all [OPTIONS]
