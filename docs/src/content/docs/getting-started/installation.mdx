@@ -29,3 +29,22 @@ swelog --help
 ```
 
 Once installed, continue to the [Quick Start](/getting-started/quick-start/).
+
+## WSL-specific configuration
+
+WSL ships without a Secret Service provider, so [Integrations](/integrations/) fail until you install one.
+
+Install the keyring and its manager:
+
+```sh
+sudo apt install gnome-keyring seahorse
+```
+
+Open the keyring manager:
+
+```sh
+seahorse
+```
+
+Create a new password keyring named `login`. Any password works, but your WSL
+user password is the easiest to remember.
