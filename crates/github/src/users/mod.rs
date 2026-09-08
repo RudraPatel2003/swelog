@@ -5,44 +5,20 @@ use miette::{
     Result,
     WrapErr,
 };
-use reqwest::{
-    Client,
-    header::{
-        ACCEPT,
-        USER_AGENT,
-    },
-};
 use structs::UserResponse;
 
-use crate::{
-    errors::FailedToSendGitHubRequest,
-    repository_name::{
-        GITHUB_ACCEPT_HEADER,
-        SWELOG_USER_AGENT,
-    },
-    response::read_successful_response_body,
-};
+use crate::client::GitHubClient;
 
-const USER_API_URL: &str = "https://api.github.com/user";
+const USER_ENDPOINT_PATH: &str = "user";
 
-pub async fn get_github_username(github_token: &str) -> Result<String> {
-    let client = Client::new();
+const NO_QUERY_PARAMETERS: [(&str, &str); 0] = [];
 
-    let response = client
-        .get(USER_API_URL)
-        .bearer_auth(github_token)
-        .header(ACCEPT, GITHUB_ACCEPT_HEADER)
-        .header(USER_AGENT, SWELOG_USER_AGENT)
-        .send()
-        .await
-        .into_diagnostic()
-        .wrap_err_with(|| FailedToSendGitHubRequest)?;
+impl GitHubClient {
+    pub async fn get_username(&self) -> Result<String> {
+        let response_text = self.get_json_text(USER_ENDPOINT_PATH, &NO_QUERY_PARAMETERS).await?;
 
-    let response_text = read_successful_response_body(response).await?;
-
-    let username = parse_user_response_text(&response_text)?;
-
-    Ok(username)
+        parse_user_response_text(&response_text)
+    }
 }
 
 fn parse_user_response_text(response_text: &str) -> Result<String> {

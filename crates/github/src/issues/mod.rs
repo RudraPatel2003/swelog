@@ -1,19 +1,10 @@
 mod structs;
 
-use std::collections::HashMap;
-
 use chrono::NaiveDate;
 use miette::{
     IntoDiagnostic,
     Result,
     WrapErr,
-};
-use reqwest::{
-    Client,
-    header::{
-        ACCEPT,
-        USER_AGENT,
-    },
 };
 use structs::SearchIssuesResponse;
 pub use structs::{
@@ -21,87 +12,43 @@ pub use structs::{
     PullRequest,
 };
 
-use crate::{
-    errors::FailedToSendGitHubRequest,
-    repository_name::{
-        GITHUB_ACCEPT_HEADER,
-        SWELOG_USER_AGENT,
-    },
-    response::read_successful_response_body,
-};
+use crate::client::GitHubClient;
 
-const MERGED_PRS_API_URL: &str = "https://api.github.com/search/issues";
+const SEARCH_ISSUES_ENDPOINT_PATH: &str = "search/issues";
 
-const OPENED_PRS_API_URL: &str = "https://api.github.com/search/issues";
+impl GitHubClient {
+    pub async fn get_merged_prs(
+        &self,
+        github_username: &str,
+        activity_date: &NaiveDate,
+    ) -> Result<Vec<Issue>> {
+        let search_query = get_merged_prs_search_query(github_username, *activity_date);
 
-pub async fn get_merged_prs(
-    github_token: &str,
-    github_username: &str,
-    activity_date: &NaiveDate,
-) -> Result<Vec<Issue>> {
-    let client = Client::new();
+        self.search_issues(&search_query).await
+    }
 
-    let search_query = get_merged_prs_search_query(github_username, *activity_date);
+    pub async fn get_opened_prs(
+        &self,
+        github_username: &str,
+        activity_date: &NaiveDate,
+    ) -> Result<Vec<Issue>> {
+        let search_query = get_opened_prs_search_query(github_username, *activity_date);
 
-    let mut query_parameters = HashMap::new();
+        self.search_issues(&search_query).await
+    }
 
-    query_parameters.insert("q", search_query);
+    async fn search_issues(&self, search_query: &str) -> Result<Vec<Issue>> {
+        let query_parameters = get_search_query_parameters(search_query);
 
-    query_parameters.insert("sort", String::from("updated"));
+        let response_text =
+            self.get_json_text(SEARCH_ISSUES_ENDPOINT_PATH, &query_parameters).await?;
 
-    query_parameters.insert("order", String::from("desc"));
-
-    let response = client
-        .get(MERGED_PRS_API_URL)
-        .query(&query_parameters)
-        .bearer_auth(github_token)
-        .header(ACCEPT, GITHUB_ACCEPT_HEADER)
-        .header(USER_AGENT, SWELOG_USER_AGENT)
-        .send()
-        .await
-        .into_diagnostic()
-        .wrap_err_with(|| FailedToSendGitHubRequest)?;
-
-    let response_text = read_successful_response_body(response).await?;
-
-    let issues = parse_search_issues_response_text(&response_text)?;
-
-    Ok(issues)
+        parse_search_issues_response_text(&response_text)
+    }
 }
 
-pub async fn get_opened_prs(
-    github_token: &str,
-    github_username: &str,
-    activity_date: &NaiveDate,
-) -> Result<Vec<Issue>> {
-    let client = Client::new();
-
-    let search_query = get_opened_prs_search_query(github_username, *activity_date);
-
-    let mut query_parameters = HashMap::new();
-
-    query_parameters.insert("q", search_query);
-
-    query_parameters.insert("sort", String::from("updated"));
-
-    query_parameters.insert("order", String::from("desc"));
-
-    let response = client
-        .get(OPENED_PRS_API_URL)
-        .query(&query_parameters)
-        .bearer_auth(github_token)
-        .header(ACCEPT, GITHUB_ACCEPT_HEADER)
-        .header(USER_AGENT, SWELOG_USER_AGENT)
-        .send()
-        .await
-        .into_diagnostic()
-        .wrap_err_with(|| FailedToSendGitHubRequest)?;
-
-    let response_text = read_successful_response_body(response).await?;
-
-    let issues = parse_search_issues_response_text(&response_text)?;
-
-    Ok(issues)
+const fn get_search_query_parameters(search_query: &str) -> [(&'static str, &str); 3] {
+    [("q", search_query), ("sort", "updated"), ("order", "desc")]
 }
 
 fn get_merged_prs_search_query(github_username: &str, activity_date: NaiveDate) -> String {

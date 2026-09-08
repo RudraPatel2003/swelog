@@ -3,22 +3,11 @@ mod formatting;
 use chrono::NaiveDate;
 use clap::Args;
 use config::config_file::read_config_file;
-use credentials::{
-    credential::Credential,
-    resolution::get_or_prompt_for_credential,
-};
 use dates::{
     date_format::DATE_VALUE_NAME,
     parsing::parse_date,
 };
-use github::{
-    issues::{
-        Issue,
-        get_merged_prs,
-        get_opened_prs,
-    },
-    users::get_github_username,
-};
+use github::issues::Issue;
 use miette::Result;
 
 use crate::{
@@ -76,16 +65,16 @@ pub async fn collect_github_activity(
     environment: &Environment,
     date_selection: DateSelection,
 ) -> Result<FetchOutcome> {
-    let github_token = get_or_prompt_for_credential(Credential::Github)?;
+    let github_client = environment.build_github_client()?;
 
-    let github_username = get_github_username(&github_token).await?;
+    let github_username = github_client.get_username().await?;
 
     let activity_date =
         resolve_selected_date(date_selection, environment.today)?.unwrap_or(environment.today);
 
-    let get_opened_prs_future = get_opened_prs(&github_token, &github_username, &activity_date);
+    let get_opened_prs_future = github_client.get_opened_prs(&github_username, &activity_date);
 
-    let get_merged_prs_future = get_merged_prs(&github_token, &github_username, &activity_date);
+    let get_merged_prs_future = github_client.get_merged_prs(&github_username, &activity_date);
 
     let (opened_prs, merged_prs) = tokio::try_join!(get_opened_prs_future, get_merged_prs_future)?;
 

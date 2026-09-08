@@ -1,3 +1,4 @@
+pub mod clients;
 pub mod endpoints;
 pub mod global_args;
 pub mod update_check;
