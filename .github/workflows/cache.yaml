@@ -29,11 +29,9 @@ jobs:
         with:
           tool: nextest
 
-      # Keep the pinned toolchain in sync with rust-toolchain.toml.
       - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@master
+        uses: ./.github/actions/install-rust-toolchain
         with:
-          toolchain: nightly-2026-08-18
           components: clippy, rustfmt
 
       - name: Cache Rust dependencies
