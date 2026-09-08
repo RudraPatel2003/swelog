@@ -56,8 +56,6 @@ pub const WRITTEN_WORK_FILE_CONTENT: &str = "# Today's Work
 - Paired on the release flow
 ";
 
-/// An isolated home for one test: its own vault, config file, cache
-/// directory, and credential file, none of which touch the real ones.
 pub struct SwelogSandbox {
     root: TempDir,
 }
