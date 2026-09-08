@@ -1,6 +1,10 @@
 use base_url::base_url::BaseUrl;
 use clap::Args;
 use github::client::DEFAULT_GITHUB_API_BASE_URL;
+use google_calendar::{
+    client::DEFAULT_GOOGLE_CALENDAR_API_BASE_URL,
+    oauth::DEFAULT_GOOGLE_TOKEN_BASE_URL,
+};
 use llm::{
     anthropic_language_model::DEFAULT_ANTHROPIC_BASE_URL,
     language_model_endpoints::LanguageModelEndpoints,
@@ -62,6 +66,26 @@ pub struct ServiceEndpoints {
         hide = true
     )]
     pub open_router: BaseUrl,
+
+    #[arg(
+        long = "google-token-url",
+        global = true,
+        env = "SWELOG_GOOGLE_TOKEN_URL",
+        default_value = DEFAULT_GOOGLE_TOKEN_BASE_URL,
+        value_name = "URL",
+        hide = true
+    )]
+    pub google_token: BaseUrl,
+
+    #[arg(
+        long = "google-calendar-api-url",
+        global = true,
+        env = "SWELOG_GOOGLE_CALENDAR_API_URL",
+        default_value = DEFAULT_GOOGLE_CALENDAR_API_BASE_URL,
+        value_name = "URL",
+        hide = true
+    )]
+    pub google_calendar_api: BaseUrl,
 
     #[arg(
         long = "npm-registry-url",

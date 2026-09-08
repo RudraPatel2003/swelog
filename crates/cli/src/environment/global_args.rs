@@ -42,6 +42,18 @@ pub struct GlobalArgs {
     )]
     pub today: Option<NaiveDate>,
 
+    #[arg(long, global = true, env = "SWELOG_GOOGLE_CLIENT_ID", value_name = "ID", hide = true)]
+    pub google_client_id: Option<String>,
+
+    #[arg(
+        long,
+        global = true,
+        env = "SWELOG_GOOGLE_CLIENT_SECRET",
+        value_name = "SECRET",
+        hide = true
+    )]
+    pub google_client_secret: Option<String>,
+
     #[command(flatten)]
     pub endpoints: ServiceEndpoints,
 }

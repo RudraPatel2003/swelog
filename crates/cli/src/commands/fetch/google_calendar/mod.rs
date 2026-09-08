@@ -8,10 +8,7 @@ use dates::{
     formatting::format_date,
     parsing::parse_date,
 };
-use google_calendar::client::{
-    get_primary_calendar_meetings_on_date,
-    structs::Meeting,
-};
+use google_calendar::client::structs::Meeting;
 use miette::Result;
 
 use crate::{
@@ -72,7 +69,10 @@ pub async fn collect_google_calendar_meetings(
     let meeting_date =
         resolve_selected_date(date_selection, environment.today)?.unwrap_or(environment.today);
 
-    let meetings = get_primary_calendar_meetings_on_date(&meeting_date).await?;
+    let google_calendar_client = environment.build_google_calendar_client()?;
+
+    let meetings =
+        google_calendar_client.get_primary_calendar_meetings_on_date(&meeting_date).await?;
 
     let google_calendar_fetch_outcome = get_google_calendar_fetch_outcome(&meetings, meeting_date);
 

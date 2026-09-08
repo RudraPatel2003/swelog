@@ -1020,6 +1020,7 @@ dependencies = [
 name = "google_calendar"
 version = "0.21.0"
 dependencies = [
+ "base_url",
  "chrono",
  "credentials",
  "dates",

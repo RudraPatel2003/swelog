@@ -7,25 +7,45 @@ const COMPILED_IN_CLIENT_ID: Option<&str> = option_env!("SWELOG_GOOGLE_CLIENT_ID
 const COMPILED_IN_CLIENT_SECRET: Option<&str> = option_env!("SWELOG_GOOGLE_CLIENT_SECRET");
 
 // The secret is not a secret
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct GoogleOAuthApplication {
-    pub client_id: &'static str,
-    pub client_secret: &'static str,
+    pub client_id: String,
+    pub client_secret: String,
 }
 
-pub fn get_compiled_in_oauth_application() -> Result<GoogleOAuthApplication> {
-    let Some(client_id) = get_non_empty_value(COMPILED_IN_CLIENT_ID) else {
+/// Overrides for the compiled-in Google OAuth client, so a build without one
+/// (such as a test build) can still reach a Google-shaped server.
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct GoogleOAuthApplicationOverrides {
+    pub client_id: Option<String>,
+    pub client_secret: Option<String>,
+}
+
+pub fn get_oauth_application(
+    overrides: &GoogleOAuthApplicationOverrides,
+) -> Result<GoogleOAuthApplication> {
+    let Some(client_id) = resolve_value(overrides.client_id.as_deref(), COMPILED_IN_CLIENT_ID)
+    else {
         return Err(GoogleOAuthApplicationMissing.into());
     };
 
-    let Some(client_secret) = get_non_empty_value(COMPILED_IN_CLIENT_SECRET) else {
+    let Some(client_secret) =
+        resolve_value(overrides.client_secret.as_deref(), COMPILED_IN_CLIENT_SECRET)
+    else {
         return Err(GoogleOAuthApplicationMissing.into());
     };
 
     Ok(GoogleOAuthApplication { client_id, client_secret })
 }
 
-fn get_non_empty_value(compiled_in_value: Option<&'static str>) -> Option<&'static str> {
-    compiled_in_value.map(str::trim).filter(|value| !value.is_empty())
+fn resolve_value(override_value: Option<&str>, compiled_in_value: Option<&str>) -> Option<String> {
+    get_non_empty_value(override_value)
+        .or_else(|| get_non_empty_value(compiled_in_value))
+        .map(ToString::to_string)
+}
+
+fn get_non_empty_value(value: Option<&str>) -> Option<&str> {
+    value.map(str::trim).filter(|value| !value.is_empty())
 }
 
 #[cfg(not(debug_assertions))]

@@ -1,12 +1,16 @@
 pub mod structs;
 
+use base_url::base_url::BaseUrl;
 use miette::{
     IntoDiagnostic,
     Result,
     WrapErr,
 };
 use oauth2::PkceCodeVerifier;
-use reqwest::Client;
+use reqwest::{
+    Client,
+    Url,
+};
 
 use crate::{
     errors::{
@@ -28,12 +32,13 @@ use crate::{
     },
 };
 
-const GOOGLE_TOKEN_URL: &str = "https://oauth2.googleapis.com/token";
+const TOKEN_ENDPOINT_PATH: &str = "token";
 
 // The error Google returns when a refresh token has been revoked or expired.
 const INVALID_GRANT_ERROR: &str = "invalid_grant";
 
 pub async fn exchange_authorization_code(
+    token_base_url: &BaseUrl,
     application: &GoogleOAuthApplication,
     authorization_code: &str,
     pkce_verifier: &PkceCodeVerifier,
@@ -49,7 +54,9 @@ pub async fn exchange_authorization_code(
 
     form.push(("redirect_uri", redirect_uri.to_string()));
 
-    let TokenRequestOutcome::Succeeded(response_text) = post_token_request(&form).await? else {
+    let TokenRequestOutcome::Succeeded(response_text) =
+        post_token_request(token_base_url, &form).await?
+    else {
         let google_authorization_failed_error = GoogleAuthorizationFailed {
             message: "Google rejected the authorization code".to_string(),
         };
@@ -67,6 +74,7 @@ pub async fn exchange_authorization_code(
 }
 
 pub async fn refresh_access_token(
+    token_base_url: &BaseUrl,
     application: &GoogleOAuthApplication,
     refresh_token: &str,
 ) -> Result<RefreshOutcome> {
@@ -76,7 +84,9 @@ pub async fn refresh_access_token(
 
     form.push(("refresh_token", refresh_token.to_string()));
 
-    let TokenRequestOutcome::Succeeded(response_text) = post_token_request(&form).await? else {
+    let TokenRequestOutcome::Succeeded(response_text) =
+        post_token_request(token_base_url, &form).await?
+    else {
         return Ok(RefreshOutcome::ReauthorizationRequired);
     };
 
@@ -98,14 +108,19 @@ fn get_refresh_token_to_store(token_response: &TokenResponse, refresh_token: &st
 
 fn get_client_form_fields(application: &GoogleOAuthApplication) -> Vec<(&'static str, String)> {
     vec![
-        ("client_id", application.client_id.to_string()),
-        ("client_secret", application.client_secret.to_string()),
+        ("client_id", application.client_id.clone()),
+        ("client_secret", application.client_secret.clone()),
     ]
 }
 
-async fn post_token_request(form: &[(&'static str, String)]) -> Result<TokenRequestOutcome> {
+async fn post_token_request(
+    token_base_url: &BaseUrl,
+    form: &[(&'static str, String)],
+) -> Result<TokenRequestOutcome> {
+    let token_url: Url = token_base_url.join(TOKEN_ENDPOINT_PATH)?;
+
     let response = Client::new()
-        .post(GOOGLE_TOKEN_URL)
+        .post(token_url)
         .form(form)
         .send()
         .await
