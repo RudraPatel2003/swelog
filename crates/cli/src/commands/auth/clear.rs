@@ -1,9 +1,8 @@
 use clap::Args;
-use credentials::{
-    credential::Credential,
-    store::clear_credential,
-};
+use credentials::credential::Credential;
 use miette::Result;
+
+use crate::environment::Environment;
 
 #[derive(Debug, Args)]
 pub struct ClearArgs {
@@ -17,13 +16,13 @@ pub struct ClearArgs {
 }
 
 impl ClearArgs {
-    pub fn run(self) -> Result<()> {
+    pub fn run(self, environment: &Environment) -> Result<()> {
         let credentials = self
             .credential
             .map_or_else(|| Credential::ALL_CREDENTIALS.to_vec(), |credential| vec![credential]);
 
         for credential in credentials {
-            let was_credential_cleared = clear_credential(credential)?;
+            let was_credential_cleared = environment.credential_store.clear(credential)?;
 
             if was_credential_cleared {
                 println!("Removed the stored {}.", credential.label());

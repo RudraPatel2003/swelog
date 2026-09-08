@@ -66,6 +66,6 @@ async fn run_command(command: Commands, environment: &Environment) -> Result<()>
 
         Commands::Config(config_args) => config_args.run(environment),
 
-        Commands::Auth(auth_args) => auth_args.run(),
+        Commands::Auth(auth_args) => auth_args.run(environment),
     }
 }

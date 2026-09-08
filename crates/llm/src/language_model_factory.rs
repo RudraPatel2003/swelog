@@ -2,6 +2,7 @@ use config::swelog_config::LanguageModelProvider;
 use credentials::{
     credential::Credential,
     resolution::get_or_prompt_for_credential,
+    store::CredentialStore,
 };
 use miette::Result;
 
@@ -18,12 +19,14 @@ use crate::{
 pub fn get_language_model(
     summarization_settings: &SummarizationSettings,
     endpoints: &LanguageModelEndpoints,
+    credential_store: &CredentialStore,
 ) -> Result<Box<dyn LanguageModel>> {
     let language_model = summarization_settings.language_model.clone();
 
     match summarization_settings.language_model_provider {
         LanguageModelProvider::Anthropic => {
-            let anthropic_api_key = get_or_prompt_for_credential(Credential::Anthropic)?;
+            let anthropic_api_key =
+                get_or_prompt_for_credential(credential_store, Credential::Anthropic)?;
 
             let anthropic_language_model = AnthropicLanguageModel::new(
                 endpoints.anthropic_base_url.clone(),
@@ -42,7 +45,8 @@ pub fn get_language_model(
         }
 
         LanguageModelProvider::OpenAi => {
-            let open_ai_api_key = get_or_prompt_for_credential(Credential::OpenAi)?;
+            let open_ai_api_key =
+                get_or_prompt_for_credential(credential_store, Credential::OpenAi)?;
 
             let open_ai_language_model = OpenAiLanguageModel::new(
                 endpoints.open_ai_base_url.clone(),
@@ -54,7 +58,8 @@ pub fn get_language_model(
         }
 
         LanguageModelProvider::OpenRouter => {
-            let open_router_api_key = get_or_prompt_for_credential(Credential::OpenRouter)?;
+            let open_router_api_key =
+                get_or_prompt_for_credential(credential_store, Credential::OpenRouter)?;
 
             let open_router_language_model = OpenRouterLanguageModel::new(
                 endpoints.open_router_base_url.clone(),

@@ -30,7 +30,10 @@ impl StatusArgs {
 
         println!();
 
-        for (fetch_source, availability) in collect_fetch_source_availabilities(&swelog_config)? {
+        let availabilities =
+            collect_fetch_source_availabilities(&swelog_config, &environment.credential_store)?;
+
+        for (fetch_source, availability) in availabilities {
             println!(
                 "{:LABEL_WIDTH$}{}",
                 fetch_source.label(),

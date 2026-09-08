@@ -2,6 +2,7 @@ use std::path::PathBuf;
 
 use chrono::NaiveDate;
 use clap::Args;
+use credentials::store::CredentialStore;
 use dates::{
     date_format::DATE_VALUE_NAME,
     parsing::parse_date,
@@ -21,6 +22,9 @@ pub struct GlobalArgs {
     /// Custom path to the swelog cache directory. Used for testing.
     #[arg(long, global = true, env = "SWELOG_CACHE_DIRECTORY", value_name = "PATH", hide = true)]
     pub cache_directory: Option<PathBuf>,
+
+    #[arg(long, global = true, env = "SWELOG_CREDENTIAL_STORE", value_name = "STORE", hide = true)]
+    pub credential_store: Option<CredentialStore>,
 
     #[arg(
         long,

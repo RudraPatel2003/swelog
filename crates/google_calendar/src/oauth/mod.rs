@@ -4,6 +4,7 @@ mod flow;
 mod redirect;
 mod token;
 
+use ::credentials::store::CredentialStore;
 use base_url::base_url::BaseUrl;
 use miette::Result;
 
@@ -27,20 +28,25 @@ pub const DEFAULT_GOOGLE_TOKEN_BASE_URL: &str = "https://oauth2.googleapis.com/"
 pub struct GoogleAuthorization {
     application: GoogleOAuthApplication,
     token_base_url: BaseUrl,
+    credential_store: CredentialStore,
 }
 
 impl GoogleAuthorization {
     #[must_use]
-    pub const fn new(application: GoogleOAuthApplication, token_base_url: BaseUrl) -> Self {
-        Self { application, token_base_url }
+    pub const fn new(
+        application: GoogleOAuthApplication,
+        token_base_url: BaseUrl,
+        credential_store: CredentialStore,
+    ) -> Self {
+        Self { application, token_base_url, credential_store }
     }
 
     pub async fn get_access_token_authorizing_if_needed(&self) -> Result<String> {
-        let Some(google_credentials) = read_google_credentials()? else {
+        let Some(google_credentials) = read_google_credentials(&self.credential_store)? else {
             let authorized_credentials =
                 authorize_in_browser(&self.application, &self.token_base_url).await?;
 
-            write_google_credentials(&authorized_credentials)?;
+            write_google_credentials(&self.credential_store, &authorized_credentials)?;
 
             return Ok(authorized_credentials.access_token);
         };
@@ -65,12 +71,12 @@ impl GoogleAuthorization {
             }
         };
 
-        write_google_credentials(&refreshed_credentials)?;
+        write_google_credentials(&self.credential_store, &refreshed_credentials)?;
 
         Ok(refreshed_credentials.access_token)
     }
 
     pub fn clear(&self) -> Result<()> {
-        clear_google_credentials()
+        clear_google_credentials(&self.credential_store)
     }
 }

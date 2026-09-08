@@ -5,11 +5,7 @@ use std::time::{
 
 use credentials::{
     credential::Credential,
-    store::{
-        clear_credential,
-        read_credential,
-        write_credential,
-    },
+    store::CredentialStore,
 };
 use miette::Result;
 use serde::{
@@ -40,8 +36,10 @@ impl GoogleCredentials {
     }
 }
 
-pub fn read_google_credentials() -> Result<Option<GoogleCredentials>> {
-    let Some(google_credentials_json) = read_credential(Credential::GoogleCalendar)? else {
+pub fn read_google_credentials(
+    credential_store: &CredentialStore,
+) -> Result<Option<GoogleCredentials>> {
+    let Some(google_credentials_json) = credential_store.read(Credential::GoogleCalendar)? else {
         return Ok(None);
     };
 
@@ -54,17 +52,20 @@ pub fn read_google_credentials() -> Result<Option<GoogleCredentials>> {
     Ok(Some(google_credentials))
 }
 
-pub fn write_google_credentials(google_credentials: &GoogleCredentials) -> Result<()> {
+pub fn write_google_credentials(
+    credential_store: &CredentialStore,
+    google_credentials: &GoogleCredentials,
+) -> Result<()> {
     let google_credentials_json =
         serde_json::to_string(google_credentials).map_err(|error| GoogleAuthorizationFailed {
             message: format!("Google credentials could not be stored: {error}"),
         })?;
 
-    write_credential(Credential::GoogleCalendar, &google_credentials_json)
+    credential_store.write(Credential::GoogleCalendar, &google_credentials_json)
 }
 
-pub fn clear_google_credentials() -> Result<()> {
-    clear_credential(Credential::GoogleCalendar)?;
+pub fn clear_google_credentials(credential_store: &CredentialStore) -> Result<()> {
+    credential_store.clear(Credential::GoogleCalendar)?;
 
     Ok(())
 }

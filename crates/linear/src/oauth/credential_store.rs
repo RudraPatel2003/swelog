@@ -1,27 +1,33 @@
 use async_trait::async_trait;
 use credentials::{
     credential::Credential,
-    store::{
-        clear_credential,
-        read_credential,
-        write_credential,
-    },
+    store::CredentialStore,
 };
 use rmcp::transport::{
     AuthError,
-    CredentialStore,
+    CredentialStore as McpCredentialStore,
     StoredCredentials,
 };
 
-/// Stores the Linear OAuth credentials in the operating system keyring.
-#[derive(Clone, Copy)]
-pub struct KeyringCredentialStore;
+/// Stores the Linear OAuth credentials wherever swelog keeps its other secrets.
+#[derive(Clone)]
+pub struct SwelogCredentialStore {
+    credential_store: CredentialStore,
+}
+
+impl SwelogCredentialStore {
+    pub const fn new(credential_store: CredentialStore) -> Self {
+        Self { credential_store }
+    }
+}
 
 #[async_trait]
-impl CredentialStore for KeyringCredentialStore {
+impl McpCredentialStore for SwelogCredentialStore {
     async fn load(&self) -> Result<Option<StoredCredentials>, AuthError> {
-        let Some(stored_credentials_json) =
-            read_credential(Credential::Linear).map_err(|error| map_storage_error(&error))?
+        let Some(stored_credentials_json) = self
+            .credential_store
+            .read(Credential::Linear)
+            .map_err(|error| map_storage_error(&error))?
         else {
             return Ok(None);
         };
@@ -36,12 +42,15 @@ impl CredentialStore for KeyringCredentialStore {
         let stored_credentials_json = serde_json::to_string(&stored_credentials)
             .map_err(|error| map_storage_error(&error))?;
 
-        write_credential(Credential::Linear, &stored_credentials_json)
+        self.credential_store
+            .write(Credential::Linear, &stored_credentials_json)
             .map_err(|error| map_storage_error(&error))
     }
 
     async fn clear(&self) -> Result<(), AuthError> {
-        clear_credential(Credential::Linear).map_err(|error| map_storage_error(&error))?;
+        self.credential_store
+            .clear(Credential::Linear)
+            .map_err(|error| map_storage_error(&error))?;
 
         Ok(())
     }

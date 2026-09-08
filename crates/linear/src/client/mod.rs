@@ -4,6 +4,7 @@ use chrono::{
     Local,
     NaiveDate,
 };
+use credentials::store::CredentialStore;
 use miette::Result;
 use reqwest::Client;
 use rmcp::{
@@ -47,12 +48,13 @@ const PAGE_SIZE: u64 = 50;
 
 pub struct LinearClient {
     mcp_url: Url,
+    credential_store: CredentialStore,
 }
 
 impl LinearClient {
     #[must_use]
-    pub const fn new(mcp_url: Url) -> Self {
-        Self { mcp_url }
+    pub const fn new(mcp_url: Url, credential_store: CredentialStore) -> Self {
+        Self { mcp_url, credential_store }
     }
 
     pub async fn get_current_active_assigned_issues(
@@ -93,7 +95,8 @@ impl LinearClient {
         let mut reauthorization_attempted = false;
 
         loop {
-            let authorization_manager = get_authorization_manager(self.mcp_url.as_str()).await?;
+            let authorization_manager =
+                get_authorization_manager(self.mcp_url.as_str(), &self.credential_store).await?;
 
             let authorized_client = AuthClient::new(Client::new(), authorization_manager);
 
@@ -106,7 +109,7 @@ impl LinearClient {
                 Ok(client) => return Ok(client),
 
                 Err(error) if error.is_authorization_required() && !reauthorization_attempted => {
-                    clear_linear_authorization()?;
+                    clear_linear_authorization(&self.credential_store)?;
 
                     reauthorization_attempted = true;
                 }
