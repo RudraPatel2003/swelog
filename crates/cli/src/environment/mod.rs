@@ -7,8 +7,6 @@ use miette::Result;
 
 use crate::environment::global_args::GlobalArgs;
 
-/// Everything a command reads from outside its own arguments, resolved once at
-/// startup so the commands themselves stay free of ambient state.
 pub struct Environment {
     pub config_file_path: PathBuf,
 }

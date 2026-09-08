@@ -27,14 +27,11 @@ swelog <COMMAND>
 | `auth`      | Manage the credentials swelog stores in your operating system keyring                        |
 | `help`      | Print this message or the help of the given subcommand(s)                                    |
 
-| Flag              | Description                                                                                                       |
-| ----------------- | ----------------------------------------------------------------------------------------------------------------- |
-| `--config <PATH>` | Path to the swelog config file. Defaults to swelog/swelog.json in your operating system's configuration directory |
-| `-h`, `--help`    | Print help                                                                                                        |
-| `-V`, `--version` | Print version                                                                                                     |
-
-`--config` is accepted by every command and can also be set with the
-`SWELOG_CONFIG_FILE` environment variable.
+| Flag              | Description                         |
+| ----------------- | ------------------------------------|
+| `--config <PATH>` | Custom path to a swelog config file |
+| `-h`, `--help`    | Print help                          |
+| `-V`, `--version` | Print version                       |
 
 ## `swelog init`
 
