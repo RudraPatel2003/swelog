@@ -15,10 +15,10 @@ fn get_mock_issue(repository_url: &str, number: u64) -> Issue {
     }
 }
 
-const OPENED_AND_MERGED_SECTIONS: &str = r#"Opened:
+const OPENED_AND_MERGED_SECTIONS: &str = r#"### Opened
 - "PR 123" ([#123](https://github.com/swelog-cli/swelog-cli/pull/123)) in [swelog-cli/swelog-cli](https://github.com/swelog-cli/swelog-cli)
 
-Merged:
+### Merged
 - "PR 789" ([#789](https://github.com/swelog-cli/swelog-cli/pull/789)) in [swelog-cli/swelog-cli](https://github.com/swelog-cli/swelog-cli)"#;
 
 #[test]
@@ -36,7 +36,7 @@ fn format_github_activity_lists_opened_and_merged_sections() {
     assert_eq!(markdown, OPENED_AND_MERGED_SECTIONS);
 }
 
-const OPENED_SECTION_ONLY: &str = r#"Opened:
+const OPENED_SECTION_ONLY: &str = r#"### Opened
 - "PR 123" ([#123](https://github.com/swelog-cli/swelog-cli/pull/123)) in [swelog-cli/swelog-cli](https://github.com/swelog-cli/swelog-cli)"#;
 
 #[test]
@@ -50,7 +50,7 @@ fn format_github_activity_omits_a_section_with_no_pull_requests() {
     assert_eq!(markdown, OPENED_SECTION_ONLY);
 }
 
-const OPENED_SECTION_WITH_MULTIPLE_PULL_REQUESTS: &str = r#"Opened:
+const OPENED_SECTION_WITH_MULTIPLE_PULL_REQUESTS: &str = r#"### Opened
 - "PR 123" ([#123](https://github.com/swelog-cli/swelog-cli/pull/123)) in [swelog-cli/swelog-cli](https://github.com/swelog-cli/swelog-cli)
 - "PR 456" ([#456](https://github.com/swelog-cli/swelog-cli/pull/456)) in [swelog-cli/swelog-cli](https://github.com/swelog-cli/swelog-cli)"#;
 
@@ -74,7 +74,7 @@ fn format_github_activity_is_empty_when_there_is_no_activity() {
     assert_eq!(markdown, "");
 }
 
-const PULL_REQUEST_IN_ANOTHER_REPOSITORY: &str = r#"Opened:
+const PULL_REQUEST_IN_ANOTHER_REPOSITORY: &str = r#"### Opened
 - "PR 37" ([#37](https://github.com/swelog-cli/swelog-cli/pull/37)) in [getsentry/sentry](https://github.com/getsentry/sentry)"#;
 
 #[test]
