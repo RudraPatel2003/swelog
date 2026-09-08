@@ -69,7 +69,7 @@ impl Credential {
         }
     }
 
-    pub(crate) const fn keyring_username(self) -> &'static str {
+    pub(crate) const fn storage_key(self) -> &'static str {
         match self {
             Self::Github => "github-token",
             Self::OpenAi => "openai-api-key",

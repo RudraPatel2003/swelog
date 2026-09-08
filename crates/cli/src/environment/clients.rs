@@ -22,7 +22,8 @@ use crate::environment::Environment;
 
 impl Environment {
     pub fn build_github_client(&self) -> Result<GitHubClient> {
-        let github_token = get_or_prompt_for_credential(Credential::Github)?;
+        let github_token =
+            get_or_prompt_for_credential(&self.credential_store, Credential::Github)?;
 
         let github_api_endpoint = self.endpoints.github_api.clone();
 
@@ -38,7 +39,9 @@ impl Environment {
 
         let google_calendar_api_endpoint = self.endpoints.google_calendar_api.clone();
 
-        let authorization = GoogleAuthorization::new(application, google_token);
+        let credential_store = self.credential_store.clone();
+
+        let authorization = GoogleAuthorization::new(application, google_token, credential_store);
 
         let google_calendar_client =
             GoogleCalendarClient::new(google_calendar_api_endpoint, authorization);
@@ -48,7 +51,7 @@ impl Environment {
 
     #[must_use]
     pub fn build_linear_client(&self) -> LinearClient {
-        LinearClient::new(self.endpoints.linear_mcp.clone())
+        LinearClient::new(self.endpoints.linear_mcp.clone(), self.credential_store.clone())
     }
 
     pub fn build_language_model(
@@ -57,6 +60,10 @@ impl Environment {
     ) -> Result<Box<dyn LanguageModel>> {
         let language_model_endpoints = self.endpoints.language_model_endpoints();
 
-        get_language_model(summarization_settings, &language_model_endpoints)
+        get_language_model(
+            summarization_settings,
+            &language_model_endpoints,
+            &self.credential_store,
+        )
     }
 }

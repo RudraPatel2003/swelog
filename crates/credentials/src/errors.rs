@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use miette::Diagnostic;
 use thiserror::Error;
 
@@ -37,4 +39,25 @@ pub struct MissingAuthorization {
 pub struct KeyringUnavailable {
     pub label: &'static str,
     pub message: String,
+}
+
+#[derive(Debug, Diagnostic, Error)]
+#[error("Failed to access the credential file at {credential_file}")]
+#[diagnostic(
+    code(swelog::credentials::credential_file_unavailable),
+    help("check that the file is readable JSON and try again: {message}")
+)]
+pub struct CredentialFileUnavailable {
+    pub credential_file: PathBuf,
+    pub message: String,
+}
+
+#[derive(Debug, Diagnostic, Error)]
+#[error("`{value}` is not a credential store")]
+#[diagnostic(
+    code(swelog::credentials::invalid_credential_store),
+    help("use `keyring` or `file:<path>`")
+)]
+pub struct InvalidCredentialStore {
+    pub value: String,
 }

@@ -57,7 +57,8 @@ impl AllArgs {
     pub async fn run(self, environment: &Environment) -> Result<()> {
         let swelog_config = read_config_file(&environment.config_file_path)?;
 
-        let included_fetch_sources = collect_included_fetch_sources(&swelog_config)?;
+        let included_fetch_sources =
+            collect_included_fetch_sources(&swelog_config, &environment.credential_store)?;
 
         if included_fetch_sources.is_empty() {
             let no_configured_fetch_sources_error = NoConfiguredFetchSources;

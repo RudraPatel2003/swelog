@@ -18,18 +18,18 @@ use crate::{
         MissingAuthorization,
         MissingCredential,
     },
-    store::{
-        read_credential,
-        write_credential,
-    },
+    store::CredentialStore,
 };
 
-pub fn get_or_prompt_for_credential(credential: Credential) -> Result<String> {
+pub fn get_or_prompt_for_credential(
+    credential_store: &CredentialStore,
+    credential: Credential,
+) -> Result<String> {
     if let Some(secret) = read_credential_from_environment(credential) {
         return Ok(secret);
     }
 
-    if let Some(secret) = read_credential(credential)? {
+    if let Some(secret) = credential_store.read(credential)? {
         return Ok(secret);
     }
 
@@ -56,7 +56,7 @@ pub fn get_or_prompt_for_credential(credential: Credential) -> Result<String> {
         return Err(missing_credential_error.into());
     }
 
-    write_credential(credential, &secret)?;
+    credential_store.write(credential, &secret)?;
 
     Ok(secret)
 }

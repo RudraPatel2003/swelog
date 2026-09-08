@@ -7,9 +7,12 @@ use clap::{
 };
 use miette::Result;
 
-use crate::commands::auth::{
-    clear::ClearArgs,
-    status::StatusArgs,
+use crate::{
+    commands::auth::{
+        clear::ClearArgs,
+        status::StatusArgs,
+    },
+    environment::Environment,
 };
 
 #[derive(Debug, Args)]
@@ -28,11 +31,11 @@ enum AuthCommands {
 }
 
 impl AuthArgs {
-    pub fn run(self) -> Result<()> {
+    pub fn run(self, environment: &Environment) -> Result<()> {
         match self.command {
-            AuthCommands::Status(status_args) => status_args.run(),
+            AuthCommands::Status(status_args) => status_args.run(environment),
 
-            AuthCommands::Clear(clear_args) => clear_args.run(),
+            AuthCommands::Clear(clear_args) => clear_args.run(environment),
         }
     }
 }

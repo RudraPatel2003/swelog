@@ -2,7 +2,7 @@ use config::swelog_config::SwelogConfig;
 use credentials::{
     credential::Credential,
     resolution::read_credential_from_environment,
-    store::read_credential,
+    store::CredentialStore,
 };
 use miette::Result;
 
@@ -72,23 +72,29 @@ impl FetchSource {
 
 pub fn collect_fetch_source_availabilities(
     swelog_config: &SwelogConfig,
+    credential_store: &CredentialStore,
 ) -> Result<Vec<(FetchSource, FetchSourceAvailability)>> {
     FetchSource::ALL_FETCH_SOURCES
         .into_iter()
         .map(|fetch_source| {
-            let availability = resolve_fetch_source_availability(fetch_source, swelog_config)?;
+            let availability =
+                resolve_fetch_source_availability(fetch_source, swelog_config, credential_store)?;
 
             Ok((fetch_source, availability))
         })
         .collect()
 }
 
-pub fn collect_included_fetch_sources(swelog_config: &SwelogConfig) -> Result<Vec<FetchSource>> {
-    let included_fetch_sources = collect_fetch_source_availabilities(swelog_config)?
-        .into_iter()
-        .filter(|(_, availability)| matches!(availability, FetchSourceAvailability::Included))
-        .map(|(fetch_source, _)| fetch_source)
-        .collect();
+pub fn collect_included_fetch_sources(
+    swelog_config: &SwelogConfig,
+    credential_store: &CredentialStore,
+) -> Result<Vec<FetchSource>> {
+    let included_fetch_sources =
+        collect_fetch_source_availabilities(swelog_config, credential_store)?
+            .into_iter()
+            .filter(|(_, availability)| matches!(availability, FetchSourceAvailability::Included))
+            .map(|(fetch_source, _)| fetch_source)
+            .collect();
 
     Ok(included_fetch_sources)
 }
@@ -96,18 +102,22 @@ pub fn collect_included_fetch_sources(swelog_config: &SwelogConfig) -> Result<Ve
 fn resolve_fetch_source_availability(
     fetch_source: FetchSource,
     swelog_config: &SwelogConfig,
+    credential_store: &CredentialStore,
 ) -> Result<FetchSourceAvailability> {
-    let authorization = read_authorization_presence(fetch_source.credential())?;
+    let authorization = read_authorization_presence(credential_store, fetch_source.credential())?;
 
     Ok(get_fetch_source_availability(fetch_source, swelog_config, authorization))
 }
 
-fn read_authorization_presence(credential: Credential) -> Result<AuthorizationPresence> {
+fn read_authorization_presence(
+    credential_store: &CredentialStore,
+    credential: Credential,
+) -> Result<AuthorizationPresence> {
     if read_credential_from_environment(credential).is_some() {
         return Ok(AuthorizationPresence::Present);
     }
 
-    if read_credential(credential)?.is_some() {
+    if credential_store.read(credential)?.is_some() {
         return Ok(AuthorizationPresence::Present);
     }
 

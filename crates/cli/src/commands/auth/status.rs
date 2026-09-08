@@ -2,7 +2,7 @@ use clap::Args;
 use credentials::{
     credential::Credential,
     resolution::read_credential_from_environment,
-    store::read_credential,
+    store::CredentialStore,
 };
 use highlight::stdout::{
     highlight_dimmed,
@@ -11,16 +11,18 @@ use highlight::stdout::{
 };
 use miette::Result;
 
+use crate::environment::Environment;
+
 const LABEL_WIDTH: usize = 31;
 
 #[derive(Debug, Args)]
 pub struct StatusArgs {}
 
 impl StatusArgs {
-    pub fn run(self) -> Result<()> {
+    pub fn run(self, environment: &Environment) -> Result<()> {
         let _ = self;
 
-        println!("Credentials stored in your operating system keyring:");
+        println!("Credentials stored in {}:", environment.credential_store.describe());
 
         println!();
 
@@ -28,7 +30,7 @@ impl StatusArgs {
             println!(
                 "{:LABEL_WIDTH$}{}",
                 credential.label(),
-                describe_credential_status(credential)?
+                describe_credential_status(&environment.credential_store, credential)?
             );
         }
 
@@ -40,14 +42,17 @@ impl StatusArgs {
     }
 }
 
-fn describe_credential_status(credential: Credential) -> Result<String> {
+fn describe_credential_status(
+    credential_store: &CredentialStore,
+    credential: Credential,
+) -> Result<String> {
     if let Some(environment_variable) = credential.environment_variable()
         && read_credential_from_environment(credential).is_some()
     {
         return Ok(highlight_yellow(format!("set by ${environment_variable}")));
     }
 
-    let description = if read_credential(credential)?.is_some() {
+    let description = if credential_store.read(credential)?.is_some() {
         highlight_green("stored")
     } else {
         highlight_dimmed("not stored")

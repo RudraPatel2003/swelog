@@ -4,7 +4,7 @@ use std::time::Duration;
 
 use credentials::{
     credential::Credential,
-    store::clear_credential,
+    store::CredentialStore,
 };
 use miette::Result;
 use oauth::callback_server::CallbackServer;
@@ -20,7 +20,7 @@ use crate::{
         LinearAuthorizationFailed,
         LinearAuthorizationTimedOut,
     },
-    oauth::credential_store::KeyringCredentialStore,
+    oauth::credential_store::SwelogCredentialStore,
 };
 
 const AUTHORIZATION_TIMEOUT: Duration = Duration::from_secs(300);
@@ -28,12 +28,16 @@ const AUTHORIZATION_TIMEOUT: Duration = Duration::from_secs(300);
 const CALLBACK_COMPLETION_MESSAGE: &str =
     "Linear authorization complete. You can close this window and return to swelog.";
 
-pub async fn get_authorization_manager(mcp_url: &str) -> Result<AuthorizationManager> {
+pub async fn get_authorization_manager(
+    mcp_url: &str,
+    credential_store: &CredentialStore,
+) -> Result<AuthorizationManager> {
     let mut authorization_manager = AuthorizationManager::new(mcp_url)
         .await
         .map_err(|error| LinearAuthorizationFailed { message: error.to_string() })?;
 
-    authorization_manager.set_credential_store(KeyringCredentialStore);
+    authorization_manager
+        .set_credential_store(SwelogCredentialStore::new(credential_store.clone()));
 
     if authorization_manager
         .initialize_from_store()
@@ -46,8 +50,8 @@ pub async fn get_authorization_manager(mcp_url: &str) -> Result<AuthorizationMan
     authorize_interactively(authorization_manager).await
 }
 
-pub fn clear_linear_authorization() -> Result<()> {
-    clear_credential(Credential::Linear)?;
+pub fn clear_linear_authorization(credential_store: &CredentialStore) -> Result<()> {
+    credential_store.clear(Credential::Linear)?;
 
     Ok(())
 }
