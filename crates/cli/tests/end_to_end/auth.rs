@@ -1,12 +1,13 @@
 use credentials::credential::Credential;
 use predicates::str::contains;
 
-use crate::support::sandbox::{
-    GITHUB_TOKEN,
-    SwelogSandbox,
+use crate::support::{
+    anthropic::ANTHROPIC_API_KEY,
+    sandbox::{
+        GITHUB_TOKEN,
+        SwelogSandbox,
+    },
 };
-
-const ANTHROPIC_API_KEY: &str = "sk-ant-end-to-end";
 
 #[test]
 fn auth_status_reports_stored_and_environment_credentials() {

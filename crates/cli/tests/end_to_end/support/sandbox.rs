@@ -124,6 +124,10 @@ impl SwelogSandbox {
         self.swelog_paths().daily_log_directory.join(get_daily_log_file_name(&parse_date(date)))
     }
 
+    pub fn weekly_log_file(&self, monday_date: &str) -> PathBuf {
+        self.swelog_paths().weekly_log_directory.join(format!("Week of {monday_date}.md"))
+    }
+
     pub fn read_work_file(&self) -> String {
         fs::read_to_string(self.work_file()).expect("work file should be readable")
     }
@@ -134,6 +138,10 @@ impl SwelogSandbox {
 
     pub fn read_daily_log(&self, date: &str) -> String {
         fs::read_to_string(self.daily_log_file(date)).expect("daily log should be readable")
+    }
+
+    pub fn write_daily_log(&self, date: &str, content: &str) {
+        fs::write(self.daily_log_file(date), content).expect("daily log should be written");
     }
 
     pub fn store_credential(&self, credential: Credential, secret: &str) {
