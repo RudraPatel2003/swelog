@@ -1,5 +1,6 @@
 use std::time::Duration;
 
+use base_url::base_url::BaseUrl;
 use miette::Result;
 use oauth::callback_server::CallbackServer;
 use oauth2::{
@@ -35,6 +36,7 @@ const CALLBACK_COMPLETION_MESSAGE: &str =
 
 pub async fn authorize_in_browser(
     application: &GoogleOAuthApplication,
+    token_base_url: &BaseUrl,
 ) -> Result<GoogleCredentials> {
     let callback_server = CallbackServer::bind(CALLBACK_COMPLETION_MESSAGE).await?;
 
@@ -59,8 +61,14 @@ pub async fn authorize_in_browser(
 
     let authorization_code = parse_authorization_code(&callback_url, csrf_token.secret())?;
 
-    exchange_authorization_code(application, &authorization_code, &pkce_verifier, &redirect_uri)
-        .await
+    exchange_authorization_code(
+        token_base_url,
+        application,
+        &authorization_code,
+        &pkce_verifier,
+        &redirect_uri,
+    )
+    .await
 }
 
 fn build_authorization_url(
@@ -76,7 +84,7 @@ fn build_authorization_url(
 
     authorization_url
         .query_pairs_mut()
-        .append_pair("client_id", application.client_id)
+        .append_pair("client_id", &application.client_id)
         .append_pair("redirect_uri", redirect_uri)
         .append_pair("response_type", "code")
         .append_pair("scope", CALENDAR_SCOPE)

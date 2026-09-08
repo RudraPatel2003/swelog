@@ -16,6 +16,7 @@ license = { workspace = true }
 workspace = true
 
 [dependencies]
+base_url = { path = "../base_url" }
 chrono = { workspace = true }
 credentials = { path = "../credentials" }
 dates = { path = "../dates" }

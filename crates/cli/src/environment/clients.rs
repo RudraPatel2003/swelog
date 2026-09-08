@@ -3,6 +3,13 @@ use credentials::{
     resolution::get_or_prompt_for_credential,
 };
 use github::client::GitHubClient;
+use google_calendar::{
+    client::GoogleCalendarClient,
+    oauth::{
+        GoogleAuthorization,
+        application::get_oauth_application,
+    },
+};
 use llm::{
     language_model::LanguageModel,
     language_model_factory::get_language_model,
@@ -23,10 +30,27 @@ impl Environment {
         Ok(github_client)
     }
 
+    pub fn build_google_calendar_client(&self) -> Result<GoogleCalendarClient> {
+        let application = get_oauth_application(&self.google_oauth_application_overrides)?;
+
+        let google_token = self.endpoints.google_token.clone();
+
+        let google_calendar_api_endpoint = self.endpoints.google_calendar_api.clone();
+
+        let authorization = GoogleAuthorization::new(application, google_token);
+
+        let google_calendar_client =
+            GoogleCalendarClient::new(google_calendar_api_endpoint, authorization);
+
+        Ok(google_calendar_client)
+    }
+
     pub fn build_language_model(
         &self,
         summarization_settings: &SummarizationSettings,
     ) -> Result<Box<dyn LanguageModel>> {
-        get_language_model(summarization_settings, &self.endpoints.language_model_endpoints())
+        let language_model_endpoints = self.endpoints.language_model_endpoints();
+
+        get_language_model(summarization_settings, &language_model_endpoints)
     }
 }

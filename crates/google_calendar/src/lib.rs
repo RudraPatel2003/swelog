@@ -2,5 +2,5 @@ pub mod client;
 mod day_window;
 mod errors;
 mod meetings;
-mod oauth;
+pub mod oauth;
 mod response;

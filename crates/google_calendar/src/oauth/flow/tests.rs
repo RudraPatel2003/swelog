@@ -3,7 +3,10 @@ use super::*;
 const REDIRECT_URI: &str = "http://127.0.0.1:52341/callback";
 
 fn get_mock_application() -> GoogleOAuthApplication {
-    GoogleOAuthApplication { client_id: "test-client-id", client_secret: "test-secret" }
+    GoogleOAuthApplication {
+        client_id: String::from("test-client-id"),
+        client_secret: String::from("test-secret"),
+    }
 }
 
 fn build_test_authorization_url(application: &GoogleOAuthApplication) -> Url {
