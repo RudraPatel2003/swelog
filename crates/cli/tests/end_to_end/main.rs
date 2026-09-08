@@ -8,4 +8,6 @@ mod support;
 mod auth;
 mod config;
 mod daily_log;
+mod fetch_all;
+mod fetch_github;
 mod update_check;
