@@ -23,15 +23,13 @@ use crate::{
     oauth::credential_store::KeyringCredentialStore,
 };
 
-pub const LINEAR_MCP_URL: &str = "https://mcp.linear.app/mcp/readonly";
-
 const AUTHORIZATION_TIMEOUT: Duration = Duration::from_secs(300);
 
 const CALLBACK_COMPLETION_MESSAGE: &str =
     "Linear authorization complete. You can close this window and return to swelog.";
 
-pub async fn get_authorization_manager() -> Result<AuthorizationManager> {
-    let mut authorization_manager = AuthorizationManager::new(LINEAR_MCP_URL)
+pub async fn get_authorization_manager(mcp_url: &str) -> Result<AuthorizationManager> {
+    let mut authorization_manager = AuthorizationManager::new(mcp_url)
         .await
         .map_err(|error| LinearAuthorizationFailed { message: error.to_string() })?;
 

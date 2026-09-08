@@ -10,6 +10,7 @@ use google_calendar::{
         application::get_oauth_application,
     },
 };
+use linear::client::LinearClient;
 use llm::{
     language_model::LanguageModel,
     language_model_factory::get_language_model,
@@ -43,6 +44,11 @@ impl Environment {
             GoogleCalendarClient::new(google_calendar_api_endpoint, authorization);
 
         Ok(google_calendar_client)
+    }
+
+    #[must_use]
+    pub fn build_linear_client(&self) -> LinearClient {
+        LinearClient::new(self.endpoints.linear_mcp.clone())
     }
 
     pub fn build_language_model(

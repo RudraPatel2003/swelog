@@ -40,3 +40,4 @@ time = { path = "../time" }
 tokio = { workspace = true }
 undo = { path = "../undo" }
 updates = { path = "../updates" }
+url = { workspace = true }
