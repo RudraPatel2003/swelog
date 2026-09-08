@@ -4,12 +4,10 @@ use config::{
     overwrite::Overwrite,
     setup::setup_swelog_files_from_config,
 };
+use highlight::stdout::highlight_cyan;
 use miette::Result;
 
-use crate::{
-    environment::Environment,
-    shared::highlight::highlight,
-};
+use crate::environment::Environment;
 
 #[derive(Debug, Args)]
 pub struct SetupArgs {
@@ -30,7 +28,7 @@ impl SetupArgs {
 
         println!(
             "Created swelog files in your Obsidian vault at {}",
-            highlight(swelog_config.obsidian_vault_path.display())
+            highlight_cyan(swelog_config.obsidian_vault_path.display())
         );
 
         Ok(())

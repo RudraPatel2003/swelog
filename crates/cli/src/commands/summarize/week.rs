@@ -13,6 +13,7 @@ use dates::{
     date_format::DATE_VALUE_NAME,
     parsing::parse_monday_date,
 };
+use highlight::stdout::highlight_cyan;
 use llm::{
     language_model_factory::get_language_model,
     summarization_settings::SummarizationSettings,
@@ -30,7 +31,6 @@ use crate::{
             WeekSelection,
             resolve_monday_date,
         },
-        highlight::highlight,
         summarization_notice::{
             SummarizationPeriod,
             format_summarization_notice,
@@ -91,7 +91,7 @@ impl WeeklySummaryArgs {
 
         println!(
             "Successfully summarized your weekly work into {}",
-            highlight(weekly_log_file_name)
+            highlight_cyan(weekly_log_file_name)
         );
 
         Ok(())

@@ -6,6 +6,7 @@ use config::{
     setup::swelog_paths::SwelogPaths,
 };
 use daily_log::file::get_daily_log_file_name;
+use highlight::stdout::highlight_cyan;
 use llm::{
     language_model_factory::get_language_model,
     summarization_settings::SummarizationSettings,
@@ -17,7 +18,6 @@ use crate::{
     environment::Environment,
     shared::{
         daily_log_args::DailyLogArgs,
-        highlight::highlight,
         summarization_notice::{
             SummarizationPeriod,
             format_summarization_notice,
@@ -69,7 +69,10 @@ impl DailySummaryArgs {
 
         let daily_log_file_name = get_daily_log_file_name(&log_date);
 
-        println!("Successfully summarized your daily work into {}", highlight(daily_log_file_name));
+        println!(
+            "Successfully summarized your daily work into {}",
+            highlight_cyan(daily_log_file_name)
+        );
 
         Ok(())
     }

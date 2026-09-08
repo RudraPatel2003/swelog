@@ -511,11 +511,11 @@ dependencies = [
  "futures",
  "github",
  "google_calendar",
+ "highlight",
  "linear",
  "llm",
  "markdown",
  "miette",
- "owo-colors",
  "summary",
  "thiserror 2.0.18",
  "time",
@@ -563,8 +563,8 @@ name = "config"
 version = "0.21.0"
 dependencies = [
  "dirs",
+ "highlight",
  "miette",
- "owo-colors",
  "serde",
  "serde_json",
  "tempfile",
@@ -1086,6 +1086,13 @@ name = "hex"
 version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
+
+[[package]]
+name = "highlight"
+version = "0.21.0"
+dependencies = [
+ "owo-colors",
+]
 
 [[package]]
 name = "hkdf"
@@ -3314,8 +3321,8 @@ version = "0.21.0"
 dependencies = [
  "base_url",
  "chrono",
+ "highlight",
  "miette",
- "owo-colors",
  "reqwest 0.13.4",
  "semver",
  "serde",

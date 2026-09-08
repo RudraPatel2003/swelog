@@ -5,14 +5,12 @@ use daily_log::{
     file::get_daily_log_file_name,
     write::write_daily_log_from_config,
 };
+use highlight::stdout::highlight_cyan;
 use miette::Result;
 
 use crate::{
     environment::Environment,
-    shared::{
-        daily_log_args::DailyLogArgs,
-        highlight::highlight,
-    },
+    shared::daily_log_args::DailyLogArgs,
 };
 
 #[derive(Debug, Args)]
@@ -39,7 +37,7 @@ impl LogArgs {
 
         let daily_log_file_name = get_daily_log_file_name(&log_date);
 
-        println!("Logged your work into {}", highlight(daily_log_file_name));
+        println!("Logged your work into {}", highlight_cyan(daily_log_file_name));
 
         Ok(())
     }

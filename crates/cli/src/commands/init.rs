@@ -4,12 +4,10 @@ use config::{
     overwrite::Overwrite,
     swelog_config::SwelogConfig,
 };
+use highlight::stdout::highlight_cyan;
 use miette::Result;
 
-use crate::{
-    environment::Environment,
-    shared::highlight::highlight,
-};
+use crate::environment::Environment;
 
 #[derive(Debug, Args)]
 pub struct InitArgs {
@@ -28,7 +26,10 @@ impl InitArgs {
             Overwrite::from_force_flag(self.overwrite_existing_config),
         )?;
 
-        println!("Created swelog config at {}", highlight(environment.config_file_path.display()));
+        println!(
+            "Created swelog config at {}",
+            highlight_cyan(environment.config_file_path.display())
+        );
 
         Ok(())
     }

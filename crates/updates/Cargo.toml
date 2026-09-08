@@ -18,8 +18,8 @@ workspace = true
 [dependencies]
 base_url = { path = "../base_url" }
 chrono = { workspace = true }
+highlight = { path = "../highlight" }
 miette = { workspace = true }
-owo-colors = { workspace = true }
 reqwest = { workspace = true }
 semver = { workspace = true }
 serde = { workspace = true }

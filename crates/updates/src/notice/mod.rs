@@ -1,6 +1,6 @@
-use owo_colors::{
-    OwoColorize,
-    Stream,
+use highlight::stderr::{
+    highlight_cyan,
+    highlight_dimmed,
 };
 use semver::Version;
 
@@ -30,9 +30,9 @@ fn is_newer_version(current_version: &str, latest_version: &str) -> bool {
 fn format_update_notice(current_version: &str, latest_version: &str) -> String {
     format!(
         "A new version of swelog is available: {} → {}\nRun {} to upgrade.\n",
-        current_version.if_supports_color(Stream::Stderr, |version| version.dimmed()),
-        latest_version.if_supports_color(Stream::Stderr, |version| version.cyan()),
-        UPGRADE_COMMAND.if_supports_color(Stream::Stderr, |command| command.cyan()),
+        highlight_dimmed(current_version),
+        highlight_cyan(latest_version),
+        highlight_cyan(UPGRADE_COMMAND),
     )
 }
 

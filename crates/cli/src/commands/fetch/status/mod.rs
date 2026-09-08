@@ -1,10 +1,10 @@
 use clap::Args;
 use config::config_file::read_config_file;
-use miette::Result;
-use owo_colors::{
-    OwoColorize,
-    Stream,
+use highlight::stdout::{
+    highlight_dimmed,
+    highlight_green,
 };
+use miette::Result;
 
 use crate::{
     commands::fetch::sources::{
@@ -51,21 +51,15 @@ fn describe_fetch_source_availability(
     availability: FetchSourceAvailability,
 ) -> String {
     match availability {
-        FetchSourceAvailability::Included => {
-            format!("{}", "included".if_supports_color(Stream::Stdout, |status| status.green()))
-        }
+        FetchSourceAvailability::Included => highlight_green("included"),
 
-        FetchSourceAvailability::MissingAuthorization => {
-            let description =
-                format!("not included, {} is not stored", fetch_source.credential().label());
-
-            format!("{}", description.if_supports_color(Stream::Stdout, |text| text.dimmed()))
-        }
+        FetchSourceAvailability::MissingAuthorization => highlight_dimmed(format!(
+            "not included, {} is not stored",
+            fetch_source.credential().label()
+        )),
 
         FetchSourceAvailability::MissingConfiguration { reason } => {
-            let description = format!("not included, {reason}");
-
-            format!("{}", description.if_supports_color(Stream::Stdout, |text| text.dimmed()))
+            highlight_dimmed(format!("not included, {reason}"))
         }
     }
 }

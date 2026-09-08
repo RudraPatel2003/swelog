@@ -7,6 +7,7 @@ use config::{
         read_work_file,
     },
 };
+use highlight::stdout::highlight_cyan;
 use miette::Result;
 use undo::snapshot::{
     UndoSnapshot,
@@ -14,10 +15,7 @@ use undo::snapshot::{
     write_undo_snapshot,
 };
 
-use crate::{
-    environment::Environment,
-    shared::highlight::highlight,
-};
+use crate::environment::Environment;
 
 #[derive(Debug, Args)]
 pub struct ResetArgs {}
@@ -40,7 +38,7 @@ impl ResetArgs {
 
         create_or_reset_work_file(&swelog_config, &environment.cache_directory)?;
 
-        println!("Reset work file at {}", highlight(swelog_paths.work_file.display()));
+        println!("Reset work file at {}", highlight_cyan(swelog_paths.work_file.display()));
 
         Ok(())
     }
