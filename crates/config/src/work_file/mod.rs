@@ -1,6 +1,9 @@
 pub mod hide_comments;
 
-use std::fs;
+use std::{
+    fs,
+    path::Path,
+};
 
 use hide_comments::has_hide_comments_flag;
 use miette::{
@@ -29,18 +32,21 @@ pub fn read_work_file(swelog_paths: &SwelogPaths) -> Result<String> {
     })
 }
 
-pub fn create_or_reset_work_file(swelog_config: &SwelogConfig) -> Result<()> {
+pub fn create_or_reset_work_file(
+    swelog_config: &SwelogConfig,
+    cache_directory: &Path,
+) -> Result<()> {
     let swelog_paths = SwelogPaths::new(swelog_config);
 
-    let default_work_file_content = get_default_work_file_content();
+    let default_work_file_content = get_default_work_file_content(cache_directory);
 
     fs::write(&swelog_paths.work_file, default_work_file_content).into_diagnostic().wrap_err_with(
         || format!("failed to write work file at {}", swelog_paths.work_file.display()),
     )
 }
 
-fn get_default_work_file_content() -> &'static str {
-    if has_hide_comments_flag() {
+fn get_default_work_file_content(cache_directory: &Path) -> &'static str {
+    if has_hide_comments_flag(cache_directory) {
         DEFAULT_WORK_FILE_CONTENT_WITHOUT_COMMENTS
     } else {
         DEFAULT_WORK_FILE_CONTENT

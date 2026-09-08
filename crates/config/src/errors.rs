@@ -61,4 +61,4 @@ pub struct SwelogFileNotFound {
     code(swelog::config::unavailable_cache_directory),
     help("set a cache directory for your operating system, such as XDG_CACHE_HOME on Linux")
 )]
-pub(crate) struct UnavailableCacheDirectory;
+pub struct UnavailableCacheDirectory;

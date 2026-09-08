@@ -22,6 +22,7 @@ impl SetupArgs {
 
         setup_swelog_files_from_config(
             &swelog_config,
+            &environment.cache_directory,
             Overwrite::from_force_flag(self.overwrite_existing_files),
         )?;
 

@@ -17,8 +17,7 @@ struct TestContext {
 fn get_test_context() -> TestContext {
     let temporary_directory = tempdir().expect("temp directory should be created");
 
-    let undo_snapshot_file =
-        temporary_directory.path().join(APP_NAME).join(UNDO_SNAPSHOT_FILE_NAME);
+    let undo_snapshot_file = get_undo_snapshot_file_path(&temporary_directory.path().join("cache"));
 
     TestContext { temporary_directory, undo_snapshot_file }
 }

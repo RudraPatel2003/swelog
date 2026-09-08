@@ -11,7 +11,10 @@ use tempfile::{
     TempDir,
     tempdir,
 };
-use undo::snapshot::read_undo_snapshot;
+use undo::snapshot::{
+    get_undo_snapshot_file_path,
+    read_undo_snapshot,
+};
 
 use super::*;
 use crate::{
@@ -42,8 +45,6 @@ const EXPECTED_DAILY_LOG_CONTENT: &str = r"# Daily Log - 05-23-2026
 
 const EXISTING_DAILY_LOG_CONTENT: &str = "existing daily log";
 
-const UNDO_SNAPSHOT_FILE_NAME: &str = "undo.json";
-
 struct TestContext {
     temporary_directory: TempDir,
     config: SwelogConfig,
@@ -70,8 +71,12 @@ impl TestContext {
         self.daily_log_directory().join(daily_log_file_name)
     }
 
+    fn cache_directory(&self) -> PathBuf {
+        self.temporary_directory.path().join("cache")
+    }
+
     fn undo_snapshot_file(&self) -> PathBuf {
-        self.temporary_directory.path().join(UNDO_SNAPSHOT_FILE_NAME)
+        get_undo_snapshot_file_path(&self.cache_directory())
     }
 
     fn write_swelog_files(&self) {
@@ -107,7 +112,7 @@ fn write_daily_log_writes_the_work_file_into_the_daily_log_directory() {
 
     write_daily_log_from_config(
         &test_context.config,
-        &test_context.undo_snapshot_file(),
+        &test_context.cache_directory(),
         &log_date,
         Overwrite::No,
         KeepWorkFile::No,
@@ -134,7 +139,7 @@ fn write_daily_log_does_not_require_a_context_file() {
 
     write_daily_log_from_config(
         &test_context.config,
-        &test_context.undo_snapshot_file(),
+        &test_context.cache_directory(),
         &log_date,
         Overwrite::No,
         KeepWorkFile::No,
@@ -157,7 +162,7 @@ fn write_daily_log_fails_when_work_file_is_not_updated() {
 
     let error = write_daily_log_from_config(
         &test_context.config,
-        &test_context.undo_snapshot_file(),
+        &test_context.cache_directory(),
         &log_date,
         Overwrite::No,
         KeepWorkFile::No,
@@ -183,7 +188,7 @@ fn write_daily_log_fails_when_work_file_is_missing() {
 
     let error = write_daily_log_from_config(
         &test_context.config,
-        &test_context.undo_snapshot_file(),
+        &test_context.cache_directory(),
         &log_date,
         Overwrite::No,
         KeepWorkFile::No,
@@ -211,7 +216,7 @@ fn write_daily_log_fails_when_daily_log_directory_is_missing() {
 
     let error = write_daily_log_from_config(
         &test_context.config,
-        &test_context.undo_snapshot_file(),
+        &test_context.cache_directory(),
         &log_date,
         Overwrite::No,
         KeepWorkFile::No,
@@ -239,7 +244,7 @@ fn write_daily_log_fails_when_daily_log_exists_without_force() {
 
     let error = write_daily_log_from_config(
         &test_context.config,
-        &test_context.undo_snapshot_file(),
+        &test_context.cache_directory(),
         &log_date,
         Overwrite::No,
         KeepWorkFile::No,
@@ -273,7 +278,7 @@ fn write_daily_log_overwrites_existing_daily_log_with_force() {
 
     write_daily_log_from_config(
         &test_context.config,
-        &test_context.undo_snapshot_file(),
+        &test_context.cache_directory(),
         &log_date,
         Overwrite::Yes,
         KeepWorkFile::No,
@@ -298,7 +303,7 @@ fn write_daily_log_resets_work_file_by_default() {
 
     write_daily_log_from_config(
         &test_context.config,
-        &test_context.undo_snapshot_file(),
+        &test_context.cache_directory(),
         &log_date,
         Overwrite::No,
         KeepWorkFile::No,
@@ -323,7 +328,7 @@ fn write_daily_log_keeps_work_file_when_keep_is_set() {
 
     write_daily_log_from_config(
         &test_context.config,
-        &test_context.undo_snapshot_file(),
+        &test_context.cache_directory(),
         &log_date,
         Overwrite::No,
         KeepWorkFile::Yes,
@@ -348,7 +353,7 @@ fn write_daily_log_saves_an_undo_snapshot_of_the_work_file() {
 
     write_daily_log_from_config(
         &test_context.config,
-        &test_context.undo_snapshot_file(),
+        &test_context.cache_directory(),
         &log_date,
         Overwrite::No,
         KeepWorkFile::No,
@@ -375,7 +380,7 @@ fn write_daily_log_saves_an_undo_snapshot_when_the_work_file_is_kept() {
 
     write_daily_log_from_config(
         &test_context.config,
-        &test_context.undo_snapshot_file(),
+        &test_context.cache_directory(),
         &log_date,
         Overwrite::No,
         KeepWorkFile::Yes,
@@ -403,7 +408,7 @@ fn write_daily_log_does_not_save_an_undo_snapshot_when_the_work_file_is_not_upda
 
     write_daily_log_from_config(
         &test_context.config,
-        &test_context.undo_snapshot_file(),
+        &test_context.cache_directory(),
         &log_date,
         Overwrite::No,
         KeepWorkFile::No,

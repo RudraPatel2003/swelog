@@ -1,3 +1,4 @@
+pub mod cache_directory;
 pub mod config_file;
 pub mod context_file;
 pub mod errors;

@@ -17,12 +17,7 @@ use serde::{
     Serialize,
 };
 
-use crate::errors::{
-    NoUndoSnapshot,
-    UnavailableCacheDirectory,
-};
-
-const APP_NAME: &str = "swelog";
+use crate::errors::NoUndoSnapshot;
 
 const UNDO_SNAPSHOT_FILE_NAME: &str = "undo.json";
 
@@ -34,16 +29,9 @@ pub struct UndoSnapshot {
     pub work_file_content: String,
 }
 
-pub fn get_undo_snapshot_file_path() -> Result<PathBuf> {
-    let Some(cache_directory) = dirs::cache_dir() else {
-        let unavailable_cache_directory_error = UnavailableCacheDirectory;
-
-        return Err(unavailable_cache_directory_error.into());
-    };
-
-    let undo_snapshot_file = cache_directory.join(APP_NAME).join(UNDO_SNAPSHOT_FILE_NAME);
-
-    Ok(undo_snapshot_file)
+#[must_use]
+pub fn get_undo_snapshot_file_path(cache_directory: &Path) -> PathBuf {
+    cache_directory.join(UNDO_SNAPSHOT_FILE_NAME)
 }
 
 pub fn read_undo_snapshot(undo_snapshot_file: &Path) -> Result<UndoSnapshot> {

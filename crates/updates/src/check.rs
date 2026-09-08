@@ -1,5 +1,8 @@
 use std::{
-    path::PathBuf,
+    path::{
+        Path,
+        PathBuf,
+    },
     time::Duration,
 };
 
@@ -29,10 +32,8 @@ pub struct PendingUpdateNotice {
 }
 
 #[must_use]
-pub fn start_version_check(current_version: &str) -> PendingUpdateNotice {
-    let Ok(cache_file_path) = get_version_cache_file_path() else {
-        return PendingUpdateNotice { update_notice: None, refresh: None };
-    };
+pub fn start_version_check(current_version: &str, cache_directory: &Path) -> PendingUpdateNotice {
+    let cache_file_path = get_version_cache_file_path(cache_directory);
 
     let version_cache = read_version_cache(&cache_file_path).ok();
 

@@ -23,7 +23,10 @@ use tempfile::{
     TempDir,
     tempdir,
 };
-use undo::snapshot::read_undo_snapshot;
+use undo::snapshot::{
+    get_undo_snapshot_file_path,
+    read_undo_snapshot,
+};
 
 use super::*;
 
@@ -47,8 +50,6 @@ const DEMOTED_WORK_FILE_CONTENT: &str = r"### Today's Work
 - Reviewed auth PR";
 
 const EXISTING_DAILY_LOG_CONTENT: &str = "existing daily log";
-
-const UNDO_SNAPSHOT_FILE_NAME: &str = "undo.json";
 
 struct TestContext {
     temporary_directory: TempDir,
@@ -85,8 +86,12 @@ impl TestContext {
         self.daily_log_directory().join(daily_log_file_name)
     }
 
+    fn cache_directory(&self) -> PathBuf {
+        self.temporary_directory.path().join("cache")
+    }
+
     fn undo_snapshot_file(&self) -> PathBuf {
-        self.temporary_directory.path().join(UNDO_SNAPSHOT_FILE_NAME)
+        get_undo_snapshot_file_path(&self.cache_directory())
     }
 
     fn write_swelog_files(&self) {
@@ -122,7 +127,7 @@ async fn summarize_daily_work_writes_generated_daily_log() {
 
     summarize_daily_work_from_config(
         &test_context.config,
-        &test_context.undo_snapshot_file(),
+        &test_context.cache_directory(),
         &FakeLanguageModel,
         &log_date,
         Some(CONTEXT_FILE_CONTENT),
@@ -158,7 +163,7 @@ async fn summarize_daily_work_prompts_without_context_when_none_is_given() {
 
     summarize_daily_work_from_config(
         &test_context.config,
-        &test_context.undo_snapshot_file(),
+        &test_context.cache_directory(),
         &FakeLanguageModel,
         &log_date,
         None,
@@ -190,7 +195,7 @@ async fn summarize_daily_work_fails_when_work_file_is_missing() {
 
     let error = summarize_daily_work_from_config(
         &test_context.config,
-        &test_context.undo_snapshot_file(),
+        &test_context.cache_directory(),
         &FakeLanguageModel,
         &log_date,
         Some(CONTEXT_FILE_CONTENT),
@@ -221,7 +226,7 @@ async fn summarize_daily_work_fails_when_daily_log_directory_is_missing() {
 
     let error = summarize_daily_work_from_config(
         &test_context.config,
-        &test_context.undo_snapshot_file(),
+        &test_context.cache_directory(),
         &FakeLanguageModel,
         &log_date,
         Some(CONTEXT_FILE_CONTENT),
@@ -252,7 +257,7 @@ async fn summarize_daily_work_fails_when_daily_log_exists_without_force() {
 
     let error = summarize_daily_work_from_config(
         &test_context.config,
-        &test_context.undo_snapshot_file(),
+        &test_context.cache_directory(),
         &FakeLanguageModel,
         &log_date,
         Some(CONTEXT_FILE_CONTENT),
@@ -289,7 +294,7 @@ async fn summarize_daily_work_overwrites_existing_daily_log_with_force() {
 
     summarize_daily_work_from_config(
         &test_context.config,
-        &test_context.undo_snapshot_file(),
+        &test_context.cache_directory(),
         &FakeLanguageModel,
         &log_date,
         Some(CONTEXT_FILE_CONTENT),
@@ -319,7 +324,7 @@ async fn summarize_daily_work_resets_work_file_by_default() {
 
     summarize_daily_work_from_config(
         &test_context.config,
-        &test_context.undo_snapshot_file(),
+        &test_context.cache_directory(),
         &FakeLanguageModel,
         &log_date,
         Some(CONTEXT_FILE_CONTENT),
@@ -354,7 +359,7 @@ async fn summarize_daily_work_keeps_work_file_when_keep_is_set() {
 
     summarize_daily_work_from_config(
         &test_context.config,
-        &test_context.undo_snapshot_file(),
+        &test_context.cache_directory(),
         &FakeLanguageModel,
         &log_date,
         Some(CONTEXT_FILE_CONTENT),
@@ -403,7 +408,7 @@ async fn summarize_daily_work_saves_an_undo_snapshot_of_the_original_work_file()
 
     summarize_daily_work_from_config(
         &test_context.config,
-        &test_context.undo_snapshot_file(),
+        &test_context.cache_directory(),
         &FakeLanguageModel,
         &log_date,
         Some(CONTEXT_FILE_CONTENT),

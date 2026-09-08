@@ -22,10 +22,6 @@ use serde::{
     Serialize,
 };
 
-use crate::errors::UnavailableCacheDirectory;
-
-const APP_NAME: &str = "swelog";
-
 const VERSION_CACHE_FILE_NAME: &str = "version-check.json";
 
 const VERSION_CHECK_INTERVAL: TimeDelta = TimeDelta::days(1);
@@ -37,16 +33,9 @@ pub struct VersionCache {
     pub checked_at: DateTime<Utc>,
 }
 
-pub fn get_version_cache_file_path() -> Result<PathBuf> {
-    let Some(cache_directory) = dirs::cache_dir() else {
-        let unavailable_cache_directory_error = UnavailableCacheDirectory;
-
-        return Err(unavailable_cache_directory_error.into());
-    };
-
-    let cache_file_path = cache_directory.join(APP_NAME).join(VERSION_CACHE_FILE_NAME);
-
-    Ok(cache_file_path)
+#[must_use]
+pub fn get_version_cache_file_path(cache_directory: &Path) -> PathBuf {
+    cache_directory.join(VERSION_CACHE_FILE_NAME)
 }
 
 pub fn read_version_cache(cache_file_path: &Path) -> Result<VersionCache> {

@@ -1,3 +1,5 @@
+use std::path::Path;
+
 use config::{
     setup::{
         default_files::is_default_work_file_content,
@@ -41,12 +43,16 @@ pub fn read_work_file_notes(swelog_paths: &SwelogPaths) -> Result<String> {
     Ok(work_file_content)
 }
 
-pub fn finish_work_file(swelog_config: &SwelogConfig, keep_work_file: KeepWorkFile) -> Result<()> {
+pub fn finish_work_file(
+    swelog_config: &SwelogConfig,
+    cache_directory: &Path,
+    keep_work_file: KeepWorkFile,
+) -> Result<()> {
     if keep_work_file == KeepWorkFile::Yes {
         return Ok(());
     }
 
-    set_hide_comments_flag()?;
+    set_hide_comments_flag(cache_directory)?;
 
-    create_or_reset_work_file(swelog_config)
+    create_or_reset_work_file(swelog_config, cache_directory)
 }
