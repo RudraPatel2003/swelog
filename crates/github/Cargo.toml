@@ -16,10 +16,10 @@ license = { workspace = true }
 workspace = true
 
 [dependencies]
+base_url = { path = "../base_url" }
 chrono = { workspace = true }
 reqwest = { workspace = true }
 miette = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 thiserror = { workspace = true }
-tokio = { workspace = true }
