@@ -38,6 +38,7 @@ use crate::{
             collect_included_fetch_sources,
         },
     },
+    environment::Environment,
     shared::date_selection::DateSelection,
 };
 
@@ -53,8 +54,8 @@ pub struct AllArgs {
 }
 
 impl AllArgs {
-    pub async fn run(self) -> Result<()> {
-        let swelog_config = read_config_file()?;
+    pub async fn run(self, environment: &Environment) -> Result<()> {
+        let swelog_config = read_config_file(&environment.config_file_path)?;
 
         let included_fetch_sources = collect_included_fetch_sources(&swelog_config)?;
 

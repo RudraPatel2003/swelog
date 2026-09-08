@@ -35,6 +35,7 @@ use crate::{
         },
         sources::FetchSource,
     },
+    environment::Environment,
     shared::date_selection::{
         DateSelection,
         resolve_selected_date,
@@ -55,10 +56,10 @@ pub struct LinearArgs {
 }
 
 impl LinearArgs {
-    pub async fn run(self) -> Result<()> {
+    pub async fn run(self, environment: &Environment) -> Result<()> {
         let date_selection = DateSelection::from_date_flags(self.date, self.use_yesterday);
 
-        fetch_linear_issues(date_selection).await
+        fetch_linear_issues(environment, date_selection).await
     }
 }
 
@@ -70,8 +71,11 @@ pub fn describe_missing_linear_configuration(swelog_config: &SwelogConfig) -> Op
     Some("linearUsername is not configured")
 }
 
-pub async fn fetch_linear_issues(date_selection: DateSelection) -> Result<()> {
-    let swelog_config = read_config_file()?;
+pub async fn fetch_linear_issues(
+    environment: &Environment,
+    date_selection: DateSelection,
+) -> Result<()> {
+    let swelog_config = read_config_file(&environment.config_file_path)?;
 
     FetchSource::Linear.print_fetching_notice();
 

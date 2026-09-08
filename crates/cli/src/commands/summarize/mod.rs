@@ -9,6 +9,8 @@ use day::DailySummaryArgs;
 use miette::Result;
 use week::WeeklySummaryArgs;
 
+use crate::environment::Environment;
+
 #[derive(Debug, Args)]
 pub struct SummarizeArgs {
     #[command(flatten)]
@@ -28,18 +30,18 @@ enum SummarizeCommands {
 }
 
 impl SummarizeArgs {
-    pub async fn run(self) -> Result<()> {
+    pub async fn run(self, environment: &Environment) -> Result<()> {
         match self.command {
             Some(SummarizeCommands::Day(daily_summary_args)) => {
-                daily_summary_args.run().await?;
+                daily_summary_args.run(environment).await?;
             }
 
             Some(SummarizeCommands::Week(weekly_summary_args)) => {
-                weekly_summary_args.run().await?;
+                weekly_summary_args.run(environment).await?;
             }
 
             None => {
-                self.daily_summary_args.run().await?;
+                self.daily_summary_args.run(environment).await?;
             }
         }
 

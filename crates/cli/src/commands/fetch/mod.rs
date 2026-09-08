@@ -17,6 +17,8 @@ use linear::LinearArgs;
 use miette::Result;
 use status::StatusArgs;
 
+use crate::environment::Environment;
+
 #[derive(Debug, Args)]
 pub struct FetchArgs {
     #[command(subcommand)]
@@ -42,17 +44,19 @@ enum FetchCommands {
 }
 
 impl FetchArgs {
-    pub async fn run(self) -> Result<()> {
+    pub async fn run(self, environment: &Environment) -> Result<()> {
         match self.command {
-            FetchCommands::All(all_args) => all_args.run().await,
+            FetchCommands::All(all_args) => all_args.run(environment).await,
 
-            FetchCommands::Github(github_args) => github_args.run().await,
+            FetchCommands::Github(github_args) => github_args.run(environment).await,
 
-            FetchCommands::Linear(linear_args) => linear_args.run().await,
+            FetchCommands::Linear(linear_args) => linear_args.run(environment).await,
 
-            FetchCommands::GoogleCalendar(google_calendar_args) => google_calendar_args.run().await,
+            FetchCommands::GoogleCalendar(google_calendar_args) => {
+                google_calendar_args.run(environment).await
+            }
 
-            FetchCommands::Status(status_args) => status_args.run(),
+            FetchCommands::Status(status_args) => status_args.run(environment),
         }
     }
 }

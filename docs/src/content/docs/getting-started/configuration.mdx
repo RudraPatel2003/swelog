@@ -7,6 +7,14 @@ Swelog stores its configuration in `swelog/swelog.json` inside your operating
 system's configuration directory. All generated files and directories live
 inside `<obsidianVaultPath>/<swelogFolderName>`.
 
+To read a config file from somewhere else, pass `--config <PATH>` to any
+command or set the `SWELOG_CONFIG_FILE` environment variable. The flag takes
+precedence over the environment variable.
+
+```sh
+swelog --config ~/work/swelog.json log
+```
+
 ## Fields
 
 | Field                 | Required | Description                                                                                                                    |

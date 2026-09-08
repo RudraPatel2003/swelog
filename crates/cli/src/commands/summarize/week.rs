@@ -24,14 +24,17 @@ use summary::week::{
     summarize_weekly_work_from_config,
 };
 
-use crate::shared::{
-    date_selection::{
-        WeekSelection,
-        resolve_monday_date,
-    },
-    summarization_notice::{
-        SummarizationPeriod,
-        format_summarization_notice,
+use crate::{
+    environment::Environment,
+    shared::{
+        date_selection::{
+            WeekSelection,
+            resolve_monday_date,
+        },
+        summarization_notice::{
+            SummarizationPeriod,
+            format_summarization_notice,
+        },
     },
 };
 
@@ -51,8 +54,8 @@ pub struct WeeklySummaryArgs {
 }
 
 impl WeeklySummaryArgs {
-    pub async fn run(self) -> Result<()> {
-        let swelog_config = read_config_file()?;
+    pub async fn run(self, environment: &Environment) -> Result<()> {
+        let swelog_config = read_config_file(&environment.config_file_path)?;
 
         let week_selection = WeekSelection::from_week_flags(self.monday_date, self.use_last_week);
 

@@ -1,12 +1,10 @@
-use miette::Result;
+use std::path::Path;
+
 use owo_colors::OwoColorize;
 
-use crate::{
-    config_file::get_config_file_path,
-    swelog_config::{
-        LanguageModelProvider,
-        SwelogConfig,
-    },
+use crate::swelog_config::{
+    LanguageModelProvider,
+    SwelogConfig,
 };
 
 const LABEL_WIDTH: usize = 21;
@@ -23,9 +21,7 @@ struct ConfigRow {
     value: String,
 }
 
-pub fn print_config(config: &SwelogConfig) -> Result<()> {
-    let config_file_path = get_config_file_path()?;
-
+pub fn print_config(config_file_path: &Path, config: &SwelogConfig) {
     let formatted_config = format_config(config);
 
     println!("Displaying config at {}:", config_file_path.display().cyan());
@@ -33,8 +29,6 @@ pub fn print_config(config: &SwelogConfig) -> Result<()> {
     println!();
 
     print!("{formatted_config}");
-
-    Ok(())
 }
 
 fn format_config(config: &SwelogConfig) -> String {

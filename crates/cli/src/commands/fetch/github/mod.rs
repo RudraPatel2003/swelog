@@ -34,6 +34,7 @@ use crate::{
         },
         sources::FetchSource,
     },
+    environment::Environment,
     shared::date_selection::{
         DateSelection,
         resolve_selected_date,
@@ -54,15 +55,18 @@ pub struct GithubArgs {
 }
 
 impl GithubArgs {
-    pub async fn run(self) -> Result<()> {
+    pub async fn run(self, environment: &Environment) -> Result<()> {
         let date_selection = DateSelection::from_date_flags(self.date, self.use_yesterday);
 
-        fetch_github_activity(date_selection).await
+        fetch_github_activity(environment, date_selection).await
     }
 }
 
-pub async fn fetch_github_activity(date_selection: DateSelection) -> Result<()> {
-    let swelog_config = read_config_file()?;
+pub async fn fetch_github_activity(
+    environment: &Environment,
+    date_selection: DateSelection,
+) -> Result<()> {
+    let swelog_config = read_config_file(&environment.config_file_path)?;
 
     FetchSource::Github.print_fetching_notice();
 
