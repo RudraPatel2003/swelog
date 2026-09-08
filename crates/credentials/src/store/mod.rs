@@ -29,8 +29,6 @@ const KEYRING_SELECTION: &str = "keyring";
 
 const FILE_SELECTION_PREFIX: &str = "file:";
 
-/// Where swelog keeps its secrets. The keyring is the default; a file is for
-/// environments without a keyring, such as automated tests.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum CredentialStore {
     Keyring,
