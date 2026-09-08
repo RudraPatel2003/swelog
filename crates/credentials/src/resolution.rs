@@ -1,8 +1,10 @@
 use std::{
     env,
     io::{
+        IsTerminal,
         Write,
         stderr,
+        stdin,
     },
 };
 
@@ -44,15 +46,19 @@ pub fn get_or_prompt_for_credential(
         return Err(missing_authorization_error.into());
     };
 
+    let missing_credential_error = MissingCredential {
+        label: credential.label(),
+        environment_variable,
+        command_name: credential.command_name(),
+    };
+
+    if !stdin().is_terminal() {
+        return Err(missing_credential_error.into());
+    }
+
     let secret = prompt_for_secret(credential.label(), instructions)?;
 
     if secret.is_empty() {
-        let missing_credential_error = MissingCredential {
-            label: credential.label(),
-            environment_variable,
-            command_name: credential.command_name(),
-        };
-
         return Err(missing_credential_error.into());
     }
 
