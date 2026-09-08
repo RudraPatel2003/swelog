@@ -4,8 +4,8 @@ use config::{
     overwrite::Overwrite,
     swelog_config::SwelogConfig,
 };
+use highlight::stdout::highlight_cyan;
 use miette::Result;
-use owo_colors::OwoColorize;
 
 use crate::environment::Environment;
 
@@ -26,7 +26,10 @@ impl InitArgs {
             Overwrite::from_force_flag(self.overwrite_existing_config),
         )?;
 
-        println!("Created swelog config at {}", environment.config_file_path.display().cyan());
+        println!(
+            "Created swelog config at {}",
+            highlight_cyan(environment.config_file_path.display())
+        );
 
         Ok(())
     }

@@ -1,5 +1,5 @@
 [package]
-name = "config"
+name = "highlight"
 version = "0.21.0"
 publish = false
 authors = { workspace = true }
@@ -16,12 +16,4 @@ license = { workspace = true }
 workspace = true
 
 [dependencies]
-dirs = { workspace = true }
-highlight = { path = "../highlight" }
-miette = { workspace = true }
-serde = { workspace = true }
-serde_json = { workspace = true }
-thiserror = { workspace = true }
-
-[dev-dependencies]
-tempfile = { workspace = true }
+owo-colors = { workspace = true }

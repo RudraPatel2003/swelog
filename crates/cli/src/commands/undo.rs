@@ -3,8 +3,8 @@ use config::{
     config_file::read_config_file,
     setup::swelog_paths::SwelogPaths,
 };
+use highlight::stdout::highlight_cyan;
 use miette::Result;
-use owo_colors::OwoColorize;
 use undo::{
     restore::restore_undo_snapshot,
     snapshot::{
@@ -41,9 +41,9 @@ impl UndoArgs {
 }
 
 fn print_undone_changes(swelog_paths: &SwelogPaths, undo_snapshot: &UndoSnapshot) {
-    println!("Restored your work file at {}", swelog_paths.work_file.display().cyan());
+    println!("Restored your work file at {}", highlight_cyan(swelog_paths.work_file.display()));
 
     if let Some(created_file) = &undo_snapshot.created_file {
-        println!("Deleted {}", created_file.display().cyan());
+        println!("Deleted {}", highlight_cyan(created_file.display()));
     }
 }

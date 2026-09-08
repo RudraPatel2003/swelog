@@ -13,12 +13,12 @@ use dates::{
     date_format::DATE_VALUE_NAME,
     parsing::parse_monday_date,
 };
+use highlight::stdout::highlight_cyan;
 use llm::{
     language_model_factory::get_language_model,
     summarization_settings::SummarizationSettings,
 };
 use miette::Result;
-use owo_colors::OwoColorize;
 use summary::week::{
     get_weekly_log_file_name,
     summarize_weekly_work_from_config,
@@ -89,7 +89,10 @@ impl WeeklySummaryArgs {
 
         let weekly_log_file_name = get_weekly_log_file_name(&monday_date);
 
-        println!("Successfully summarized your weekly work into {}", weekly_log_file_name.cyan());
+        println!(
+            "Successfully summarized your weekly work into {}",
+            highlight_cyan(weekly_log_file_name)
+        );
 
         Ok(())
     }

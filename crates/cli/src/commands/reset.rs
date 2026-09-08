@@ -7,8 +7,8 @@ use config::{
         read_work_file,
     },
 };
+use highlight::stdout::highlight_cyan;
 use miette::Result;
-use owo_colors::OwoColorize;
 use undo::snapshot::{
     UndoSnapshot,
     get_undo_snapshot_file_path,
@@ -38,7 +38,7 @@ impl ResetArgs {
 
         create_or_reset_work_file(&swelog_config, &environment.cache_directory)?;
 
-        println!("Reset work file at {}", swelog_paths.work_file.display().cyan());
+        println!("Reset work file at {}", highlight_cyan(swelog_paths.work_file.display()));
 
         Ok(())
     }

@@ -29,11 +29,11 @@ dates = { path = "../dates" }
 futures = { workspace = true }
 github = { path = "../github" }
 google_calendar = { path = "../google_calendar" }
+highlight = { path = "../highlight" }
 llm = { path = "../llm" }
 linear = { path = "../linear" }
 markdown = { path = "../markdown" }
 miette = { workspace = true, features = ["fancy"] }
-owo-colors = { workspace = true }
 summary = { path = "../summary" }
 thiserror = { workspace = true }
 time = { path = "../time" }

@@ -1,4 +1,7 @@
-use owo_colors::OwoColorize;
+use highlight::stderr::{
+    highlight_cyan,
+    highlight_dimmed,
+};
 use semver::Version;
 
 const UPGRADE_COMMAND: &str = "npm update -g swelog-cli";
@@ -27,9 +30,9 @@ fn is_newer_version(current_version: &str, latest_version: &str) -> bool {
 fn format_update_notice(current_version: &str, latest_version: &str) -> String {
     format!(
         "A new version of swelog is available: {} → {}\nRun {} to upgrade.\n",
-        current_version.dimmed(),
-        latest_version.cyan(),
-        UPGRADE_COMMAND.cyan(),
+        highlight_dimmed(current_version),
+        highlight_cyan(latest_version),
+        highlight_cyan(UPGRADE_COMMAND),
     )
 }
 

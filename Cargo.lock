@@ -511,11 +511,11 @@ dependencies = [
  "futures",
  "github",
  "google_calendar",
+ "highlight",
  "linear",
  "llm",
  "markdown",
  "miette",
- "owo-colors",
  "summary",
  "thiserror 2.0.18",
  "time",
@@ -563,8 +563,8 @@ name = "config"
 version = "0.21.0"
 dependencies = [
  "dirs",
+ "highlight",
  "miette",
- "owo-colors",
  "serde",
  "serde_json",
  "tempfile",
@@ -1088,6 +1088,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
 
 [[package]]
+name = "highlight"
+version = "0.21.0"
+dependencies = [
+ "owo-colors",
+]
+
+[[package]]
 name = "hkdf"
 version = "0.12.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1383,6 +1390,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d98f6fed1fde3f8c21bc40a1abb88dd75e67924f9cffc3ef95607bad8017f8e2"
 
 [[package]]
+name = "is-terminal"
+version = "0.4.17"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3640c1c38b8e4e43584d8df18be5fc6b0aa314ce6ebf51b53313d4306cca8e46"
+dependencies = [
+ "hermit-abi",
+ "libc",
+ "windows-sys 0.52.0",
+]
+
+[[package]]
 name = "is_ci"
 version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1619,7 +1637,7 @@ dependencies = [
  "cfg-if",
  "miette-derive",
  "owo-colors",
- "supports-color",
+ "supports-color 3.0.2",
  "supports-hyperlinks",
  "supports-unicode",
  "terminal_size",
@@ -1936,6 +1954,10 @@ name = "owo-colors"
 version = "4.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d211803b9b6b570f68772237e415a029d5a50c65d382910b879fb19d3271f94d"
+dependencies = [
+ "supports-color 2.1.0",
+ "supports-color 3.0.2",
+]
 
 [[package]]
 name = "parking"
@@ -2841,6 +2863,16 @@ dependencies = [
 
 [[package]]
 name = "supports-color"
+version = "2.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d6398cde53adc3c4557306a96ce67b302968513830a77a95b2b17305d9719a89"
+dependencies = [
+ "is-terminal",
+ "is_ci",
+]
+
+[[package]]
+name = "supports-color"
 version = "3.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c64fc7232dd8d2e4ac5ce4ef302b1d81e0b80d055b9d77c7c4f51f6aa4c867d6"
@@ -3289,8 +3321,8 @@ version = "0.21.0"
 dependencies = [
  "base_url",
  "chrono",
+ "highlight",
  "miette",
- "owo-colors",
  "reqwest 0.13.4",
  "semver",
  "serde",

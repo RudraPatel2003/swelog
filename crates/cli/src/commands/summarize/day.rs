@@ -6,12 +6,12 @@ use config::{
     setup::swelog_paths::SwelogPaths,
 };
 use daily_log::file::get_daily_log_file_name;
+use highlight::stdout::highlight_cyan;
 use llm::{
     language_model_factory::get_language_model,
     summarization_settings::SummarizationSettings,
 };
 use miette::Result;
-use owo_colors::OwoColorize;
 use summary::day::summarize_daily_work_from_config;
 
 use crate::{
@@ -69,7 +69,10 @@ impl DailySummaryArgs {
 
         let daily_log_file_name = get_daily_log_file_name(&log_date);
 
-        println!("Successfully summarized your daily work into {}", daily_log_file_name.cyan());
+        println!(
+            "Successfully summarized your daily work into {}",
+            highlight_cyan(daily_log_file_name)
+        );
 
         Ok(())
     }
