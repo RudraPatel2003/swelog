@@ -26,11 +26,8 @@ jobs:
       - name: Setup Just
         uses: extractions/setup-just@v4
 
-      # Keep the pinned toolchain in sync with rust-toolchain.toml.
       - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@master
-        with:
-          toolchain: nightly-2026-08-18
+        uses: ./.github/actions/install-rust-toolchain
 
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
@@ -106,11 +103,9 @@ jobs:
       - name: Setup Just
         uses: extractions/setup-just@v4
 
-      # Keep the pinned toolchain in sync with rust-toolchain.toml.
       - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@master
+        uses: ./.github/actions/install-rust-toolchain
         with:
-          toolchain: nightly-2026-08-18
           targets: ${{ matrix.target }}
 
       - name: Cache Rust dependencies
@@ -160,11 +155,9 @@ jobs:
         with:
           tool: nextest
 
-      # Keep the pinned toolchain in sync with rust-toolchain.toml.
       - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@master
+        uses: ./.github/actions/install-rust-toolchain
         with:
-          toolchain: nightly-2026-08-18
           components: clippy, rustfmt
 
       - name: Cache Rust dependencies

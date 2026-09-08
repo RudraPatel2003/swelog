@@ -1,0 +1,40 @@
+name: Install Rust toolchain
+description: Installs the Rust toolchain channel pinned in rust-toolchain.toml.
+
+inputs:
+  components:
+    description: Comma-separated rustup components to install.
+  targets:
+    description: Comma-separated rustup targets to install.
+
+runs:
+  using: composite
+  steps:
+    - name: Read pinned channel from rust-toolchain.toml
+      id: read-channel
+      uses: actions/github-script@v8
+      with:
+        script: |
+          const fs = require("fs");
+
+          const lines = fs.readFileSync("rust-toolchain.toml", "utf8").split("\n");
+
+          const channelLine = lines.find((line) => line.trim().startsWith("channel"));
+
+          if (!channelLine) {
+            core.setFailed("No `channel` line found in rust-toolchain.toml");
+            return;
+          }
+
+          const channel = channelLine.match(/"([^"]*)"/)[1];
+
+          core.info(`Pinned Rust channel: ${channel}`);
+
+          core.setOutput("channel", channel);
+
+    - name: Install Rust toolchain
+      uses: dtolnay/rust-toolchain@master
+      with:
+        toolchain: ${{ steps.read-channel.outputs.channel }}
+        components: ${{ inputs.components }}
+        targets: ${{ inputs.targets }}
