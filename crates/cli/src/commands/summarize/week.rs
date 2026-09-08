@@ -1,7 +1,4 @@
-use chrono::{
-    Local,
-    NaiveDate,
-};
+use chrono::NaiveDate;
 use clap::Args;
 use config::{
     config_file::read_config_file,
@@ -59,7 +56,7 @@ impl WeeklySummaryArgs {
 
         let week_selection = WeekSelection::from_week_flags(self.monday_date, self.use_last_week);
 
-        let monday_date = resolve_monday_date(week_selection, Local::now().date_naive())?;
+        let monday_date = resolve_monday_date(week_selection, environment.today)?;
 
         let summarization_settings = SummarizationSettings::from_config(&swelog_config)?;
 

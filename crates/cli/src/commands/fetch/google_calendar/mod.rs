@@ -1,9 +1,6 @@
 mod formatting;
 
-use chrono::{
-    Local,
-    NaiveDate,
-};
+use chrono::NaiveDate;
 use clap::Args;
 use config::config_file::read_config_file;
 use dates::{
@@ -63,17 +60,17 @@ pub async fn fetch_google_calendar_meetings(
 
     FetchSource::GoogleCalendar.print_fetching_notice();
 
-    let fetch_outcome = collect_google_calendar_meetings(date_selection).await?;
+    let fetch_outcome = collect_google_calendar_meetings(environment, date_selection).await?;
 
     record_fetch_outcome(&swelog_config, fetch_outcome)
 }
 
 pub async fn collect_google_calendar_meetings(
+    environment: &Environment,
     date_selection: DateSelection,
 ) -> Result<FetchOutcome> {
-    let today = Local::now().date_naive();
-
-    let meeting_date = resolve_selected_date(date_selection, today)?.unwrap_or(today);
+    let meeting_date =
+        resolve_selected_date(date_selection, environment.today)?.unwrap_or(environment.today);
 
     let meetings = get_primary_calendar_meetings_on_date(&meeting_date).await?;
 

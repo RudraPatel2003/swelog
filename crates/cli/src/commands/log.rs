@@ -1,4 +1,3 @@
-use chrono::Local;
 use clap::Args;
 use config::config_file::read_config_file;
 use daily_log::{
@@ -23,9 +22,7 @@ impl LogArgs {
     pub fn run(self, environment: &Environment) -> Result<()> {
         let swelog_config = read_config_file(&environment.config_file_path)?;
 
-        let today = Local::now().date_naive();
-
-        let log_date = self.daily_log_args.resolve_log_date(today)?;
+        let log_date = self.daily_log_args.resolve_log_date(environment.today)?;
 
         write_daily_log_from_config(
             &swelog_config,

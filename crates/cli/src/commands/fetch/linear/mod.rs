@@ -1,10 +1,7 @@
 mod errors;
 mod formatting;
 
-use chrono::{
-    Local,
-    NaiveDate,
-};
+use chrono::NaiveDate;
 use clap::Args;
 use config::{
     config_file::read_config_file,
@@ -79,25 +76,24 @@ pub async fn fetch_linear_issues(
 
     FetchSource::Linear.print_fetching_notice();
 
-    let fetch_outcome = collect_linear_issues(&swelog_config, date_selection).await?;
+    let fetch_outcome = collect_linear_issues(environment, &swelog_config, date_selection).await?;
 
     record_fetch_outcome(&swelog_config, fetch_outcome)
 }
 
 pub async fn collect_linear_issues(
+    environment: &Environment,
     swelog_config: &SwelogConfig,
     date_selection: DateSelection,
 ) -> Result<FetchOutcome> {
     let linear_username = swelog_config.get_linear_username().ok_or(MissingLinearUsername)?;
 
-    let today = Local::now().date_naive();
-
-    let activity_date = resolve_selected_date(date_selection, today)?;
+    let activity_date = resolve_selected_date(date_selection, environment.today)?;
 
     let issues = match activity_date {
         Some(activity_date) => get_assigned_issues_on_date(linear_username, &activity_date).await?,
 
-        None => get_current_active_assigned_issues(linear_username, &today).await?,
+        None => get_current_active_assigned_issues(linear_username, &environment.today).await?,
     };
 
     let linear_fetch_outcome = get_linear_fetch_outcome(&issues, activity_date.as_ref());

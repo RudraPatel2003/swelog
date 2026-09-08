@@ -72,7 +72,8 @@ impl AllArgs {
         let date_selection = DateSelection::from_date_flags(self.date, self.use_yesterday);
 
         let failed_fetch_sources =
-            run_fetch_sources(&included_fetch_sources, &swelog_config, date_selection).await;
+            run_fetch_sources(&included_fetch_sources, environment, &swelog_config, date_selection)
+                .await;
 
         if failed_fetch_sources.is_empty() {
             return Ok(());
@@ -88,12 +89,14 @@ impl AllArgs {
 
 async fn run_fetch_sources(
     fetch_sources: &[FetchSource],
+    environment: &Environment,
     swelog_config: &SwelogConfig,
     date_selection: DateSelection,
 ) -> Vec<FetchSource> {
     print_fetching_notices(fetch_sources);
 
-    let fetch_results = collect_fetch_outcomes(fetch_sources, swelog_config, date_selection).await;
+    let fetch_results =
+        collect_fetch_outcomes(fetch_sources, environment, swelog_config, date_selection).await;
 
     println!();
 
@@ -108,27 +111,33 @@ fn print_fetching_notices(fetch_sources: &[FetchSource]) {
 
 async fn collect_fetch_outcomes(
     fetch_sources: &[FetchSource],
+    environment: &Environment,
     swelog_config: &SwelogConfig,
     date_selection: DateSelection,
 ) -> Vec<Result<FetchOutcome>> {
-    let fetches = fetch_sources
-        .iter()
-        .map(|fetch_source| collect_fetch_outcome(*fetch_source, swelog_config, date_selection));
+    let fetches = fetch_sources.iter().map(|fetch_source| {
+        collect_fetch_outcome(*fetch_source, environment, swelog_config, date_selection)
+    });
 
     join_all(fetches).await
 }
 
 async fn collect_fetch_outcome(
     fetch_source: FetchSource,
+    environment: &Environment,
     swelog_config: &SwelogConfig,
     date_selection: DateSelection,
 ) -> Result<FetchOutcome> {
     match fetch_source {
-        FetchSource::Github => collect_github_activity(date_selection).await,
+        FetchSource::Github => collect_github_activity(environment, date_selection).await,
 
-        FetchSource::Linear => collect_linear_issues(swelog_config, date_selection).await,
+        FetchSource::Linear => {
+            collect_linear_issues(environment, swelog_config, date_selection).await
+        }
 
-        FetchSource::GoogleCalendar => collect_google_calendar_meetings(date_selection).await,
+        FetchSource::GoogleCalendar => {
+            collect_google_calendar_meetings(environment, date_selection).await
+        }
     }
 }
 
