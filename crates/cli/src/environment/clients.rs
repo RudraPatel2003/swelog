@@ -3,6 +3,11 @@ use credentials::{
     resolution::get_or_prompt_for_credential,
 };
 use github::client::GitHubClient;
+use llm::{
+    language_model::LanguageModel,
+    language_model_factory::get_language_model,
+    summarization_settings::SummarizationSettings,
+};
 use miette::Result;
 
 use crate::environment::Environment;
@@ -16,5 +21,12 @@ impl Environment {
         let github_client = GitHubClient::new(github_api_endpoint, github_token);
 
         Ok(github_client)
+    }
+
+    pub fn build_language_model(
+        &self,
+        summarization_settings: &SummarizationSettings,
+    ) -> Result<Box<dyn LanguageModel>> {
+        get_language_model(summarization_settings, &self.endpoints.language_model_endpoints())
     }
 }

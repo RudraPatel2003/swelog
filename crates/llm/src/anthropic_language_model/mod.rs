@@ -2,6 +2,7 @@ pub mod errors;
 mod structs;
 
 use async_trait::async_trait;
+use base_url::base_url::BaseUrl;
 use errors::{
     AnthropicAuthorizationFailed,
     AnthropicRequestFailed,
@@ -24,7 +25,9 @@ use structs::{
 
 use crate::language_model::LanguageModel;
 
-const ANTHROPIC_MESSAGES_URL: &str = "https://api.anthropic.com/v1/messages";
+pub const DEFAULT_ANTHROPIC_BASE_URL: &str = "https://api.anthropic.com/";
+
+const MESSAGES_ENDPOINT_PATH: &str = "v1/messages";
 
 const ANTHROPIC_VERSION_HEADER: &str = "anthropic-version";
 
@@ -39,14 +42,15 @@ const MAX_RESPONSE_TOKENS: u32 = 8192;
 
 pub struct AnthropicLanguageModel {
     client: Client,
+    base_url: BaseUrl,
     model: String,
     api_key: String,
 }
 
 impl AnthropicLanguageModel {
     #[must_use]
-    pub fn new(model: String, api_key: String) -> Self {
-        Self { client: Client::new(), model, api_key }
+    pub fn new(base_url: BaseUrl, model: String, api_key: String) -> Self {
+        Self { client: Client::new(), base_url, model, api_key }
     }
 }
 
@@ -62,9 +66,11 @@ impl LanguageModel for AnthropicLanguageModel {
             }],
         };
 
+        let endpoint_url = self.base_url.join(MESSAGES_ENDPOINT_PATH)?;
+
         let response = self
             .client
-            .post(ANTHROPIC_MESSAGES_URL)
+            .post(endpoint_url)
             .header(ANTHROPIC_API_KEY_HEADER, self.api_key.as_str())
             .header(ANTHROPIC_VERSION_HEADER, ANTHROPIC_VERSION)
             .json(&request)

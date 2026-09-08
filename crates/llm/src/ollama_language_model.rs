@@ -1,4 +1,5 @@
 use async_trait::async_trait;
+use base_url::base_url::BaseUrl;
 use miette::{
     IntoDiagnostic,
     Result,
@@ -11,15 +12,20 @@ use ollama_rs::{
 
 use crate::language_model::LanguageModel;
 
+pub const DEFAULT_OLLAMA_BASE_URL: &str = "http://localhost:11434/";
+
 pub struct OllamaLanguageModel {
     client: Ollama,
     model: String,
 }
 
 impl OllamaLanguageModel {
-    #[must_use]
-    pub fn new(model: String) -> Self {
-        Self { client: Ollama::default(), model }
+    pub fn new(base_url: &BaseUrl, model: String) -> Result<Self> {
+        let client = Ollama::try_new(base_url.as_str())
+            .into_diagnostic()
+            .wrap_err_with(|| format!("failed to connect to Ollama at {base_url}"))?;
+
+        Ok(Self { client, model })
     }
 }
 

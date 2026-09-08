@@ -17,6 +17,7 @@ workspace = true
 
 [dependencies]
 async-trait = { workspace = true }
+base_url = { path = "../base_url" }
 chrono = { workspace = true }
 config = { path = "../config" }
 credentials = { path = "../credentials" }

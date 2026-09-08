@@ -2,6 +2,7 @@ pub mod errors;
 mod structs;
 
 use async_trait::async_trait;
+use base_url::base_url::BaseUrl;
 use errors::{
     OpenRouterAuthorizationFailed,
     OpenRouterRequestFailed,
@@ -23,18 +24,21 @@ use structs::{
 
 use crate::language_model::LanguageModel;
 
-const OPEN_ROUTER_RESPONSES_URL: &str = "https://openrouter.ai/api/v1/responses";
+pub const DEFAULT_OPEN_ROUTER_BASE_URL: &str = "https://openrouter.ai/api/";
+
+const RESPONSES_ENDPOINT_PATH: &str = "v1/responses";
 
 pub struct OpenRouterLanguageModel {
     client: Client,
+    base_url: BaseUrl,
     model: String,
     api_key: String,
 }
 
 impl OpenRouterLanguageModel {
     #[must_use]
-    pub fn new(model: String, api_key: String) -> Self {
-        Self { client: Client::new(), model, api_key }
+    pub fn new(base_url: BaseUrl, model: String, api_key: String) -> Self {
+        Self { client: Client::new(), base_url, model, api_key }
     }
 }
 
@@ -44,9 +48,11 @@ impl LanguageModel for OpenRouterLanguageModel {
         let request =
             OpenRouterResponseRequest { model: self.model.clone(), input: String::from(prompt) };
 
+        let endpoint_url = self.base_url.join(RESPONSES_ENDPOINT_PATH)?;
+
         let response = self
             .client
-            .post(OPEN_ROUTER_RESPONSES_URL)
+            .post(endpoint_url)
             .bearer_auth(self.api_key.clone())
             .json(&request)
             .send()

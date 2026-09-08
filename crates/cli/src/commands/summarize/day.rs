@@ -36,7 +36,7 @@ impl DailySummaryArgs {
 
         let summarization_settings = SummarizationSettings::from_config(&swelog_config)?;
 
-        let language_model = get_language_model(&summarization_settings)?;
+        let language_model = environment.build_language_model(&summarization_settings)?;
 
         let log_date = self.daily_log_args.resolve_log_date(environment.today)?;
 
