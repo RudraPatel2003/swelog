@@ -1,4 +1,4 @@
-mod cache;
+pub mod cache;
 pub mod check;
 mod errors;
 mod notice;
