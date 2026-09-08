@@ -1,4 +1,3 @@
-use chrono::Local;
 use clap::Args;
 use config::{
     config_file::read_config_file,
@@ -39,9 +38,7 @@ impl DailySummaryArgs {
 
         let language_model = get_language_model(&summarization_settings)?;
 
-        let today = Local::now().date_naive();
-
-        let log_date = self.daily_log_args.resolve_log_date(today)?;
+        let log_date = self.daily_log_args.resolve_log_date(environment.today)?;
 
         let swelog_paths = SwelogPaths::new(&swelog_config);
 

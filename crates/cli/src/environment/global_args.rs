@@ -1,6 +1,11 @@
 use std::path::PathBuf;
 
+use chrono::NaiveDate;
 use clap::Args;
+use dates::{
+    date_format::DATE_VALUE_NAME,
+    parsing::parse_date,
+};
 
 use crate::environment::{
     endpoints::ServiceEndpoints,
@@ -26,6 +31,16 @@ pub struct GlobalArgs {
         hide = true
     )]
     pub update_check: UpdateCheck,
+
+    #[arg(
+        long,
+        global = true,
+        env = "SWELOG_TODAY",
+        value_name = DATE_VALUE_NAME,
+        value_parser = parse_date,
+        hide = true
+    )]
+    pub today: Option<NaiveDate>,
 
     #[command(flatten)]
     pub endpoints: ServiceEndpoints,

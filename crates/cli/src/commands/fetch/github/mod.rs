@@ -1,9 +1,6 @@
 mod formatting;
 
-use chrono::{
-    Local,
-    NaiveDate,
-};
+use chrono::NaiveDate;
 use clap::Args;
 use config::config_file::read_config_file;
 use credentials::{
@@ -70,19 +67,21 @@ pub async fn fetch_github_activity(
 
     FetchSource::Github.print_fetching_notice();
 
-    let fetch_outcome = collect_github_activity(date_selection).await?;
+    let fetch_outcome = collect_github_activity(environment, date_selection).await?;
 
     record_fetch_outcome(&swelog_config, fetch_outcome)
 }
 
-pub async fn collect_github_activity(date_selection: DateSelection) -> Result<FetchOutcome> {
+pub async fn collect_github_activity(
+    environment: &Environment,
+    date_selection: DateSelection,
+) -> Result<FetchOutcome> {
     let github_token = get_or_prompt_for_credential(Credential::Github)?;
 
     let github_username = get_github_username(&github_token).await?;
 
-    let today = Local::now().date_naive();
-
-    let activity_date = resolve_selected_date(date_selection, today)?.unwrap_or(today);
+    let activity_date =
+        resolve_selected_date(date_selection, environment.today)?.unwrap_or(environment.today);
 
     let get_opened_prs_future = get_opened_prs(&github_token, &github_username, &activity_date);
 
