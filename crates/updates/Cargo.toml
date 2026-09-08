@@ -16,6 +16,7 @@ license = { workspace = true }
 workspace = true
 
 [dependencies]
+base_url = { path = "../base_url" }
 chrono = { workspace = true }
 miette = { workspace = true }
 owo-colors = { workspace = true }

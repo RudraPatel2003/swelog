@@ -9,9 +9,11 @@ use commands::Commands;
 use environment::{
     Environment,
     resolve_environment,
+    update_check::UpdateCheck,
 };
 use miette::Result;
 use updates::check::{
+    PendingUpdateNotice,
     print_update_notice,
     start_version_check,
 };
@@ -22,10 +24,7 @@ async fn main() -> Result<()> {
 
     let environment = resolve_environment(cli.global_args)?;
 
-    let cargo_package_version = env!("CARGO_PKG_VERSION");
-
-    let pending_update_notice =
-        start_version_check(cargo_package_version, &environment.cache_directory);
+    let pending_update_notice = start_update_check(&environment);
 
     // Store result so update is printed even if command fails
     let command_result = run_command(cli.command, &environment).await;
@@ -33,6 +32,20 @@ async fn main() -> Result<()> {
     print_update_notice(pending_update_notice).await;
 
     command_result
+}
+
+fn start_update_check(environment: &Environment) -> PendingUpdateNotice {
+    let cargo_package_version = env!("CARGO_PKG_VERSION");
+
+    match environment.update_check {
+        UpdateCheck::On => start_version_check(
+            cargo_package_version,
+            &environment.cache_directory,
+            environment.endpoints.npm_registry.clone(),
+        ),
+
+        UpdateCheck::Off => PendingUpdateNotice::skipped(),
+    }
 }
 
 async fn run_command(command: Commands, environment: &Environment) -> Result<()> {

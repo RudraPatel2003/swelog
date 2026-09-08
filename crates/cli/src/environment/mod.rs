@@ -1,4 +1,6 @@
+pub mod endpoints;
 pub mod global_args;
+pub mod update_check;
 
 use std::path::PathBuf;
 
@@ -8,11 +10,17 @@ use config::{
 };
 use miette::Result;
 
-use crate::environment::global_args::GlobalArgs;
+use crate::environment::{
+    endpoints::ServiceEndpoints,
+    global_args::GlobalArgs,
+    update_check::UpdateCheck,
+};
 
 pub struct Environment {
     pub config_file_path: PathBuf,
     pub cache_directory: PathBuf,
+    pub endpoints: ServiceEndpoints,
+    pub update_check: UpdateCheck,
 }
 
 pub fn resolve_environment(global_args: GlobalArgs) -> Result<Environment> {
@@ -22,5 +30,10 @@ pub fn resolve_environment(global_args: GlobalArgs) -> Result<Environment> {
     let cache_directory =
         global_args.cache_directory.map_or_else(get_default_cache_directory, Ok)?;
 
-    Ok(Environment { config_file_path, cache_directory })
+    Ok(Environment {
+        config_file_path,
+        cache_directory,
+        endpoints: global_args.endpoints,
+        update_check: global_args.update_check,
+    })
 }
