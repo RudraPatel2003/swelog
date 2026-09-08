@@ -1,5 +1,6 @@
 use std::time::Duration;
 
+use base_url::base_url::BaseUrl;
 use miette::{
     IntoDiagnostic,
     Result,
@@ -13,7 +14,9 @@ use serde::Deserialize;
 
 use crate::errors::FailedToFetchLatestVersion;
 
-const NPM_REGISTRY_LATEST_URL: &str = "https://registry.npmjs.org/swelog-cli/latest";
+pub const DEFAULT_NPM_REGISTRY_BASE_URL: &str = "https://registry.npmjs.org/";
+
+const LATEST_VERSION_ENDPOINT_PATH: &str = "swelog-cli/latest";
 
 const SWELOG_USER_AGENT: &str = "RudraPatel2003/swelog-cli";
 
@@ -24,7 +27,9 @@ struct NpmPackageManifest {
     version: String,
 }
 
-pub async fn fetch_latest_version() -> Result<String> {
+pub async fn fetch_latest_version(npm_registry_base_url: &BaseUrl) -> Result<String> {
+    let latest_version_url = npm_registry_base_url.join(LATEST_VERSION_ENDPOINT_PATH)?;
+
     let client = Client::builder()
         .timeout(VERSION_CHECK_REQUEST_TIMEOUT)
         .build()
@@ -32,7 +37,7 @@ pub async fn fetch_latest_version() -> Result<String> {
         .wrap_err_with(|| FailedToFetchLatestVersion)?;
 
     let response = client
-        .get(NPM_REGISTRY_LATEST_URL)
+        .get(latest_version_url)
         .header(USER_AGENT, SWELOG_USER_AGENT)
         .send()
         .await

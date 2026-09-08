@@ -19,6 +19,7 @@ name = "swelog"
 path = "src/main.rs"
 
 [dependencies]
+base_url = { path = "../base_url" }
 chrono = { workspace = true }
 clap = { workspace = true, features = ["derive"] }
 config = { path = "../config" }
