@@ -22,7 +22,7 @@ struct TestContext {
 fn get_test_context() -> TestContext {
     let temporary_directory = tempdir().expect("temp directory should be created");
 
-    let cache_file_path = temporary_directory.path().join(APP_NAME).join(VERSION_CACHE_FILE_NAME);
+    let cache_file_path = get_version_cache_file_path(&temporary_directory.path().join("cache"));
 
     TestContext { temporary_directory, cache_file_path }
 }

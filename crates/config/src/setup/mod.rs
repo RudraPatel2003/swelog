@@ -1,7 +1,10 @@
 pub mod default_files;
 pub mod swelog_paths;
 
-use std::fs;
+use std::{
+    fs,
+    path::Path,
+};
 
 use miette::{
     IntoDiagnostic,
@@ -19,6 +22,7 @@ use crate::{
 
 pub fn setup_swelog_files_from_config(
     swelog_config: &SwelogConfig,
+    cache_directory: &Path,
     overwrite: Overwrite,
 ) -> Result<()> {
     let swelog_paths = SwelogPaths::new(swelog_config);
@@ -31,7 +35,7 @@ pub fn setup_swelog_files_from_config(
         format!("failed to create swelog directory at {}", swelog_paths.swelog_directory.display())
     })?;
 
-    create_or_reset_work_file(swelog_config)?;
+    create_or_reset_work_file(swelog_config, cache_directory)?;
 
     fs::create_dir_all(&swelog_paths.daily_log_directory).into_diagnostic().wrap_err_with(
         || {

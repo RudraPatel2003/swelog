@@ -26,7 +26,7 @@ impl UndoArgs {
 
         let swelog_config = read_config_file(&environment.config_file_path)?;
 
-        let undo_snapshot_file = get_undo_snapshot_file_path()?;
+        let undo_snapshot_file = get_undo_snapshot_file_path(&environment.cache_directory);
 
         let undo_snapshot = read_undo_snapshot(&undo_snapshot_file)?;
 

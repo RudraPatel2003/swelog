@@ -32,11 +32,11 @@ impl ResetArgs {
 
         let undo_snapshot = UndoSnapshot { created_file: None, work_file_content };
 
-        let undo_snapshot_file_path = get_undo_snapshot_file_path()?;
+        let undo_snapshot_file_path = get_undo_snapshot_file_path(&environment.cache_directory);
 
         write_undo_snapshot(&undo_snapshot_file_path, &undo_snapshot)?;
 
-        create_or_reset_work_file(&swelog_config)?;
+        create_or_reset_work_file(&swelog_config, &environment.cache_directory)?;
 
         println!("Reset work file at {}", swelog_paths.work_file.display().cyan());
 

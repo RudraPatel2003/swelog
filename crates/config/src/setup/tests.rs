@@ -28,6 +28,10 @@ impl TestContext {
         SwelogPaths::new(&self.config)
     }
 
+    fn cache_directory(&self) -> PathBuf {
+        self.temporary_directory.path().join("cache")
+    }
+
     fn swelog_directory(&self) -> PathBuf {
         self.swelog_paths().swelog_directory
     }
@@ -66,8 +70,12 @@ fn setup_creates_swelog_files_and_directories() {
 
     let overwrite_existing_files = Overwrite::No;
 
-    setup_swelog_files_from_config(&test_context.config, overwrite_existing_files)
-        .expect("swelog files should be created");
+    setup_swelog_files_from_config(
+        &test_context.config,
+        &test_context.cache_directory(),
+        overwrite_existing_files,
+    )
+    .expect("swelog files should be created");
 
     let work_file_contents =
         fs::read_to_string(test_context.work_file()).expect("work file should be readable");
@@ -98,9 +106,11 @@ fn setup_uses_configured_path_names() {
 
     let swelog_paths = SwelogPaths::new(&config);
 
+    let cache_directory = temporary_directory.path().join("cache");
+
     let overwrite_existing_files = Overwrite::No;
 
-    setup_swelog_files_from_config(&config, overwrite_existing_files)
+    setup_swelog_files_from_config(&config, &cache_directory, overwrite_existing_files)
         .expect("swelog files should be created");
 
     assert!(swelog_paths.work_file.is_file());
@@ -124,7 +134,11 @@ fn setup_fails_when_work_file_exists_without_force() {
 
     let overwrite_existing_files = Overwrite::No;
 
-    let result = setup_swelog_files_from_config(&test_context.config, overwrite_existing_files);
+    let result = setup_swelog_files_from_config(
+        &test_context.config,
+        &test_context.cache_directory(),
+        overwrite_existing_files,
+    );
 
     let error = result.expect_err("existing work file should not be overwritten without force");
 
@@ -151,7 +165,11 @@ fn setup_fails_when_daily_log_directory_exists_without_force() {
 
     let overwrite_existing_files = Overwrite::No;
 
-    let result = setup_swelog_files_from_config(&test_context.config, overwrite_existing_files);
+    let result = setup_swelog_files_from_config(
+        &test_context.config,
+        &test_context.cache_directory(),
+        overwrite_existing_files,
+    );
 
     let error =
         result.expect_err("existing daily log directory should not be overwritten without force");
@@ -174,7 +192,11 @@ fn setup_fails_when_weekly_log_directory_exists_without_force() {
 
     let overwrite_existing_files = Overwrite::No;
 
-    let result = setup_swelog_files_from_config(&test_context.config, overwrite_existing_files);
+    let result = setup_swelog_files_from_config(
+        &test_context.config,
+        &test_context.cache_directory(),
+        overwrite_existing_files,
+    );
 
     let error =
         result.expect_err("existing weekly log directory should not be overwritten without force");
@@ -200,8 +222,12 @@ fn setup_overwrites_existing_files_when_force_is_set() {
 
     let overwrite_existing_files = Overwrite::Yes;
 
-    setup_swelog_files_from_config(&test_context.config, overwrite_existing_files)
-        .expect("swelog files should be overwritten");
+    setup_swelog_files_from_config(
+        &test_context.config,
+        &test_context.cache_directory(),
+        overwrite_existing_files,
+    )
+    .expect("swelog files should be overwritten");
 
     let work_file_contents =
         fs::read_to_string(test_context.work_file()).expect("work file should be readable");
@@ -227,8 +253,12 @@ fn setup_accepts_existing_log_directories_when_force_is_set() {
 
     let overwrite_existing_files = Overwrite::Yes;
 
-    setup_swelog_files_from_config(&test_context.config, overwrite_existing_files)
-        .expect("existing log directories should be accepted");
+    setup_swelog_files_from_config(
+        &test_context.config,
+        &test_context.cache_directory(),
+        overwrite_existing_files,
+    )
+    .expect("existing log directories should be accepted");
 
     assert!(test_context.work_file().is_file());
 
@@ -251,8 +281,12 @@ fn setup_leaves_an_existing_context_file_alone() {
 
     let overwrite_existing_files = Overwrite::No;
 
-    setup_swelog_files_from_config(&test_context.config, overwrite_existing_files)
-        .expect("an existing context file should not block setup");
+    setup_swelog_files_from_config(
+        &test_context.config,
+        &test_context.cache_directory(),
+        overwrite_existing_files,
+    )
+    .expect("an existing context file should not block setup");
 
     let context_file_contents =
         fs::read_to_string(test_context.context_file()).expect("context file should be readable");

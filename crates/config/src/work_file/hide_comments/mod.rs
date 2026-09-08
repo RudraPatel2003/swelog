@@ -12,41 +12,12 @@ use miette::{
     WrapErr,
 };
 
-use crate::errors::UnavailableCacheDirectory;
-
-const APP_NAME: &str = "swelog";
-
 const HIDE_COMMENTS_FLAG_FILE_NAME: &str = "hide-comments";
 
-pub fn set_hide_comments_flag() -> Result<()> {
-    let flag_file_path = get_hide_comments_flag_file_path()?;
+pub fn set_hide_comments_flag(cache_directory: &Path) -> Result<()> {
+    let flag_file_path = get_hide_comments_flag_file_path(cache_directory);
 
-    set_hide_comments_flag_at(&flag_file_path)
-}
-
-#[must_use]
-pub fn has_hide_comments_flag() -> bool {
-    let Ok(flag_file_path) = get_hide_comments_flag_file_path() else {
-        return false;
-    };
-
-    has_hide_comments_flag_at(&flag_file_path)
-}
-
-fn get_hide_comments_flag_file_path() -> Result<PathBuf> {
-    let Some(cache_directory) = dirs::cache_dir() else {
-        let unavailable_cache_directory_error = UnavailableCacheDirectory;
-
-        return Err(unavailable_cache_directory_error.into());
-    };
-
-    let flag_file_path = cache_directory.join(APP_NAME).join(HIDE_COMMENTS_FLAG_FILE_NAME);
-
-    Ok(flag_file_path)
-}
-
-fn set_hide_comments_flag_at(flag_file_path: &Path) -> Result<()> {
-    if has_hide_comments_flag_at(flag_file_path) {
+    if has_hide_comments_flag(cache_directory) {
         return Ok(());
     }
 
@@ -56,13 +27,18 @@ fn set_hide_comments_flag_at(flag_file_path: &Path) -> Result<()> {
         })?;
     }
 
-    fs::write(flag_file_path, "").into_diagnostic().wrap_err_with(|| {
+    fs::write(&flag_file_path, "").into_diagnostic().wrap_err_with(|| {
         format!("failed to write the hide comments flag at {}", flag_file_path.display())
     })
 }
 
-fn has_hide_comments_flag_at(flag_file_path: &Path) -> bool {
-    flag_file_path.is_file()
+#[must_use]
+pub fn has_hide_comments_flag(cache_directory: &Path) -> bool {
+    get_hide_comments_flag_file_path(cache_directory).is_file()
+}
+
+fn get_hide_comments_flag_file_path(cache_directory: &Path) -> PathBuf {
+    cache_directory.join(HIDE_COMMENTS_FLAG_FILE_NAME)
 }
 
 #[cfg(test)]

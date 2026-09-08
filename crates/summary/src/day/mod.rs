@@ -29,12 +29,13 @@ use miette::{
 };
 use undo::snapshot::{
     UndoSnapshot,
+    get_undo_snapshot_file_path,
     write_undo_snapshot,
 };
 
 pub async fn summarize_daily_work_from_config(
     swelog_config: &SwelogConfig,
-    undo_snapshot_file: &Path,
+    cache_directory: &Path,
     language_model: &dyn LanguageModel,
     log_date: &NaiveDate,
     context_file_content: Option<&str>,
@@ -62,9 +63,9 @@ pub async fn summarize_daily_work_from_config(
 
     let undo_snapshot = UndoSnapshot { created_file: Some(daily_log_file), work_file_content };
 
-    write_undo_snapshot(undo_snapshot_file, &undo_snapshot)?;
+    write_undo_snapshot(&get_undo_snapshot_file_path(cache_directory), &undo_snapshot)?;
 
-    finish_work_file(swelog_config, keep_work_file)
+    finish_work_file(swelog_config, cache_directory, keep_work_file)
 }
 
 fn build_summarized_daily_log_content(

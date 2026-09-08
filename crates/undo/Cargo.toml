@@ -17,7 +17,6 @@ workspace = true
 
 [dependencies]
 config = { path = "../config" }
-dirs = { workspace = true }
 miette = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }

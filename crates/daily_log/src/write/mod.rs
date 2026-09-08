@@ -17,6 +17,7 @@ use miette::{
 };
 use undo::snapshot::{
     UndoSnapshot,
+    get_undo_snapshot_file_path,
     write_undo_snapshot,
 };
 
@@ -32,7 +33,7 @@ use crate::{
 
 pub fn write_daily_log_from_config(
     swelog_config: &SwelogConfig,
-    undo_snapshot_file: &Path,
+    cache_directory: &Path,
     log_date: &NaiveDate,
     overwrite: Overwrite,
     keep_work_file: KeepWorkFile,
@@ -53,9 +54,9 @@ pub fn write_daily_log_from_config(
 
     let undo_snapshot = UndoSnapshot { created_file: Some(daily_log_file), work_file_content };
 
-    write_undo_snapshot(undo_snapshot_file, &undo_snapshot)?;
+    write_undo_snapshot(&get_undo_snapshot_file_path(cache_directory), &undo_snapshot)?;
 
-    finish_work_file(swelog_config, keep_work_file)
+    finish_work_file(swelog_config, cache_directory, keep_work_file)
 }
 
 #[cfg(test)]

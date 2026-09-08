@@ -17,7 +17,6 @@ workspace = true
 
 [dependencies]
 chrono = { workspace = true }
-dirs = { workspace = true }
 miette = { workspace = true }
 owo-colors = { workspace = true }
 reqwest = { workspace = true }

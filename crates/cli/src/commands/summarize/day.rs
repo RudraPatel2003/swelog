@@ -13,7 +13,6 @@ use llm::{
 use miette::Result;
 use owo_colors::OwoColorize;
 use summary::day::summarize_daily_work_from_config;
-use undo::snapshot::get_undo_snapshot_file_path;
 
 use crate::{
     environment::Environment,
@@ -57,11 +56,9 @@ impl DailySummaryArgs {
             )
         );
 
-        let undo_snapshot_file = get_undo_snapshot_file_path()?;
-
         summarize_daily_work_from_config(
             &swelog_config,
-            &undo_snapshot_file,
+            &environment.cache_directory,
             language_model.as_ref(),
             &log_date,
             context_file_content.as_deref(),

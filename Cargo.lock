@@ -3233,7 +3233,6 @@ name = "undo"
 version = "0.21.0"
 dependencies = [
  "config",
- "dirs",
  "miette",
  "serde",
  "serde_json",
@@ -3288,7 +3287,6 @@ name = "updates"
 version = "0.21.0"
 dependencies = [
  "chrono",
- "dirs",
  "miette",
  "owo-colors",
  "reqwest 0.13.4",

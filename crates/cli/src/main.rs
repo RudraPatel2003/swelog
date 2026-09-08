@@ -24,7 +24,8 @@ async fn main() -> Result<()> {
 
     let cargo_package_version = env!("CARGO_PKG_VERSION");
 
-    let pending_update_notice = start_version_check(cargo_package_version);
+    let pending_update_notice =
+        start_version_check(cargo_package_version, &environment.cache_directory);
 
     // Store result so update is printed even if command fails
     let command_result = run_command(cli.command, &environment).await;
