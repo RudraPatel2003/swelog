@@ -15,14 +15,16 @@ use undo::snapshot::{
     write_undo_snapshot,
 };
 
+use crate::environment::Environment;
+
 #[derive(Debug, Args)]
 pub struct ResetArgs {}
 
 impl ResetArgs {
-    pub fn run(self) -> Result<()> {
+    pub fn run(self, environment: &Environment) -> Result<()> {
         let _ = self;
 
-        let swelog_config = read_config_file()?;
+        let swelog_config = read_config_file(&environment.config_file_path)?;
 
         let swelog_paths = SwelogPaths::new(&swelog_config);
 

@@ -15,11 +15,14 @@ use owo_colors::OwoColorize;
 use summary::day::summarize_daily_work_from_config;
 use undo::snapshot::get_undo_snapshot_file_path;
 
-use crate::shared::{
-    daily_log_args::DailyLogArgs,
-    summarization_notice::{
-        SummarizationPeriod,
-        format_summarization_notice,
+use crate::{
+    environment::Environment,
+    shared::{
+        daily_log_args::DailyLogArgs,
+        summarization_notice::{
+            SummarizationPeriod,
+            format_summarization_notice,
+        },
     },
 };
 
@@ -30,8 +33,8 @@ pub struct DailySummaryArgs {
 }
 
 impl DailySummaryArgs {
-    pub async fn run(self) -> Result<()> {
-        let swelog_config = read_config_file()?;
+    pub async fn run(self, environment: &Environment) -> Result<()> {
+        let swelog_config = read_config_file(&environment.config_file_path)?;
 
         let summarization_settings = SummarizationSettings::from_config(&swelog_config)?;
 

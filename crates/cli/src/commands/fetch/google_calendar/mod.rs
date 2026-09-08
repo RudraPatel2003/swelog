@@ -27,6 +27,7 @@ use crate::{
         },
         sources::FetchSource,
     },
+    environment::Environment,
     shared::date_selection::{
         DateSelection,
         resolve_selected_date,
@@ -47,15 +48,18 @@ pub struct GoogleCalendarArgs {
 }
 
 impl GoogleCalendarArgs {
-    pub async fn run(self) -> Result<()> {
+    pub async fn run(self, environment: &Environment) -> Result<()> {
         let date_selection = DateSelection::from_date_flags(self.date, self.use_yesterday);
 
-        fetch_google_calendar_meetings(date_selection).await
+        fetch_google_calendar_meetings(environment, date_selection).await
     }
 }
 
-pub async fn fetch_google_calendar_meetings(date_selection: DateSelection) -> Result<()> {
-    let swelog_config = read_config_file()?;
+pub async fn fetch_google_calendar_meetings(
+    environment: &Environment,
+    date_selection: DateSelection,
+) -> Result<()> {
+    let swelog_config = read_config_file(&environment.config_file_path)?;
 
     FetchSource::GoogleCalendar.print_fetching_notice();
 

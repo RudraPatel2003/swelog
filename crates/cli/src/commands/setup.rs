@@ -7,6 +7,8 @@ use config::{
 use miette::Result;
 use owo_colors::OwoColorize;
 
+use crate::environment::Environment;
+
 #[derive(Debug, Args)]
 pub struct SetupArgs {
     /// Overwrite existing swelog files.
@@ -15,8 +17,8 @@ pub struct SetupArgs {
 }
 
 impl SetupArgs {
-    pub fn run(self) -> Result<()> {
-        let swelog_config = read_config_file()?;
+    pub fn run(self, environment: &Environment) -> Result<()> {
+        let swelog_config = read_config_file(&environment.config_file_path)?;
 
         setup_swelog_files_from_config(
             &swelog_config,

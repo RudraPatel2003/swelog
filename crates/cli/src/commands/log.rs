@@ -9,7 +9,10 @@ use miette::Result;
 use owo_colors::OwoColorize;
 use undo::snapshot::get_undo_snapshot_file_path;
 
-use crate::shared::daily_log_args::DailyLogArgs;
+use crate::{
+    environment::Environment,
+    shared::daily_log_args::DailyLogArgs,
+};
 
 #[derive(Debug, Args)]
 pub struct LogArgs {
@@ -18,8 +21,8 @@ pub struct LogArgs {
 }
 
 impl LogArgs {
-    pub fn run(self) -> Result<()> {
-        let swelog_config = read_config_file()?;
+    pub fn run(self, environment: &Environment) -> Result<()> {
+        let swelog_config = read_config_file(&environment.config_file_path)?;
 
         let today = Local::now().date_naive();
 

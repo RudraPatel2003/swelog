@@ -11,14 +11,16 @@ use crate::commands::fetch::sources::{
 
 const LABEL_WIDTH: usize = 20;
 
+use crate::environment::Environment;
+
 #[derive(Debug, Args)]
 pub struct StatusArgs {}
 
 impl StatusArgs {
-    pub fn run(self) -> Result<()> {
+    pub fn run(self, environment: &Environment) -> Result<()> {
         let _ = self;
 
-        let swelog_config = read_config_file()?;
+        let swelog_config = read_config_file(&environment.config_file_path)?;
 
         println!("Fetch commands included in `swelog fetch all`:");
 
