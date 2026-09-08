@@ -39,10 +39,10 @@ const MERGED_PRS_RESPONSE: &str = r#"{
 const NO_PRS_RESPONSE: &str = r#"{ "total_count": 0, "incomplete_results": false, "items": [] }"#;
 
 pub const GITHUB_SECTION: &str = r#"## GitHub
-Opened:
+### Opened
 - "Add end-to-end tests" ([#42](https://github.com/example/swelog/pull/42)) in [example/swelog](https://github.com/example/swelog)
 
-Merged:
+### Merged
 - "Fix work file formatting" ([#43](https://github.com/example/swelog/pull/43)) in [example/swelog](https://github.com/example/swelog)"#;
 
 pub struct GitHubMocks<'server> {

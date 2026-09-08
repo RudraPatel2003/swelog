@@ -23,10 +23,10 @@ const WORK_FILE_WITH_GITHUB_SECTION: &str = r#"# Today's Work
 - Ship end-to-end tests
 
 ## GitHub
-Opened:
+### Opened
 - "Add end-to-end tests" ([#42](https://github.com/example/swelog/pull/42)) in [example/swelog](https://github.com/example/swelog)
 
-Merged:
+### Merged
 - "Fix work file formatting" ([#43](https://github.com/example/swelog/pull/43)) in [example/swelog](https://github.com/example/swelog)
 
 ## Log
@@ -40,10 +40,10 @@ const DAILY_LOG_WITH_GITHUB_SECTION: &str = r#"# Daily Log - 07-04-2026
 - Ship end-to-end tests
 
 ## GitHub
-Opened:
+### Opened
 - "Add end-to-end tests" ([#42](https://github.com/example/swelog/pull/42)) in [example/swelog](https://github.com/example/swelog)
 
-Merged:
+### Merged
 - "Fix work file formatting" ([#43](https://github.com/example/swelog/pull/43)) in [example/swelog](https://github.com/example/swelog)
 
 ## Log
