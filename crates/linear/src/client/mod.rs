@@ -71,11 +71,6 @@ impl LinearClient {
         Ok(issues)
     }
 
-    /// Fetches the issues assigned to `username` that Linear recorded activity
-    /// on during `date`.
-    ///
-    /// Completed and canceled issues are kept, because finishing an issue is
-    /// the kind of work a past day's log should record.
     pub async fn get_assigned_issues_on_date(
         &self,
         username: &str,
