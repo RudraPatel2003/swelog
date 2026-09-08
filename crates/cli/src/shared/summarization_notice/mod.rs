@@ -1,6 +1,7 @@
 use config::context_file::CONTEXT_FILE_NAME;
 use llm::summarization_settings::SummarizationSettings;
-use owo_colors::OwoColorize;
+
+use crate::shared::highlight::highlight;
 
 #[derive(Debug, Clone, Copy)]
 pub enum SummarizationPeriod {
@@ -26,8 +27,8 @@ pub fn format_summarization_notice(
     let summarizing_line = format!(
         "Summarizing {} with provider {} and model {}...\n",
         period.label(),
-        summarization_settings.language_model_provider.label().cyan(),
-        summarization_settings.language_model.cyan()
+        highlight(summarization_settings.language_model_provider.label()),
+        highlight(&summarization_settings.language_model)
     );
 
     let context_line = format_context_line(context_file_content);

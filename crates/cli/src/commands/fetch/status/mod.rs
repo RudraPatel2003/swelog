@@ -1,17 +1,21 @@
 use clap::Args;
 use config::config_file::read_config_file;
 use miette::Result;
-use owo_colors::OwoColorize;
+use owo_colors::{
+    OwoColorize,
+    Stream,
+};
 
-use crate::commands::fetch::sources::{
-    FetchSource,
-    FetchSourceAvailability,
-    collect_fetch_source_availabilities,
+use crate::{
+    commands::fetch::sources::{
+        FetchSource,
+        FetchSourceAvailability,
+        collect_fetch_source_availabilities,
+    },
+    environment::Environment,
 };
 
 const LABEL_WIDTH: usize = 20;
-
-use crate::environment::Environment;
 
 #[derive(Debug, Args)]
 pub struct StatusArgs {}
@@ -47,19 +51,21 @@ fn describe_fetch_source_availability(
     availability: FetchSourceAvailability,
 ) -> String {
     match availability {
-        FetchSourceAvailability::Included => format!("{}", "included".green()),
+        FetchSourceAvailability::Included => {
+            format!("{}", "included".if_supports_color(Stream::Stdout, |status| status.green()))
+        }
 
         FetchSourceAvailability::MissingAuthorization => {
             let description =
                 format!("not included, {} is not stored", fetch_source.credential().label());
 
-            format!("{}", description.dimmed())
+            format!("{}", description.if_supports_color(Stream::Stdout, |text| text.dimmed()))
         }
 
         FetchSourceAvailability::MissingConfiguration { reason } => {
             let description = format!("not included, {reason}");
 
-            format!("{}", description.dimmed())
+            format!("{}", description.if_supports_color(Stream::Stdout, |text| text.dimmed()))
         }
     }
 }

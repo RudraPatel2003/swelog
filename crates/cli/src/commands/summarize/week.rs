@@ -18,7 +18,6 @@ use llm::{
     summarization_settings::SummarizationSettings,
 };
 use miette::Result;
-use owo_colors::OwoColorize;
 use summary::week::{
     get_weekly_log_file_name,
     summarize_weekly_work_from_config,
@@ -31,6 +30,7 @@ use crate::{
             WeekSelection,
             resolve_monday_date,
         },
+        highlight::highlight,
         summarization_notice::{
             SummarizationPeriod,
             format_summarization_notice,
@@ -89,7 +89,10 @@ impl WeeklySummaryArgs {
 
         let weekly_log_file_name = get_weekly_log_file_name(&monday_date);
 
-        println!("Successfully summarized your weekly work into {}", weekly_log_file_name.cyan());
+        println!(
+            "Successfully summarized your weekly work into {}",
+            highlight(weekly_log_file_name)
+        );
 
         Ok(())
     }

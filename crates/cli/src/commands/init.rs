@@ -5,9 +5,11 @@ use config::{
     swelog_config::SwelogConfig,
 };
 use miette::Result;
-use owo_colors::OwoColorize;
 
-use crate::environment::Environment;
+use crate::{
+    environment::Environment,
+    shared::highlight::highlight,
+};
 
 #[derive(Debug, Args)]
 pub struct InitArgs {
@@ -26,7 +28,7 @@ impl InitArgs {
             Overwrite::from_force_flag(self.overwrite_existing_config),
         )?;
 
-        println!("Created swelog config at {}", environment.config_file_path.display().cyan());
+        println!("Created swelog config at {}", highlight(environment.config_file_path.display()));
 
         Ok(())
     }

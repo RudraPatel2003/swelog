@@ -1,6 +1,9 @@
 use std::path::Path;
 
-use owo_colors::OwoColorize;
+use owo_colors::{
+    OwoColorize,
+    Stream,
+};
 
 use crate::swelog_config::{
     LanguageModelProvider,
@@ -24,7 +27,10 @@ struct ConfigRow {
 pub fn print_config(config_file_path: &Path, config: &SwelogConfig) {
     let formatted_config = format_config(config);
 
-    println!("Displaying config at {}:", config_file_path.display().cyan());
+    println!(
+        "Displaying config at {}:",
+        config_file_path.display().if_supports_color(Stream::Stdout, |path| path.cyan())
+    );
 
     println!();
 

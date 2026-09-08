@@ -11,13 +11,13 @@ use llm::{
     summarization_settings::SummarizationSettings,
 };
 use miette::Result;
-use owo_colors::OwoColorize;
 use summary::day::summarize_daily_work_from_config;
 
 use crate::{
     environment::Environment,
     shared::{
         daily_log_args::DailyLogArgs,
+        highlight::highlight,
         summarization_notice::{
             SummarizationPeriod,
             format_summarization_notice,
@@ -69,7 +69,7 @@ impl DailySummaryArgs {
 
         let daily_log_file_name = get_daily_log_file_name(&log_date);
 
-        println!("Successfully summarized your daily work into {}", daily_log_file_name.cyan());
+        println!("Successfully summarized your daily work into {}", highlight(daily_log_file_name));
 
         Ok(())
     }

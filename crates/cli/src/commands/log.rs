@@ -6,11 +6,13 @@ use daily_log::{
     write::write_daily_log_from_config,
 };
 use miette::Result;
-use owo_colors::OwoColorize;
 
 use crate::{
     environment::Environment,
-    shared::daily_log_args::DailyLogArgs,
+    shared::{
+        daily_log_args::DailyLogArgs,
+        highlight::highlight,
+    },
 };
 
 #[derive(Debug, Args)]
@@ -37,7 +39,7 @@ impl LogArgs {
 
         let daily_log_file_name = get_daily_log_file_name(&log_date);
 
-        println!("Logged your work into {}", daily_log_file_name.cyan());
+        println!("Logged your work into {}", highlight(daily_log_file_name));
 
         Ok(())
     }

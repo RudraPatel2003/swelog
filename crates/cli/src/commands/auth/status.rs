@@ -5,7 +5,10 @@ use credentials::{
     store::read_credential,
 };
 use miette::Result;
-use owo_colors::OwoColorize;
+use owo_colors::{
+    OwoColorize,
+    Stream,
+};
 
 const LABEL_WIDTH: usize = 31;
 
@@ -40,13 +43,18 @@ fn describe_credential_status(credential: Credential) -> Result<String> {
     if let Some(environment_variable) = credential.environment_variable()
         && read_credential_from_environment(credential).is_some()
     {
-        return Ok(format!("{}", format!("set by ${environment_variable}").yellow()));
+        let description = format!("set by ${environment_variable}");
+
+        return Ok(format!(
+            "{}",
+            description.if_supports_color(Stream::Stdout, |description| description.yellow())
+        ));
     }
 
     let description = if read_credential(credential)?.is_some() {
-        format!("{}", "stored".green())
+        format!("{}", "stored".if_supports_color(Stream::Stdout, |status| status.green()))
     } else {
-        format!("{}", "not stored".dimmed())
+        format!("{}", "not stored".if_supports_color(Stream::Stdout, |status| status.dimmed()))
     };
 
     Ok(description)

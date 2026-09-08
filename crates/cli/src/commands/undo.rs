@@ -4,7 +4,6 @@ use config::{
     setup::swelog_paths::SwelogPaths,
 };
 use miette::Result;
-use owo_colors::OwoColorize;
 use undo::{
     restore::restore_undo_snapshot,
     snapshot::{
@@ -15,7 +14,10 @@ use undo::{
     },
 };
 
-use crate::environment::Environment;
+use crate::{
+    environment::Environment,
+    shared::highlight::highlight,
+};
 
 #[derive(Debug, Args)]
 pub struct UndoArgs {}
@@ -41,9 +43,9 @@ impl UndoArgs {
 }
 
 fn print_undone_changes(swelog_paths: &SwelogPaths, undo_snapshot: &UndoSnapshot) {
-    println!("Restored your work file at {}", swelog_paths.work_file.display().cyan());
+    println!("Restored your work file at {}", highlight(swelog_paths.work_file.display()));
 
     if let Some(created_file) = &undo_snapshot.created_file {
-        println!("Deleted {}", created_file.display().cyan());
+        println!("Deleted {}", highlight(created_file.display()));
     }
 }
