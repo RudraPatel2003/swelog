@@ -37,8 +37,6 @@ use crate::{
 
 pub const DEFAULT_GOOGLE_CALENDAR_API_BASE_URL: &str = "https://www.googleapis.com/";
 
-// `primary` is Google's alias for the calendar owned by the account that
-// authorized, which is the only calendar swelog reads.
 const PRIMARY_CALENDAR_EVENTS_ENDPOINT_PATH: &str = "calendar/v3/calendars/primary/events";
 
 const PAGE_SIZE: &str = "250";
@@ -66,7 +64,9 @@ impl GoogleCalendarClient {
 
         let events = self.fetch_all_events(&day_window).await?;
 
-        Ok(collect_meetings(&events))
+        let meetings = collect_meetings(&events);
+
+        Ok(meetings)
     }
 
     async fn fetch_all_events(&self, day_window: &DayWindow) -> Result<Vec<CalendarEvent>> {

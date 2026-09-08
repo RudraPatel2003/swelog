@@ -6,15 +6,13 @@ const COMPILED_IN_CLIENT_ID: Option<&str> = option_env!("SWELOG_GOOGLE_CLIENT_ID
 
 const COMPILED_IN_CLIENT_SECRET: Option<&str> = option_env!("SWELOG_GOOGLE_CLIENT_SECRET");
 
-// The secret is not a secret
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct GoogleOAuthApplication {
     pub client_id: String,
     pub client_secret: String,
 }
 
-/// Overrides for the compiled-in Google OAuth client, so a build without one
-/// (such as a test build) can still reach a Google-shaped server.
+/// Allow overrides for testing
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct GoogleOAuthApplicationOverrides {
     pub client_id: Option<String>,
@@ -35,7 +33,9 @@ pub fn get_oauth_application(
         return Err(GoogleOAuthApplicationMissing.into());
     };
 
-    Ok(GoogleOAuthApplication { client_id, client_secret })
+    let google_oauth_application = GoogleOAuthApplication { client_id, client_secret };
+
+    Ok(google_oauth_application)
 }
 
 fn resolve_value(override_value: Option<&str>, compiled_in_value: Option<&str>) -> Option<String> {

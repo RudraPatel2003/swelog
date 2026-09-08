@@ -45,19 +45,21 @@ impl GoogleAuthorization {
             return Ok(authorized_credentials.access_token);
         };
 
-        if !google_credentials.is_expiring(get_current_epoch_seconds()) {
+        let current_epoch_seconds = get_current_epoch_seconds();
+
+        if !google_credentials.is_expiring(current_epoch_seconds) {
             return Ok(google_credentials.access_token);
         }
 
-        let refreshed_credentials = match refresh_access_token(
+        let refresh_outcome = refresh_access_token(
             &self.token_base_url,
             &self.application,
             &google_credentials.refresh_token,
         )
-        .await?
-        {
-            RefreshOutcome::Refreshed(refreshed_credentials) => refreshed_credentials,
+        .await?;
 
+        let refreshed_credentials = match refresh_outcome {
+            RefreshOutcome::Refreshed(refreshed_credentials) => refreshed_credentials,
             RefreshOutcome::ReauthorizationRequired => {
                 authorize_in_browser(&self.application, &self.token_base_url).await?
             }

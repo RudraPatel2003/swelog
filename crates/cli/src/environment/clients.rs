@@ -33,16 +33,24 @@ impl Environment {
     pub fn build_google_calendar_client(&self) -> Result<GoogleCalendarClient> {
         let application = get_oauth_application(&self.google_oauth_application_overrides)?;
 
-        let authorization =
-            GoogleAuthorization::new(application, self.endpoints.google_token.clone());
+        let google_token = self.endpoints.google_token.clone();
 
-        Ok(GoogleCalendarClient::new(self.endpoints.google_calendar_api.clone(), authorization))
+        let google_calendar_api_endpoint = self.endpoints.google_calendar_api.clone();
+
+        let authorization = GoogleAuthorization::new(application, google_token);
+
+        let google_calendar_client =
+            GoogleCalendarClient::new(google_calendar_api_endpoint, authorization);
+
+        Ok(google_calendar_client)
     }
 
     pub fn build_language_model(
         &self,
         summarization_settings: &SummarizationSettings,
     ) -> Result<Box<dyn LanguageModel>> {
-        get_language_model(summarization_settings, &self.endpoints.language_model_endpoints())
+        let language_model_endpoints = self.endpoints.language_model_endpoints();
+
+        get_language_model(summarization_settings, &language_model_endpoints)
     }
 }
