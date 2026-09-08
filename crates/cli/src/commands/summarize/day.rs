@@ -6,10 +6,7 @@ use config::{
 };
 use daily_log::file::get_daily_log_file_name;
 use highlight::stdout::highlight_cyan;
-use llm::{
-    language_model_factory::get_language_model,
-    summarization_settings::SummarizationSettings,
-};
+use llm::summarization_settings::SummarizationSettings;
 use miette::Result;
 use summary::day::summarize_daily_work_from_config;
 
@@ -36,7 +33,7 @@ impl DailySummaryArgs {
 
         let summarization_settings = SummarizationSettings::from_config(&swelog_config)?;
 
-        let language_model = get_language_model(&summarization_settings)?;
+        let language_model = environment.build_language_model(&summarization_settings)?;
 
         let log_date = self.daily_log_args.resolve_log_date(environment.today)?;
 

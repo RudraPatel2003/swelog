@@ -11,10 +11,7 @@ use dates::{
     parsing::parse_monday_date,
 };
 use highlight::stdout::highlight_cyan;
-use llm::{
-    language_model_factory::get_language_model,
-    summarization_settings::SummarizationSettings,
-};
+use llm::summarization_settings::SummarizationSettings;
 use miette::Result;
 use summary::week::{
     get_weekly_log_file_name,
@@ -60,7 +57,7 @@ impl WeeklySummaryArgs {
 
         let summarization_settings = SummarizationSettings::from_config(&swelog_config)?;
 
-        let language_model = get_language_model(&summarization_settings)?;
+        let language_model = environment.build_language_model(&summarization_settings)?;
 
         let swelog_paths = SwelogPaths::new(&swelog_config);
 

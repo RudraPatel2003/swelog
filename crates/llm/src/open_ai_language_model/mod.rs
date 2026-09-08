@@ -2,6 +2,7 @@ pub mod errors;
 mod structs;
 
 use async_trait::async_trait;
+use base_url::base_url::BaseUrl;
 use errors::{
     OpenAiAuthorizationFailed,
     OpenAiRequestFailed,
@@ -23,18 +24,21 @@ use structs::{
 
 use crate::language_model::LanguageModel;
 
-const OPEN_AI_RESPONSES_URL: &str = "https://api.openai.com/v1/responses";
+pub const DEFAULT_OPEN_AI_BASE_URL: &str = "https://api.openai.com/";
+
+const RESPONSES_ENDPOINT_PATH: &str = "v1/responses";
 
 pub struct OpenAiLanguageModel {
     client: Client,
+    base_url: BaseUrl,
     model: String,
     api_key: String,
 }
 
 impl OpenAiLanguageModel {
     #[must_use]
-    pub fn new(model: String, api_key: String) -> Self {
-        Self { client: Client::new(), model, api_key }
+    pub fn new(base_url: BaseUrl, model: String, api_key: String) -> Self {
+        Self { client: Client::new(), base_url, model, api_key }
     }
 }
 
@@ -44,9 +48,11 @@ impl LanguageModel for OpenAiLanguageModel {
         let request =
             OpenAiResponseRequest { model: self.model.clone(), input: String::from(prompt) };
 
+        let endpoint_url = self.base_url.join(RESPONSES_ENDPOINT_PATH)?;
+
         let response = self
             .client
-            .post(OPEN_AI_RESPONSES_URL)
+            .post(endpoint_url)
             .bearer_auth(self.api_key.clone())
             .json(&request)
             .send()
