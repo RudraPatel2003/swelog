@@ -12,8 +12,6 @@ use url::Url;
 
 use crate::errors::InvalidBaseUrl;
 
-/// An absolute URL whose path ends with a slash, so joining an endpoint path
-/// onto it always appends rather than replacing the last path segment.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct BaseUrl {
     url: Url,
@@ -27,15 +25,19 @@ impl BaseUrl {
         })?;
 
         if url.cannot_be_a_base() {
-            return Err(InvalidBaseUrl {
+            let invalid_base_url = InvalidBaseUrl {
                 value: value.to_string(),
                 message: "the URL cannot have paths joined onto it".to_string(),
-            });
+            };
+
+            return Err(invalid_base_url);
         }
 
         ensure_trailing_slash(&mut url);
 
-        Ok(Self { url })
+        let base_url = Self { url };
+
+        Ok(base_url)
     }
 
     pub fn join(&self, endpoint_path: &str) -> Result<Url> {
