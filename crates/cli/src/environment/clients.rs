@@ -11,6 +11,10 @@ impl Environment {
     pub fn build_github_client(&self) -> Result<GitHubClient> {
         let github_token = get_or_prompt_for_credential(Credential::Github)?;
 
-        Ok(GitHubClient::new(self.endpoints.github_api.clone(), github_token))
+        let github_api_endpoint = self.endpoints.github_api.clone();
+
+        let github_client = GitHubClient::new(github_api_endpoint, github_token);
+
+        Ok(github_client)
     }
 }
