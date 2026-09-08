@@ -12,11 +12,7 @@ use dates::{
     formatting::format_date,
     parsing::parse_date,
 };
-use linear::client::{
-    get_assigned_issues_on_date,
-    get_current_active_assigned_issues,
-    structs::LinearIssue,
-};
+use linear::client::structs::LinearIssue;
 use miette::Result;
 
 use crate::{
@@ -88,12 +84,20 @@ pub async fn collect_linear_issues(
 ) -> Result<FetchOutcome> {
     let linear_username = swelog_config.get_linear_username().ok_or(MissingLinearUsername)?;
 
+    let linear_client = environment.build_linear_client();
+
     let activity_date = resolve_selected_date(date_selection, environment.today)?;
 
     let issues = match activity_date {
-        Some(activity_date) => get_assigned_issues_on_date(linear_username, &activity_date).await?,
+        Some(activity_date) => {
+            linear_client.get_assigned_issues_on_date(linear_username, &activity_date).await?
+        }
 
-        None => get_current_active_assigned_issues(linear_username, &environment.today).await?,
+        None => {
+            linear_client
+                .get_current_active_assigned_issues(linear_username, &environment.today)
+                .await?
+        }
     };
 
     let linear_fetch_outcome = get_linear_fetch_outcome(&issues, activity_date.as_ref());

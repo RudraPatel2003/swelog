@@ -21,6 +21,7 @@ use rmcp::{
     },
 };
 use serde_json::Value;
+use url::Url;
 
 use crate::{
     activity::{
@@ -34,79 +35,93 @@ use crate::{
     },
     errors::LinearMcpRequestFailed,
     oauth::{
-        LINEAR_MCP_URL,
         clear_linear_authorization,
         get_authorization_manager,
     },
     response::parse_issue_page,
 };
 
+pub const DEFAULT_LINEAR_MCP_URL: &str = "https://mcp.linear.app/mcp/readonly";
+
 const PAGE_SIZE: u64 = 50;
 
-pub async fn get_current_active_assigned_issues(
-    username: &str,
-    today: &NaiveDate,
-) -> Result<Vec<LinearIssue>> {
-    let client = connect_to_linear_mcp().await?;
-
-    let mut issues = fetch_all_issues(&client, username, None).await?;
-
-    issues.retain(|issue| is_issue_active_or_finished_today(issue, *today, &Local));
-
-    disconnect_from_linear_mcp(client).await?;
-
-    Ok(issues)
+pub struct LinearClient {
+    mcp_url: Url,
 }
 
-/// Fetches the issues assigned to `username` that Linear recorded activity on
-/// during `date`.
-///
-/// Completed and canceled issues are kept, because finishing an issue is the
-/// kind of work a past day's log should record.
-pub async fn get_assigned_issues_on_date(
-    username: &str,
-    date: &NaiveDate,
-) -> Result<Vec<LinearIssue>> {
-    let updated_after = get_updated_after_filter(*date)?;
+impl LinearClient {
+    #[must_use]
+    pub const fn new(mcp_url: Url) -> Self {
+        Self { mcp_url }
+    }
 
-    let client = connect_to_linear_mcp().await?;
+    pub async fn get_current_active_assigned_issues(
+        &self,
+        username: &str,
+        today: &NaiveDate,
+    ) -> Result<Vec<LinearIssue>> {
+        let client = self.connect_to_linear_mcp().await?;
 
-    let mut issues = fetch_all_issues(&client, username, Some(&updated_after)).await?;
+        let mut issues = fetch_all_issues(&client, username, None).await?;
 
-    issues.retain(|issue| was_issue_worked_on(issue, *date, &Local));
+        issues.retain(|issue| is_issue_active_or_finished_today(issue, *today, &Local));
 
-    disconnect_from_linear_mcp(client).await?;
+        disconnect_from_linear_mcp(client).await?;
 
-    Ok(issues)
-}
+        Ok(issues)
+    }
 
-async fn connect_to_linear_mcp() -> Result<RunningService<RoleClient, ()>> {
-    let mut reauthorization_attempted = false;
+    /// Fetches the issues assigned to `username` that Linear recorded activity
+    /// on during `date`.
+    ///
+    /// Completed and canceled issues are kept, because finishing an issue is
+    /// the kind of work a past day's log should record.
+    pub async fn get_assigned_issues_on_date(
+        &self,
+        username: &str,
+        date: &NaiveDate,
+    ) -> Result<Vec<LinearIssue>> {
+        let updated_after = get_updated_after_filter(*date)?;
 
-    loop {
-        let authorization_manager = get_authorization_manager().await?;
+        let client = self.connect_to_linear_mcp().await?;
 
-        let authorized_client = AuthClient::new(Client::new(), authorization_manager);
+        let mut issues = fetch_all_issues(&client, username, Some(&updated_after)).await?;
 
-        let transport = StreamableHttpClientTransport::with_client(
-            authorized_client,
-            StreamableHttpClientTransportConfig::with_uri(LINEAR_MCP_URL),
-        );
+        issues.retain(|issue| was_issue_worked_on(issue, *date, &Local));
 
-        match ().serve(transport).await {
-            Ok(client) => return Ok(client),
+        disconnect_from_linear_mcp(client).await?;
 
-            Err(error) if error.is_authorization_required() && !reauthorization_attempted => {
-                clear_linear_authorization()?;
+        Ok(issues)
+    }
 
-                reauthorization_attempted = true;
-            }
+    async fn connect_to_linear_mcp(&self) -> Result<RunningService<RoleClient, ()>> {
+        let mut reauthorization_attempted = false;
 
-            Err(error) => {
-                let linear_mcp_request_failed_error =
-                    LinearMcpRequestFailed { message: error.to_string() };
+        loop {
+            let authorization_manager = get_authorization_manager(self.mcp_url.as_str()).await?;
 
-                return Err(linear_mcp_request_failed_error.into());
+            let authorized_client = AuthClient::new(Client::new(), authorization_manager);
+
+            let transport = StreamableHttpClientTransport::with_client(
+                authorized_client,
+                StreamableHttpClientTransportConfig::with_uri(self.mcp_url.as_str()),
+            );
+
+            match ().serve(transport).await {
+                Ok(client) => return Ok(client),
+
+                Err(error) if error.is_authorization_required() && !reauthorization_attempted => {
+                    clear_linear_authorization()?;
+
+                    reauthorization_attempted = true;
+                }
+
+                Err(error) => {
+                    let linear_mcp_request_failed_error =
+                        LinearMcpRequestFailed { message: error.to_string() };
+
+                    return Err(linear_mcp_request_failed_error.into());
+                }
             }
         }
     }

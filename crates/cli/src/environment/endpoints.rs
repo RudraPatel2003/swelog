@@ -5,6 +5,7 @@ use google_calendar::{
     client::DEFAULT_GOOGLE_CALENDAR_API_BASE_URL,
     oauth::DEFAULT_GOOGLE_TOKEN_BASE_URL,
 };
+use linear::client::DEFAULT_LINEAR_MCP_URL;
 use llm::{
     anthropic_language_model::DEFAULT_ANTHROPIC_BASE_URL,
     language_model_endpoints::LanguageModelEndpoints,
@@ -13,6 +14,7 @@ use llm::{
     open_router_language_model::DEFAULT_OPEN_ROUTER_BASE_URL,
 };
 use updates::registry::DEFAULT_NPM_REGISTRY_BASE_URL;
+use url::Url;
 
 /// URLs for external services. Overridable for testing.
 #[derive(Debug, Args)]
@@ -86,6 +88,16 @@ pub struct ServiceEndpoints {
         hide = true
     )]
     pub google_calendar_api: BaseUrl,
+
+    #[arg(
+        long = "linear-mcp-url",
+        global = true,
+        env = "SWELOG_LINEAR_MCP_URL",
+        default_value = DEFAULT_LINEAR_MCP_URL,
+        value_name = "URL",
+        hide = true
+    )]
+    pub linear_mcp: Url,
 
     #[arg(
         long = "npm-registry-url",
